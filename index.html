@@ -285,47 +285,48 @@
             padding: 30px;
             margin: 20px 0;
             font-family: Arial, sans-serif;
-            font-size: 0.8rem;
-            line-height: 1.3;
+            font-size: 0.75rem;
+            line-height: 1.2;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .contract-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
         }
 
         .contract-section {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         .contract-section h3 {
             background: #f8f9fa;
-            padding: 10px;
-            margin-bottom: 15px;
+            padding: 6px;
+            margin-bottom: 10px;
             border-left: 4px solid #667eea;
+            font-size: 0.85rem;
         }
 
         .signature-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            margin-top: 40px;
-            padding-top: 20px;
+            gap: 30px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid #ddd;
         }
 
         .signature-box {
             text-align: center;
-            padding: 20px 0;
+            padding: 10px 0;
         }
 
         .signature-line {
             border-bottom: 1px solid #333;
-            margin-bottom: 10px;
-            height: 40px;
+            margin-bottom: 8px;
+            height: 30px;
         }
 
         @media print {
@@ -1251,89 +1252,85 @@
 
                     <div class="contract-section">
                         <h3>Dati Acquirente</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem;">
                             <div><strong>Il/La sottoscritto/a:</strong> ${contratto.cliente.nome}</div>
                             <div><strong>Nato/a a:</strong> ${contratto.cliente.luogoNascita || ''}</div>
-                            <div><strong>Residente/Con sede in:</strong> ${contratto.cliente.residenza || ''}</div>
-                            <div><strong>Cod.Fiscale/Partita IVA:</strong> ${contratto.cliente.codiceFiscale || ''}</div>
+                            <div><strong>Residente in:</strong> ${contratto.cliente.residenza || ''}</div>
+                            <div><strong>Cod.Fiscale:</strong> ${contratto.cliente.codiceFiscale || ''}</div>
                             <div><strong>Professione:</strong> ${contratto.cliente.professione || ''}</div>
                             <div><strong>Telefono:</strong> ${contratto.cliente.telefono}</div>
                         </div>
                     </div>
 
                     <div class="contract-section">
-                        <p>Il consumatore dichiara di essere stato informato di tutto quanto concerne l'acquisto del veicolo oggetto della presente proposta nonché delle condizioni generali del contratto riportate a tergo, che dichiara di aver compreso e che accetta pienamente, e conferisce alla spettabile:</p>
+                        <p style="font-size: 0.7rem; margin-bottom: 8px;">Il consumatore conferisce alla spettabile:</p>
                         
-                        <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                            <div><strong>PERICAR di Giacomo Perissinotto</strong></div>
-                            <div><strong>Partita IVA:</strong> 01671440053</div>
-                            <div><strong>Sede legale:</strong> Corso Casale 99, 14100 Asti (AT)</div>
-                            <div><strong>Sede operativa:</strong> Corso Casale 99, 14100 Asti (AT)</div>
-                            <div><strong>Tel./Fax:</strong> +39 339 6831296</div>
-                            <div><strong>Email:</strong> giacomo@pericar.it</div>
-                            <div><strong>PEC:</strong> giacomo.perissinotto@pec.it</div>
+                        <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 0.7rem;">
+                            <div><strong>PERICAR di Giacomo Perissinotto</strong> - P.IVA: 01671440053</div>
+                            <div>Corso Casale 99, 14100 Asti (AT) - Tel: +39 339 6831296</div>
+                            <div>Email: giacomo@pericar.it - PEC: giacomo.perissinotto@pec.it</div>
                         </div>
                     </div>
 
                     <div class="contract-section">
                         <h3>Veicolo in Vendita</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;">
                             <div><strong>Marca:</strong> ${contratto.auto.marca}</div>
                             <div><strong>Modello:</strong> ${contratto.auto.modello}</div>
                             <div><strong>Versione:</strong> ${contratto.auto.versione || ''}</div>
                             <div><strong>Targa:</strong> ${contratto.auto.targa}</div>
                             <div><strong>Telaio:</strong> ${contratto.auto.telaio || ''}</div>
-                            <div><strong>Data immatricolazione:</strong> ${contratto.auto.dataImmatricolazione ? new Date(contratto.auto.dataImmatricolazione).toLocaleDateString('it-IT') : ''}</div>
+                            <div><strong>Immatricolazione:</strong> ${contratto.auto.dataImmatricolazione ? new Date(contratto.auto.dataImmatricolazione).toLocaleDateString('it-IT') : ''}</div>
                             <div><strong>Km:</strong> ${contratto.auto.chilometri.toLocaleString()}</div>
                         </div>
-                        <p style="margin-top: 15px;">nelle condizioni in cui si trova, accertato in sua presenza, alle condizioni a tergo riportate prendendo altresì atto che il Venditore ne effettua la vendita:</p>
-                        <div style="margin: 10px 0;">
-                            <label><input type="checkbox" checked> In quanto proprietario dello stesso</label><br>
-                            <label><input type="checkbox"> In forza del mandato speciale all'uopo conferito dal Sig. ________________</label>
+                        <p style="margin: 8px 0; font-size: 0.7rem;">nelle condizioni in cui si trova, alle condizioni a tergo riportate:</p>
+                        <div style="margin: 5px 0; font-size: 0.7rem;">
+                            <label><input type="checkbox" checked> Proprietario dello stesso</label>
+                            <label style="margin-left: 15px;"><input type="checkbox"> Mandato speciale</label>
                         </div>
                     </div>
 
                     ${contratto.permuta.marca ? `
                     <div class="contract-section">
                         <h3>RITIRO VEICOLO IN PERMUTA</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;">
                             <div><strong>Marca:</strong> ${contratto.permuta.marca}</div>
                             <div><strong>Modello:</strong> ${contratto.permuta.modello}</div>
                             <div><strong>Targa:</strong> ${contratto.permuta.targa}</div>
                             <div><strong>Telaio:</strong> ${contratto.permuta.telaio}</div>
-                            <div><strong>Data immatricolazione:</strong> ${contratto.permuta.dataImmatricolazione ? new Date(contratto.permuta.dataImmatricolazione).toLocaleDateString('it-IT') : ''}</div>
+                            <div><strong>Immatricolazione:</strong> ${contratto.permuta.dataImmatricolazione ? new Date(contratto.permuta.dataImmatricolazione).toLocaleDateString('it-IT') : ''}</div>
                             <div><strong>Km:</strong> ${contratto.permuta.chilometri.toLocaleString()}</div>
                             <div><strong>Versione:</strong> ${contratto.permuta.versione}</div>
-                            <div><strong>Valutazione concordata:</strong> €${contratto.permuta.valutazione.toLocaleString()}</div>
+                            <div><strong>Valutazione:</strong> €${contratto.permuta.valutazione.toLocaleString()}</div>
                         </div>
-                        <p style="margin-top: 10px; font-size: 0.9rem;">Tale importo è determinato secondo lo stato d'uso alla data del presente accordo e come risultante dall'allegata scheda tecnica e salvo riduzione per deterioramenti successivi dalla data odierna alla data di consegna del detto autoveicolo.</p>
+                        <p style="margin-top: 5px; font-size: 0.65rem;">Importo determinato secondo lo stato d'uso attuale, salvo riduzione per deterioramenti successivi.</p>
                     </div>
                     ` : ''}
 
                     <div class="contract-section">
                         <h3>Riepilogo Economico</h3>
-                        <table style="width: 100%; border-collapse: collapse;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem;">
                             <tr style="border-bottom: 1px solid #ddd;">
-                                <td style="padding: 10px; font-weight: bold;">PREZZO CONCORDATO DEL VEICOLO</td>
-                                <td style="padding: 10px; text-align: right;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                                <td style="padding: 6px; font-weight: bold;">PREZZO CONCORDATO DEL VEICOLO</td>
+                                <td style="padding: 6px; text-align: right;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
                             </tr>
                             ${contratto.permuta.valutazione > 0 ? `
                             <tr style="border-bottom: 1px solid #ddd;">
-                                <td style="padding: 10px;">Valore ritiro veicolo</td>
-                                <td style="padding: 10px; text-align: right;">-€${contratto.permuta.valutazione.toLocaleString()}</td>
+                                <td style="padding: 6px;">Valore ritiro veicolo</td>
+                                <td style="padding: 6px; text-align: right;">-€${contratto.permuta.valutazione.toLocaleString()}</td>
                             </tr>
                             ` : ''}
                             <tr style="border-bottom: 1px solid #ddd;">
-                                <td style="padding: 10px;">Deposito cauzionale</td>
-                                <td style="padding: 10px; text-align: right;">-€${contratto.depositoCauzionale.toLocaleString()}</td>
+                                <td style="padding: 6px;">Deposito cauzionale</td>
+                                <td style="padding: 6px; text-align: right;">-€${contratto.depositoCauzionale.toLocaleString()}</td>
                             </tr>
                             <tr style="border-bottom: 1px solid #ddd;">
-                                <td style="padding: 10px;">Spese voltura/minivoltura</td>
-                                <td style="padding: 10px; text-align: right;">€${contratto.speseVoltura.toLocaleString()}</td>
+                                <td style="padding: 6px;">Spese voltura/minivoltura</td>
+                                <td style="padding: 6px; text-align: right;">€${contratto.speseVoltura.toLocaleString()}</td>
                             </tr>
                             <tr style="border-top: 2px solid #333; background: #f8f9fa;">
-                                <td style="padding: 15px; font-weight: bold; font-size: 1.1rem;">TOTALE A SALDO</td>
-                                <td style="padding: 15px; text-align: right; font-weight: bold; font-size: 1.1rem;">€${totaleASaldo.toLocaleString()}</td>
+                                <td style="padding: 8px; font-weight: bold; font-size: 0.8rem;">TOTALE A SALDO</td>
+                                <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 0.8rem;">€${totaleASaldo.toLocaleString()}</td>
                             </tr>
                         </table>
                     </div>
@@ -1349,175 +1346,87 @@
                         </div>
                     </div>
 
-                    <div style="page-break-before: always; margin-top: 40px;">
-                        <h2 style="text-align: center; margin-bottom: 30px;">CONDIZIONI GENERALI DI VENDITA</h2>
+                    <div style="page-break-before: always; margin-top: 20px;">
+                        <h2 style="text-align: center; margin-bottom: 15px; font-size: 1rem;">CONDIZIONI GENERALI DI VENDITA</h2>
                         
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 1 - Definizioni</h3>
-                            <p>Nel modulo "Stato d'uso del veicolo usato" s'intende per:</p>
-                            <p><strong>Organo sostituito/Ricondizionato:</strong> Sostituito/Revisionato.</p>
-                            <p><strong>Buone condizioni:</strong> recentemente sostituito/revisionato o che per particolare cura e/o manutenzione è in condizioni di utilizzo migliori rispetto alla norma.</p>
-                            <p><strong>Condizioni di Utilizzo Standard:</strong> in condizioni di usura conforme all'età ed al chilometraggio del veicolo.</p>
-                            <p><strong>Intervento Consigliato:</strong> da ripristinare in seguito ad un normale degrado meccanico o perché in condizioni di usura oltre la norma.</p>
-                            <p><strong>Intervento necessario:</strong> da sostituire/riparare o prossimo alla rottura e che può pregiudicare il normale utilizzo del veicolo.</p>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 1 - Definizioni</h3>
+                            <p><strong>Buone condizioni:</strong> recentemente sostituito/revisionato. <strong>Standard:</strong> usura conforme all'età. <strong>Intervento consigliato:</strong> da ripristinare. <strong>Intervento necessario:</strong> da sostituire.</p>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 2 - Regolamento generale</h3>
-                            <p>Con la firma e la presentazione della proposta di acquisto il compratore versa una somma indicata dal venditore a titolo di deposito cauzionale infruttifero, e si impegna ad accettare tutte le norme delle presenti "condizioni generali di vendita".</p>
-                            <p>L'ordine del compratore diventa vincolante per il venditore al momento dell'accettazione scritta della proposta di acquisto. La mancata accettazione non potrà dare luogo alla pretesa di alcuna indennità per risarcimento di danni, e comporterà solamente il rimborso della somma già versata dal compratore.</p>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 2 - Regolamento generale</h3>
+                            <p>Con la firma il compratore versa deposito cauzionale e accetta le condizioni. L'ordine diventa vincolante all'accettazione scritta.</p>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 3 - Prezzo</h3>
-                            <p>Il prezzo pattuito si intende per merce resa Franco sede del venditore, salvo diversa pattuizione scritta.</p>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 3 - Prezzo</h3>
+                            <p>Prezzo Franco sede venditore, salvo diversa pattuizione.</p>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 4 - Ritiro dell'autoveicolo</h3>
-                            <p>Il veicolo deve essere ritirato entro 10 giorni dalla data dell'accettazione dell'ordine se è immediatamente disponibile, oppure entro 5 giorni dalla data di comunicazione della sua messa a disposizione.</p>
-                            <p>In caso di mancato ritiro entro tali termini il venditore ha la facoltà di risolvere il contratto per inadempimento del compratore incamerando il deposito cauzionale da questi versato, può inoltre pretendere le spese sostenute per eventuali ripristini concordati in sede di trattativa e definizione dell'ordine, e fatto salvo ogni ulteriore diritto, ed in particolare il risarcimento dell'eventuale maggior danno.</p>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 4 - Ritiro veicolo</h3>
+                            <p>Ritiro entro 10 giorni se disponibile, 5 giorni dalla comunicazione. Mancato ritiro: risoluzione contratto e incameramento deposito.</p>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 5 - Garanzia legale di conformità</h3>
-                            <p>Ai sensi e per gli effetti dell'art. 133 quarto comma del D.Lgs n. 206/2005 (Codice del Consumo), il cliente ed il venditore convengono che la Garanzia Legale di Conformità impegni il Venditore limitatamente ai 12 mesi successivi alla consegna del veicolo, nonché convengono di limitare il termine di prescrizione dell'azione diretta a far valere i difetti ad un anno dalla consegna.</p>
-                            <p>In ottemperanza a quanto previsto dal Codice del Consumo relativamente alla garanzia legale di conformità e garanzie commerciali per i beni di consumo il compratore dichiara:</p>
-                            <p>a. di aver attentamente visionato e provato su strada il veicolo oggetto della presente proposta e di accettarlo nello stato di fatto e nelle condizioni in cui si trova;</p>
-                            <p>b. di convenire che i difetti di conformità potranno essere fatti valere esclusivamente in relazione al contenuto del certificato di conformità "Stato d'uso del veicolo usato" che della presente proposta forma parte integrante;</p>
-                            <p>c. di essere a conoscenza del fatto che non potrà far valere difetti di conformità se specificamente informato del fatto che una caratteristica particolare del bene si discostava dai requisiti oggettivi di conformità previsti da tali norme e il consumatore ha espressamente e separatamente accettato tale scostamento al momento della conclusione del contratto di vendita.</p>
-                            <p>d. di prendere atto del fatto che eventuali difetti di conformità possono essere riferiti solo ai difetti non derivanti dall'uso normale del veicolo in considerazione dell'anzianità di costruzione dello stesso e del numero di chilometri percorsi e che le reali condizioni di utilizzo risultano dal certificato di conformità "Stato d'uso del veicolo usato";</p>
-                            <p>e. di convenire che non possono considerarsi difetti di conformità quelli derivanti dalla normale usura, da carenza di manutenzione, dal mancato rispetto delle indicazioni fornite dalla casa costruttrice in ordine all'impiego ed alla manutenzione del veicolo.</p>
-                            <p>Il compratore conviene, conformemente a quanto prescritto dall'art. 135 bis del Codice del Consumo, che in caso di accertata "non conformità" del veicolo da parte del venditore, il venditore provvederà, in via prioritaria, al ripristino dello stesso. Nel caso in cui la parte oggetto di difetto debba essere sostituita con una nuova, il compratore è tenuto a rimborsare la quota di maggior valore che il veicolo usato dovesse acquistare in ragione della sostituzione. Il compratore potrà pretendere soluzioni diverse per rimuovere i difetti di conformità, ma il venditore terrà conto dell'entità del difetto anche in ragione della gravità degli inconvenienti in cui lo stesso dovesse incorrere in conseguenza della soluzione alternativa prospettata.</p>
-                            <p>La responsabilità del venditore è esclusa in caso di uso improprio del veicolo, ed in particolare:</p>
-                            <p>1. mancata manutenzione/ispezione periodica prescritta dal costruttore, nonché impiego di lubrificanti non rispondenti alle specifiche minime indicate dal costruttore;</p>
-                            <p>2. uso del veicolo su strade non asfaltate, per le quali il certificato di conformità non attesta la presenza di idonei dispositivi;</p>
-                            <p>3. mancata condotta diligente nell'utilizzo del veicolo, volta ad evitare l'aggravamento del danno eventualmente verificatosi.</p>
-                            <p>Le parti concordano che nel caso di vendita ad un titolare di Partita IVA, regolarmente fatturata, non potrà essere applicabile la normativa di cui ai commi 1, 2 e 3 del presente articolo, poiché non sussiste la qualità del consumatore, ma opereranno gli artt. 1490 ss del Codice Civile in materia di "Garanzia dei vizi della cosa venduta". In particolare, in relazione degli artt. 1490 e 1491 del Codice Civile si pattuisce di escludere la garanzia.</p>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 5 - Garanzia conformità</h3>
+                            <p>Garanzia limitata a 12 mesi (D.Lgs 206/2005). Il compratore dichiara di aver visionato il veicolo e accettarlo nelle condizioni attuali. Difetti conformità solo se non derivanti da uso normale, usura, mancata manutenzione. Responsabilità esclusa per uso improprio. Per titolari P.IVA si applica art. 1490 ss C.C. con esclusione garanzia.</p>
                         </div>
 
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 6 - Trattamento dei dati personali</h3>
-                            <p>I dati personali dell'utente sono utilizzati dal Venditore, che ne è titolare per il trattamento, nel rispetto dei principi di protezione dei dati personali stabiliti dal Regolamento GDPR 2016/679.</p>
-                            <p><strong>Modalità e finalità del trattamento dati</strong></p>
-                            <p>1. La informiamo che i dati verranno trattati con il supporto dei seguenti mezzi:</p>
-                            <p>• Mista - elettronica e cartacea con le seguenti finalità:</p>
-                            <p>• Adempimento di obblighi di legge connessi a rapporti commerciali</p>
-                            <p>• Analisi statistiche e psicometriche</p>
-                            <p>• Attività promozionali</p>
-                            <p>• Elaborazione, stampa, imbustamento e spedizione delle fatture</p>
-                            <p>• Erogazione del servizio prodotto</p>
-                            <p>• Gestione dei fornitori (contratti, ordini, arrivi, fatture)</p>
-                            <p>• Gestione del contenzioso (contratti, ordini, arrivi, fatture)</p>
-                            <p>• Gestione della clientela (contratti, ordini, spedizioni e fatture)</p>
-                            <p>• Marketing (analisi e indagini di mercato)</p>
-                            <p>• Ricerche di mercato, studi statistici e verifiche del grado di soddisfazione della clientela sui prodotti</p>
-                            <p>• Servizi a tutela di consumatori e utenti</p>
-                            <p>• Servizi di controllo interno (della sicurezza, della produttività, della qualità dei servizi, dell'integrità patrimonio)</p>
-                            <p>Fatto salvo esplicito diniego da parte dell'interessato, i dati dell'utente saranno trattati anche per le seguenti finalità:</p>
-                            <p>• Invio di proposte e di comunicazioni commerciali a mezzo posta elettronica o SMS o fax, da parte sia del Venditore che di Conformgest S.p.a. e sia di società partner;</p>
-                            <p>• Indagini di mercato e statistiche, marketing e referenze su comunicazioni pubblicitarie (stampa, radio, TV, internet, ecc.), preferenze sui prodotti;</p>
-                            <p>L'eventuale rifiuto nel consentire il trattamento dei dati comporta l'impossibilità di usufruire del servizio richiesto dall'utente.</p>
-                            
-                            <div style="display: flex; gap: 20px; margin: 10px 0;">
-                                <label><input type="checkbox"> non accetta</label>
-                                <label><input type="checkbox"> accetta</label>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 6 - Privacy (GDPR 2016/679)</h3>
+                            <p>Dati trattati per: adempimenti legali, gestione clientela, marketing. Conservazione: 10 anni. Diritti: accesso, rettifica, cancellazione. Titolare: PERICAR.</p>
+                            <div style="display: flex; gap: 15px; margin: 5px 0;">
+                                <label style="font-size: 0.6rem;"><input type="checkbox"> non accetta marketing</label>
+                                <label style="font-size: 0.6rem;"><input type="checkbox"> accetta marketing</label>
                             </div>
+                        </div>
 
-                            <p><strong>Base giuridica</strong></p>
-                            <p>2. Il conferimento dei dati è obbligatorio per tutto quanto è richiesto dagli obblighi legali e contrattuali e pertanto l'eventuale rifiuto a fornirli in tutto o in parte può dar luogo all'impossibilità di fornire i servizi richiesti.</p>
-                            <p>La società tratta i dati facoltativi degli utenti in base al consenso, ossia mediante l'approvazione esplicita della presente policy privacy e in relazione alle modalità e finalità di seguito descritte.</p>
-                            
-                            <p><strong>Categorie di destinatari</strong></p>
-                            <p>3. Ferme restando le comunicazioni eseguite in adempimento di obblighi di legge e contrattuali, tutti i dati raccolti ed elaborati potranno essere comunicati esclusivamente per le finalità sopra specificate alle seguenti categorie di interessati:</p>
-                            <p>• Consulenti e liberi professionisti anche in forma associata;</p>
-                            <p>• Persone autorizzate;</p>
-                            <p>• Responsabili interni;</p>
-                            <p>• Società che effettuano il servizio di logistica di magazzino e trasporto;</p>
-                            <p>• Conformgest spa e altre società o imprese partner;</p>
-                            
-                            <div style="display: flex; gap: 20px; margin: 10px 0;">
-                                <label><input type="checkbox"> non accetta</label>
-                                <label><input type="checkbox"> accetta</label>
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 7 - Tributi</h3>
+                            <p>Tributi, oneri e assicurazione RC a carico compratore.</p>
+                        </div>
+
+                        <div style="margin-bottom: 10px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Art. 8 - Foro competente</h3>
+                            <p>Competenza: luogo residenza compratore (consumatori) o sede venditore (P.IVA).</p>
+                        </div>
+
+                        <div style="margin-top: 15px; padding: 8px; border: 1px solid #333; font-size: 0.6rem;">
+                            <p>Dichiaro di approvare espressamente gli artt. 1-8 delle condizioni generali (artt. 1341-1342 c.c.).</p>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <div style="text-align: right; margin-bottom: 10px; font-size: 0.7rem;">
+                                <strong>${contratto.luogo}, ${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</strong>
                             </div>
-
-                            <p><strong>Periodo di conservazione</strong></p>
-                            <p>4. I dati obbligatori ai fini contrattuali e contabili sono conservati per il tempo necessario allo svolgimento del rapporto commerciale e contabile.</p>
-                            <p>I dati di chi non acquista o usufruisce di prodotti/servizi, pur avendo avuto un precedente contatto con dei rappresentanti dell'azienda, saranno immediatamente cancellati o trattati in forma anonima, ove la loro conservazione non risulti altrimenti giustificata, salvo che sia stato acquisito validamente il consenso informato degli interessati relativo ad una successiva attività di promozione commerciale o ricerca di mercato.</p>
-                            <p>Il periodo di conservazione dei dati è: I dati saranno trattati per tutto il tempo necessario alla svolgimento del rapporto commerciale in essere e per i successivi dieci anni dalla data di acquisizione degli stessi.</p>
-                            
-                            <p><strong>Diritti dell'interessato</strong></p>
-                            <p>5. Ai sensi del Regolamento europeo 679/2016 (GDPR) e della normativa nazionale, l'interessato può, secondo le modalità e nei limiti previsti dalla vigente normativa, esercitare i seguenti diritti:</p>
-                            <p>• richiedere la conferma dell'esistenza di dati personali che lo riguardano (diritto di accesso);</p>
-                            <p>• conoscerne l'origine;</p>
-                            <p>• riceverne comunicazione intelligibile;</p>
-                            <p>• avere informazioni circa la logica, le modalità e le finalità del trattamento;</p>
-                            <p>• richiederne l'aggiornamento, la rettifica, l'integrazione, la cancellazione, la trasformazione in forma anonima, il blocco dei dati trattati in violazione di legge, ivi compresi quelli non più necessari al perseguimento degli scopi per i quali sono stati raccolti;</p>
-                            <p>• nei casi di trattamento basato su consenso, ricevere i propri dati forniti al titolare, in forma strutturata e leggibile da un elaboratore di dati e in un formato comunemente usato da un dispositivo elettronico;</p>
-                            <p>• il diritto di presentare un reclamo all'Autorità di controllo.</p>
-                            <p>6. Titolare del trattamento dei Suoi dati personali è il Venditore (PERICAR di Giacomo Perissinotto)</p>
-                        </div>
-
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 7 - Tributi ed oneri</h3>
-                            <p>I tributi, gli oneri e le formalità amministrative, presenti o future, inerenti alla vendita ed uso del veicolo sono a carico esclusivo del compratore.</p>
-                            <p>L'assicurazione obbligatoria della Responsabilità Civile cui è subordinata per legge la circolazione del veicolo, deve essere stipulata a cura e spese del compratore prima del ritiro del veicolo stesso.</p>
-                        </div>
-
-                        <div style="margin-bottom: 20px;">
-                            <h3>Art. 8 - Foro competente</h3>
-                            <p>Per qualsiasi controversia è competente l'Autorità Giudiziaria del luogo di residenza del compratore, salvo che lo stesso risulti soggetto titolare di Partita IVA, così come indicato all'art. 5 comma 4 delle presenti condizioni generali, in questo caso vi sarà competenza esclusiva del foro del venditore.</p>
-                        </div>
-
-                        <div style="margin-top: 30px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                                 <div class="signature-box">
                                     <div class="signature-line"></div>
-                                    <strong>Firma acquirente</strong>
+                                    <strong style="font-size: 0.7rem;">Firma acquirente</strong>
                                 </div>
                                 <div class="signature-box">
                                     <div class="signature-line"></div>
-                                    <strong>Firma venditore</strong>
+                                    <strong style="font-size: 0.7rem;">Firma venditore</strong>
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 30px; padding: 20px; border: 1px solid #333;">
-                            <p>Nel dare atto di avere preso piena conoscenza di ognuna delle clausole contenute nelle sopraestese condizioni generali di vendita, dichiaro altresì di approvare espressamente e specificatamente sottoscrivere, anche ai sensi e per gli effetti degli artt. 1341 e 1342 c.c., gli artt. 1 - Definizioni; 2 - Regolamento generale; 3 - Prezzo; 4 - Ritiro dell'autoveicolo; 5 - Garanzia legale di conformità; 6 - Trattamento dei dati personali; 7 - Tributi ed oneri; 8 - Foro competente.</p>
+                        <div style="margin-top: 15px; font-size: 0.65rem;">
+                            <h3 style="font-size: 0.7rem; margin-bottom: 5px;">Garanzia Convenzionale</h3>
+                            <p>Veicolo garantito secondo libretto "Dinamica-Futura-Completa" da ConformGest Spa, Biella. Garanzia valida solo per primo acquirente, non cedibile.</p>
                         </div>
 
-                        <div style="margin-top: 30px;">
-                            <div style="text-align: right; margin-bottom: 20px;">
-                                <strong>Luogo e data:</strong> ${contratto.luogo}, ${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px;">
+                        <div style="margin-top: 15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                                 <div class="signature-box">
                                     <div class="signature-line"></div>
-                                    <strong>Firma acquirente</strong>
+                                    <strong style="font-size: 0.7rem;">Firma acquirente</strong>
                                 </div>
                                 <div class="signature-box">
                                     <div class="signature-line"></div>
-                                    <strong>Firma venditore</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 30px;">
-                            <h3>Garanzia Convenzionale Efficacia</h3>
-                            <p>Il veicolo oggetto della compravendita è garantito contro i guasti i meccanici nei limiti, termini e condizioni di cui al libretto convenzionale "Dinamica - Futura - Completa" così come consegnato al compratore. La garanzia è prestata da ConformGest Spa, società con sede in Biella in Via A. Vialardi Di Verrone, 39, che il compratore riconosce quale unico interlocutore in vece del venditore, per il quale gestisce le prestazioni così come previste nel libretto di garanzia "Dinamica - Futura - Completa".</p>
-                            <p>Il compratore accetta e dichiara di conoscere integralmente quanto contenuto nel libretto garanzia "Dinamica - Futura - Completa" ed in particolare dichiara di aver preso specifica visione anche ai sensi degli articolo 1341 e 1342 c.c, delle disposizioni ivi contenute ed in particolare di quelle contenute nel libretto di garanzia "Dinamica - Futura - Completa", ovvero: Premesse - Art.1 Oggetto della garanzia - Art 2 Veicoli garantibili-Art 3 veicoli non garantibili - Art 4 Decorrenza e durata - Art 5 Estensione territoriale - Art 6 Organi garantiti - Art 7 Esclusioni - Art 8 Limite di indennizzo - Art 9 Modalità operative in caso di anomalia o guasto - Art 10 Liquidazione del danno - Art 11 Manutenzione prescitta - Art12 Norme applicabili - Art 13 Foro competente - Privacy.</p>
-                            <p>La presente garanzia ha effetto esclusivamente nei confronti del Compratore primo acquirente del veicolo cessando a tutti gli effetti di legge nel caso di rivendita da parte del compratore che in tal caso rimane obbigato alla restituzione del libretto di garanzia al Venditore/CONFORMGEST SPA essendo esclusa la possibilità di cessione del contratto.</p>
-                        </div>
-
-                        <div style="margin-top: 30px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px;">
-                                <div class="signature-box">
-                                    <div class="signature-line"></div>
-                                    <strong>Firma acquirente</strong>
-                                </div>
-                                <div class="signature-box">
-                                    <div class="signature-line"></div>
-                                    <strong>Firma venditore</strong>
+                                    <strong style="font-size: 0.7rem;">Firma venditore</strong>
                                 </div>
                             </div>
                         </div>
@@ -1543,17 +1452,17 @@
                 <head>
                     <title>Contratto</title>
                     <style>
-                        body { font-family: Arial, sans-serif; font-size: 0.8rem; line-height: 1.3; margin: 20px; }
+                        body { font-family: Arial, sans-serif; font-size: 0.75rem; line-height: 1.2; margin: 15px; }
                         .contract-preview { background: white; }
-                        .contract-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                        .contract-section { margin-bottom: 25px; }
-                        .contract-section h3 { background: #f8f9fa; padding: 10px; margin-bottom: 15px; border-left: 4px solid #667eea; }
-                        .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; }
-                        .signature-box { text-align: center; padding: 20px 0; }
-                        .signature-line { border-bottom: 1px solid #333; margin-bottom: 10px; height: 40px; }
-                        table { width: 100%; border-collapse: collapse; }
-                        td { padding: 10px; border-bottom: 1px solid #ddd; }
-                        @page { margin: 1cm; }
+                        .contract-header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                        .contract-section { margin-bottom: 10px; }
+                        .contract-section h3 { background: #f8f9fa; padding: 6px; margin-bottom: 8px; border-left: 4px solid #667eea; font-size: 0.85rem; }
+                        .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd; }
+                        .signature-box { text-align: center; padding: 10px 0; }
+                        .signature-line { border-bottom: 1px solid #333; margin-bottom: 8px; height: 30px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+                        td { padding: 6px; border-bottom: 1px solid #ddd; }
+                        @page { margin: 0.8cm; size: A4; }
                     </style>
                 </head>
                 <body>
@@ -1630,5 +1539,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b5b23c7020ed9b',t:'MTc1NDU1ODQwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b5d219b182ee67',t:'MTc1NDU1OTcxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
