@@ -426,6 +426,10 @@
 
             <button class="btn btn-primary" onclick="aggiungiCliente()">➕ Aggiungi Cliente</button>
 
+            <div style="margin: 20px 0;">
+                <input type="text" id="searchClienti" placeholder="🔍 Cerca clienti per nome, telefono, email..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraClienti()">
+            </div>
+
             <table class="data-table">
                 <thead>
                     <tr>
@@ -504,6 +508,10 @@
             </div>
 
             <button class="btn btn-success" onclick="aggiungiAuto()">🚗 Aggiungi Auto</button>
+
+            <div style="margin: 20px 0;">
+                <input type="text" id="searchAuto" placeholder="🔍 Cerca auto per marca, modello, targa..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraAuto()">
+            </div>
 
             <table class="data-table">
                 <thead>
@@ -598,6 +606,10 @@
             </div>
 
             <button class="btn btn-primary" onclick="creaContratto()">📋 Crea Contratto</button>
+
+            <div style="margin: 20px 0;">
+                <input type="text" id="searchContratti" placeholder="🔍 Cerca contratti per cliente, auto, data..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraContratti()">
+            </div>
 
             <table class="data-table">
                 <thead>
@@ -1080,6 +1092,37 @@
             }
         }
 
+        // FUNZIONI DI RICERCA
+        function filtraClienti() {
+            const searchTerm = document.getElementById('searchClienti').value.toLowerCase();
+            const rows = document.querySelectorAll('#tabellaClienti tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function filtraAuto() {
+            const searchTerm = document.getElementById('searchAuto').value.toLowerCase();
+            const rows = document.querySelectorAll('#tabellaAuto tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function filtraContratti() {
+            const searchTerm = document.getElementById('searchContratti').value.toLowerCase();
+            const rows = document.querySelectorAll('#tabellaContratti tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
         // AGGIORNAMENTO TABELLE
         function aggiornaTabelle() {
             aggiornaTabelliaClienti();
@@ -1250,10 +1293,9 @@
 
                     <!-- Dati Cliente -->
                     <div style="margin-bottom: 12px;">
-                        <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #dc3545; color: white; padding: 6px; margin: 0 -30px 8px -30px; font-weight: bold; text-align: center;">DATI ACQUIRENTE</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
                             <tr>
-                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Nome:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Il sottoscritto:</td>
                                 <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.nome}</td>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Luogo nascita:</td>
                                 <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.luogoNascita || '___________'}</td>
@@ -1730,5 +1772,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b87e95f084bb14',t:'MTc1NDU4Nzc0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b88f07e589ee69',t:'MTc1NDU4ODQyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
