@@ -1252,79 +1252,21 @@
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 10px;">
                         <!-- Colonna sinistra - Dati principali -->
                         <div>
-                            <!-- Dati Cliente -->
-                            <div style="margin-bottom: 8px;">
-                                <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #f8f9fa; padding: 3px; border-left: 3px solid #cc0000; color: #cc0000; font-weight: bold;">DATI CLIENTE</h3>
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 25%;">Nome:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee; width: 75%;">${contratto.cliente.nome}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Nato a:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.luogoNascita || '___________'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Residente:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.residenza || '___________'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Codice Fiscale:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.codiceFiscale || '___________'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Professione:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.professione || '___________'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Telefono:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.telefono}</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <!-- Testo intermedio -->
-                            <div style="margin: 8px 0; font-size: 0.7rem; text-align: center; font-weight: bold;">
-                                conferisce alla spettabile <strong>PERICAR di Giacomo Perissinotto</strong>
-                            </div>
-                            
-                            <div style="margin: 8px 0; font-size: 0.75rem; text-align: center; font-weight: bold; color: #cc0000;">
-                                L'ORDINE DI ACQUISTO DEL VEICOLO
-                            </div>
-
-                            <!-- Dati Veicolo -->
-                            <div style="margin-bottom: 8px;">
-                                <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #f8f9fa; padding: 3px; border-left: 3px solid #cc0000; color: #cc0000; font-weight: bold;">DATI VEICOLO</h3>
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 25%;">Marca:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee; width: 75%;">${contratto.auto.marca}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Modello:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.modello}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Versione:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.versione || ''}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Targa:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.targa}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Telaio:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.telaio || ''}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Immatricolazione:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.dataImmatricolazione ? new Date(contratto.auto.dataImmatricolazione).toLocaleDateString('it-IT') : ''}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Km:</td>
-                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.chilometri.toLocaleString()}</td>
-                                    </tr>
-                                </table>
+                            <!-- Testo legale con dati cliente -->
+                            <div style="margin-bottom: 10px; font-size: 0.7rem; line-height: 1.3;">
+                                <p style="margin-bottom: 6px;">Il sottoscritto <strong>${contratto.cliente.nome}</strong>, nato a <strong>${contratto.cliente.luogoNascita || '___________'}</strong>, residente in <strong>${contratto.cliente.residenza || '___________'}</strong>, codice fiscale <strong>${contratto.cliente.codiceFiscale || '___________'}</strong>, professione <strong>${contratto.cliente.professione || '___________'}</strong>, telefono <strong>${contratto.cliente.telefono}</strong>,</p>
+                                
+                                <p style="margin: 6px 0; text-align: center; font-weight: bold;">
+                                    conferisce alla spettabile <strong style="color: #cc0000;">PERICAR di Giacomo Perissinotto</strong>
+                                </p>
+                                
+                                <p style="margin: 6px 0; text-align: center; font-weight: bold; color: #cc0000; font-size: 0.75rem;">
+                                    L'ORDINE DI ACQUISTO DEL SEGUENTE VEICOLO:
+                                </p>
+                                
+                                <p style="margin: 6px 0;">
+                                    Marca <strong>${contratto.auto.marca}</strong>, modello <strong>${contratto.auto.modello}</strong>${contratto.auto.versione ? ', versione <strong>' + contratto.auto.versione + '</strong>' : ''}, targato <strong>${contratto.auto.targa}</strong>${contratto.auto.telaio ? ', numero di telaio <strong>' + contratto.auto.telaio + '</strong>' : ''}${contratto.auto.dataImmatricolazione ? ', immatricolato in data <strong>' + new Date(contratto.auto.dataImmatricolazione).toLocaleDateString('it-IT') + '</strong>' : ''}, con chilometri <strong>${contratto.auto.chilometri.toLocaleString()}</strong>.
+                                </p>
                             </div>
 
                             <!-- Dati Permuta -->
@@ -1686,5 +1628,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b7ed15147ebb00',t:'MTc1NDU4MTc4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b7f38bf166bb00',t:'MTc1NDU4MjA1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
