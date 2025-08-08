@@ -621,14 +621,29 @@
                     <label>Prezzo di Vendita (€)</label>
                     <input type="number" id="prezzoVendita" placeholder="28000">
                 </div>
-                <div class="form-group">
-                    <label>Costi Aggiuntivi (€)</label>
-                    <input type="number" id="costiAggiuntivi" placeholder="500">
                 </div>
-                <div class="form-group">
-                    <label>Descrizione Costi</label>
-                    <textarea id="descrizioneCosti" placeholder="Es: Riparazione freni, Tagliando, Pneumatici..." style="min-height: 60px; resize: vertical;"></textarea>
+
+            <h3>Costi Aggiuntivi</h3>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                    <div class="form-group">
+                        <label>Descrizione Costo</label>
+                        <input type="text" id="descrizioneCostoAuto" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">
+                    </div>
+                    <div class="form-group">
+                        <label>Importo (€)</label>
+                        <input type="number" id="importoCostoAuto" placeholder="500">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-success" onclick="aggiungiCostoAuto()" style="margin-top: 0;">➕ Aggiungi</button>
+                    </div>
                 </div>
+                
+                <div id="listaCostiAuto" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="form-grid">
                 <div class="form-group">
                     <label>Tipo</label>
                     <select id="tipoAuto">
@@ -752,6 +767,16 @@
                     <label>Spese Voltura/Minivoltura (€)</label>
                     <input type="number" id="speseVoltura" placeholder="350">
                 </div>
+                <div class="form-group">
+                    <label>Canale di Vendita (interno)</label>
+                    <select id="canaleVendita">
+                        <option value="Autoscout">Autoscout</option>
+                        <option value="Subito">Subito</option>
+                        <option value="Conoscenze">Conoscenze</option>
+                        <option value="Ingresso spontaneo">Ingresso spontaneo</option>
+                        <option value="Cip">Cip</option>
+                    </select>
+                </div>
             </div>
 
             <h3>Servizi/Accessori Aggiuntivi</h3>
@@ -812,6 +837,14 @@
                     <h3 id="fatturatoTotale">€132.020</h3>
                     <p>Fatturato Totale</p>
                 </div>
+                <div class="stat-card">
+                    <h3 id="valoreStock">€0</h3>
+                    <p>Valore Stock Presente</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="mediaVendite">4.0</h3>
+                    <p>Media Auto/Mese</p>
+                </div>
             </div>
 
             <div class="contract-preview">
@@ -833,6 +866,11 @@
             </div>
 
             <div class="contract-preview" style="margin-top: 30px;">
+                <h3>📊 Statistiche Canali di Vendita</h3>
+                <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
+            </div>
+
+            <div class="contract-preview" style="margin-top: 30px;">
                 <h3>🚗 Auto Vendute</h3>
                 <table class="data-table">
                     <thead>
@@ -842,6 +880,7 @@
                             <th>Cliente</th>
                             <th>Prezzo Vendita</th>
                             <th>Margine</th>
+                            <th>Canale</th>
                         </tr>
                     </thead>
                     <tbody id="autoVendute"></tbody>
@@ -875,6 +914,47 @@
                 <button class="btn btn-danger" onclick="chiudiModalContratto()">❌ Chiudi</button>
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIONE COSTI AUTO -->
+    <div id="modalCostiAuto" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="chiudiModalCostiAuto()">&times;</span>
+            <h2 id="titoloCostiAuto">Gestione Costi Auto</h2>
+            
+            <div id="infoAutoCosti" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <h3>Aggiungi Nuovo Costo</h3>
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="form-group">
+                    <label>Descrizione Costo</label>
+                    <input type="text" id="descrizioneCostoModal" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">
+                </div>
+                <div class="form-group">
+                    <label>Importo (€)</label>
+                    <input type="number" id="importoCostoModal" placeholder="500">
+                </div>
+            </div>
+            
+            <button class="btn btn-success" onclick="aggiungiCostoModal()">➕ Aggiungi Costo</button>
+            
+            <h3 style="margin-top: 30px;">Costi Registrati</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Descrizione</th>
+                        <th>Importo</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaCostiAuto"></tbody>
+            </table>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-success" onclick="salvaCostiAuto()">💾 Salva Modifiche</button>
+                <button class="btn btn-danger" onclick="chiudiModalCostiAuto()">❌ Chiudi</button>
+            </div>
         </div>
     </div>
 
@@ -1023,6 +1103,7 @@
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
         let extraItems = []; // Array per servizi/accessori aggiuntivi
+        let costiAutoItems = []; // Array per costi aggiuntivi auto
         let utenteCorrente = null;
 
         // Sistema di autenticazione
@@ -1076,6 +1157,7 @@
             aggiornaSelectClienti();
             aggiornaSelectAuto();
             aggiornaListaExtra();
+            aggiornaListaCostiAuto();
             
             // Imposta data odierna
             document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
@@ -1337,8 +1419,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 chilometri: parseInt(chilometri) || 0,
                 prezzoAcquisto,
                 prezzoVendita,
-                costiAggiuntivi: parseFloat(document.getElementById('costiAggiuntivi').value) || 0,
-                descrizioneCosti: document.getElementById('descrizioneCosti').value,
+                costiIniziali: [...costiAutoItems], // Copia dei costi iniziali
                 tipo,
                 stato,
                 speseAggiuntive: [] // Array per tracciare spese successive
@@ -1362,10 +1443,12 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('chilometri').value = '';
             document.getElementById('prezzoAcquisto').value = '';
             document.getElementById('prezzoVendita').value = '';
-            document.getElementById('costiAggiuntivi').value = '';
-            document.getElementById('descrizioneCosti').value = '';
+            document.getElementById('descrizioneCostoAuto').value = '';
+            document.getElementById('importoCostoAuto').value = '';
             document.getElementById('tipoAuto').value = 'NUOVO';
             document.getElementById('statoAuto').value = 'Disponibile';
+            costiAutoItems = [];
+            aggiornaListaCostiAuto();
         }
 
         // GESTIONE CONTRATTI
@@ -1404,6 +1487,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 permuta,
                 depositoCauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
                 speseVoltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
+                canaleVendita: document.getElementById('canaleVendita').value,
                 extraItems: [...extraItems], // Copia degli extra items
                 cliente,
                 auto: autoVenduta
@@ -1439,10 +1523,72 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('valutazionePermuta').value = '';
             document.getElementById('depositoCauzionale').value = '';
             document.getElementById('speseVoltura').value = '';
+            document.getElementById('canaleVendita').value = 'Autoscout';
             document.getElementById('descrizioneExtra').value = '';
             document.getElementById('prezzoExtra').value = '';
             extraItems = [];
             aggiornaListaExtra();
+        }
+
+        // GESTIONE COSTI AUTO
+        function aggiungiCostoAuto() {
+            const descrizione = document.getElementById('descrizioneCostoAuto').value.trim();
+            const importo = parseFloat(document.getElementById('importoCostoAuto').value) || 0;
+            
+            if (!descrizione || importo <= 0) {
+                alert('Descrizione e importo sono obbligatori!');
+                return;
+            }
+            
+            const costo = {
+                id: Date.now(),
+                descrizione,
+                importo
+            };
+            
+            costiAutoItems.push(costo);
+            aggiornaListaCostiAuto();
+            
+            // Pulisci campi
+            document.getElementById('descrizioneCostoAuto').value = '';
+            document.getElementById('importoCostoAuto').value = '';
+        }
+
+        function rimuoviCostoAuto(id) {
+            costiAutoItems = costiAutoItems.filter(item => item.id !== id);
+            aggiornaListaCostiAuto();
+        }
+
+        function aggiornaListaCostiAuto() {
+            const container = document.getElementById('listaCostiAuto');
+            
+            if (costiAutoItems.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Nessun costo aggiuntivo inserito</p>';
+                return;
+            }
+            
+            let html = '<div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">';
+            html += '<div style="background: #e9ecef; padding: 8px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;">';
+            html += '<div>Descrizione</div><div style="text-align: right;">Importo</div><div style="width: 60px;"></div>';
+            html += '</div>';
+            
+            costiAutoItems.forEach(item => {
+                html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
+                    <div>${item.descrizione}</div>
+                    <div style="text-align: right; font-weight: bold;">€${item.importo.toLocaleString()}</div>
+                    <div><button class="btn btn-danger" onclick="rimuoviCostoAuto(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
+                </div>`;
+            });
+            
+            const totale = costiAutoItems.reduce((sum, item) => sum + item.importo, 0);
+            html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
+                <div>TOTALE COSTI</div>
+                <div style="text-align: right; color: #dc3545;">€${totale.toLocaleString()}</div>
+                <div></div>
+            </div>`;
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         // GESTIONE SERVIZI/ACCESSORI AGGIUNTIVI
@@ -1534,7 +1680,6 @@ Nuova password richiesta: ${nuovaPassword}`);
                     {nome: 'chilometri', label: 'Chilometri', tipo: 'number'},
                     {nome: 'prezzoAcquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
                     {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
-                    {nome: 'costiAggiuntivi', label: 'Costi Aggiuntivi (€)', tipo: 'number'},
                     {nome: 'tipo', label: 'Tipo', tipo: 'select', opzioni: ['NUOVO', 'KM0', 'USATO']},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
@@ -1764,7 +1909,8 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             autoFiltrate.forEach(autoObj => {
                 const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0) + speseAggiuntiveTotali;
+                const costiInizialiTotali = (autoObj.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
+                const costoTotale = autoObj.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 const row = tbody.insertRow();
                 
@@ -1782,7 +1928,8 @@ Nuova password richiesta: ${nuovaPassword}`);
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${margine.toLocaleString()}</td>
                     <td class="actions">
                         <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
-                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">💰 Spese</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciCostiAuto(${autoObj.id})">💰 Costi</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>` : ''}
                         <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
                     </td>
                 `;
@@ -1819,15 +1966,16 @@ Nuova password richiesta: ${nuovaPassword}`);
             tbody.innerHTML = '';
             
             auto.filter(autoObj => autoObj.stato !== 'Venduta').forEach(autoObj => {
-                const costiAggiuntivi = autoObj.costiAggiuntivi || 0;
-                const costoTotale = autoObj.prezzoAcquisto + costiAggiuntivi;
+                const costiInizialiTotali = (autoObj.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
+                const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+                const costoTotale = autoObj.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</td>
                     <td>€${autoObj.prezzoAcquisto.toLocaleString()}</td>
-                    <td>€${costiAggiuntivi.toLocaleString()}</td>
+                    <td>€${(costiInizialiTotali + speseAggiuntiveTotali).toLocaleString()}</td>
                     <td>€${costoTotale.toLocaleString()}</td>
                     <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${margine.toLocaleString()}</td>
@@ -1843,8 +1991,18 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             contratti.forEach(contratto => {
                 const autoVenduta = contratto.auto;
-                const costoTotale = autoVenduta.prezzoAcquisto + (autoVenduta.costiAggiuntivi || 0);
+                const costiInizialiTotali = (autoVenduta.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
+                const speseAggiuntiveTotali = (autoVenduta.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+                const costoTotale = autoVenduta.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
                 const margine = autoVenduta.prezzoVendita - costoTotale;
+                
+                const canaleColore = {
+                    'Autoscout': '#1e40af',
+                    'Subito': '#dc2626',
+                    'Conoscenze': '#059669',
+                    'Ingresso spontaneo': '#d97706',
+                    'Cip': '#7c3aed'
+                }[contratto.canaleVendita] || '#6b7280';
                 
                 const row = tbodyVendute.insertRow();
                 row.innerHTML = `
@@ -1853,6 +2011,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                     <td>${contratto.cliente.nome}</td>
                     <td>€${autoVenduta.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${margine.toLocaleString()}</td>
+                    <td><span style="background: ${canaleColore}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">${contratto.canaleVendita || 'N/D'}</span></td>
                 `;
             });
         }
@@ -1891,6 +2050,80 @@ Nuova password richiesta: ${nuovaPassword}`);
             const fatturatoContratti = contratti.reduce((sum, contratto) => sum + contratto.auto.prezzoVendita, 0);
             const fatturatoTotale = 132020 + fatturatoContratti;
             document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString()}`;
+            
+            // Calcola valore stock presente
+            const valoreStock = auto.filter(a => a.stato !== 'Venduta').reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
+            document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString()}`;
+            
+            // Calcola media vendite mensili
+            const dataInizio = new Date('2024-07-01'); // Luglio 2024
+            const dataOggi = new Date();
+            const mesiTrascorsi = ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1;
+            
+            // Vendite di partenza: 4 di media fino a luglio, 1 ad agosto
+            const venditePartenza = 4; // Media fino a luglio
+            const venditeAgosto = 1; // Vendite di agosto
+            const venditeNuove = contratti.length;
+            
+            const totaleVendite = venditePartenza + venditeAgosto + venditeNuove;
+            const mediaVendite = totaleVendite / mesiTrascorsi;
+            document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
+            
+            // Aggiorna statistiche canali
+            aggiornaStatisticheCanali();
+        }
+        
+        function aggiornaStatisticheCanali() {
+            // Dati di partenza
+            const canaliPartenza = {
+                'Conoscenze': 23,
+                'Autoscout': 45,
+                'Cip': 9,
+                'Ingresso spontaneo': 18,
+                'Subito': 5
+            };
+            
+            // Conta vendite per canale dai nuovi contratti
+            const canaliNuovi = {};
+            contratti.forEach(contratto => {
+                const canale = contratto.canaleVendita || 'Autoscout';
+                canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
+            });
+            
+            // Calcola totale vendite
+            const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
+            const totaleVenditeNuove = Object.values(canaliNuovi).reduce((sum, val) => sum + val, 0);
+            const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
+            
+            // Calcola percentuali finali
+            const statisticheFinali = {};
+            Object.keys(canaliPartenza).forEach(canale => {
+                const venditePartenza = canaliPartenza[canale];
+                const venditeNuove = canaliNuovi[canale] || 0;
+                const totaleCanale = venditePartenza + venditeNuove;
+                statisticheFinali[canale] = ((totaleCanale / totaleVendite) * 100).toFixed(1);
+            });
+            
+            // Mostra statistiche
+            const container = document.getElementById('statisticheCanali');
+            container.innerHTML = '';
+            
+            Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
+                const colore = {
+                    'Autoscout': '#1e40af',
+                    'Subito': '#dc2626',
+                    'Conoscenze': '#059669',
+                    'Ingresso spontaneo': '#d97706',
+                    'Cip': '#7c3aed'
+                }[canale] || '#6b7280';
+                
+                container.innerHTML += `
+                    <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
+                        <p style="margin: 0; font-size: 0.9rem;">${canale}</p>
+                    </div>
+                `;
+            });
         }
 
         // CONTRATTO
@@ -2324,6 +2557,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             // Dettagli economici
             document.getElementById('depositoCauzionale').value = contratto.depositoCauzionale || '';
             document.getElementById('speseVoltura').value = contratto.speseVoltura || '';
+            document.getElementById('canaleVendita').value = contratto.canaleVendita || 'Autoscout';
             
             // Ripristina extra items
             extraItems = [...(contratto.extraItems || [])];
@@ -2657,5 +2891,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be05136764ed90',t:'MTc1NDY0NTY4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be223b1498ee78',t:'MTc1NDY0Njg4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
