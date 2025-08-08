@@ -830,7 +830,7 @@
                     <p>Auto in Stock</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="totaleContratti">19</h3>
+                    <h3 id="totaleContratti">21</h3>
                     <p>Contratti Firmati</p>
                 </div>
                 <div class="stat-card">
@@ -870,22 +870,7 @@
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
 
-            <div class="contract-preview" style="margin-top: 30px;">
-                <h3>🚗 Auto Vendute</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Auto</th>
-                            <th>Data Vendita</th>
-                            <th>Cliente</th>
-                            <th>Prezzo Vendita</th>
-                            <th>Margine</th>
-                            <th>Canale</th>
-                        </tr>
-                    </thead>
-                    <tbody id="autoVendute"></tbody>
-                </table>
-            </div>
+
         </div>
         </div>
     </div>
@@ -1986,35 +1971,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 `;
             });
             
-            // Aggiorna tabella auto vendute
-            const tbodyVendute = document.getElementById('autoVendute');
-            tbodyVendute.innerHTML = '';
-            
-            contratti.forEach(contratto => {
-                const autoVenduta = contratto.auto;
-                const costiInizialiTotali = (autoVenduta.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
-                const speseAggiuntiveTotali = (autoVenduta.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoVenduta.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
-                const margine = autoVenduta.prezzoVendita - costoTotale;
-                
-                const canaleColore = {
-                    'Autoscout': '#1e40af',
-                    'Subito': '#dc2626',
-                    'Conoscenze': '#059669',
-                    'Ingresso spontaneo': '#d97706',
-                    'Cip': '#7c3aed'
-                }[contratto.canaleVendita] || '#6b7280';
-                
-                const row = tbodyVendute.insertRow();
-                row.innerHTML = `
-                    <td>${autoVenduta.marca} ${autoVenduta.modello} (${autoVenduta.targa})</td>
-                    <td>${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</td>
-                    <td>${contratto.cliente.nome}</td>
-                    <td>€${autoVenduta.prezzoVendita.toLocaleString()}</td>
-                    <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${margine.toLocaleString()}</td>
-                    <td><span style="background: ${canaleColore}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">${contratto.canaleVendita || 'N/D'}</span></td>
-                `;
-            });
+
         }
 
         // AGGIORNAMENTO SELECT
@@ -2046,7 +2003,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         function aggiornaStatistiche() {
             const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
             document.getElementById('totaleAuto').textContent = autoInStock;
-            document.getElementById('totaleContratti').textContent = 19 + contratti.length;
+            document.getElementById('totaleContratti').textContent = 21 + contratti.length;
             
             const fatturatoContratti = contratti.reduce((sum, contratto) => sum + contratto.auto.prezzoVendita, 0);
             const fatturatoTotale = 132020 + fatturatoContratti;
@@ -2057,16 +2014,15 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString()}`;
             
             // Calcola media vendite mensili
-            const dataInizio = new Date('2024-07-01'); // Luglio 2024
+            const dataInizio = new Date('2025-03-01'); // Marzo 2025
             const dataOggi = new Date();
             const mesiTrascorsi = ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1;
             
-            // Vendite di partenza: 4 di media a fine luglio, 1 ad agosto
-            const venditeFinoLuglio = 4; // Vendite a fine luglio
-            const venditeAgosto = 1; // Vendite di agosto
+            // Vendite storiche: 21 vendite da marzo a oggi
+            const venditeStoriche = 21; // 21 vendite da marzo a oggi
             const venditeNuove = contratti.length;
             
-            const totaleVendite = venditeFinoLuglio + venditeAgosto + venditeNuove;
+            const totaleVendite = venditeStoriche + venditeNuove;
             const mediaVendite = totaleVendite / mesiTrascorsi;
             document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
             
@@ -2954,5 +2910,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be2fdbd721f615',t:'MTc1NDY0NzQzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be385bf276f615',t:'MTc1NDY0Nzc4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
