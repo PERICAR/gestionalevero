@@ -1903,7 +1903,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                     <!-- Header con logo e titolo -->
                     <div style="text-align: center; margin-bottom: 4px; margin-top: -15px;">
                         <img src="https://gestionalevero.netlify.app/logopericar2.png" alt="PERICAR Logo" style="height: 3.1cm; width: auto; margin-bottom: 2px;">
-                        <div style="background: #dc3545; color: white; padding: 6px; margin: 0 -30px; font-size: 0.9rem; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">PROPOSTA D'ACQUISTO</div>
+                        <div style="background: #E30613; color: white; padding: 6px; margin: 0 -30px; font-size: 0.9rem; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">PROPOSTA D'ACQUISTO</div>
                         <div style="text-align: right; margin: 3px 0; font-size: 0.7rem;">
                             <strong>Luogo e data:</strong> ${contratto.luogo}, ${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}
                         </div>
@@ -1943,7 +1943,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                             conferisce alla spettabile <strong style="color: #cc0000;">PERICAR di Giacomo Perissinotto</strong>
                         </p>
                         
-                        <p style="margin: 6px 0; font-weight: bold; color: #cc0000; font-size: 0.75rem;">
+                        <p style="margin: 6px 0; font-weight: bold; color: #E30613; font-size: 0.75rem;">
                             L'ORDINE DI ACQUISTO DEL SEGUENTE VEICOLO:
                         </p>
                     </div>
@@ -1973,7 +1973,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Chilometri:</td>
                                 <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.chilometri.toLocaleString()}</td>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Prezzo:</td>
-                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; color: #dc3545;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; color: #E30613;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
                             </tr>
                         </table>
                     </div>
@@ -1983,7 +1983,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                         <!-- Colonna sinistra - Dati Permuta -->
                         <div>
                             <div style="margin-bottom: 8px;">
-                                <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #dc3545; color: white; padding: 6px; margin: 0 -10px 8px -10px; font-weight: bold; text-align: center;">RITIRO VEICOLO IN PERMUTA</h3>
+                                <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #E30613; color: white; padding: 6px; margin: 0 -10px 8px -10px; font-weight: bold; text-align: center;">RITIRO VEICOLO IN PERMUTA</h3>
                                 <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
                                     <tr>
                                         <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 35%;">Marca:</td>
@@ -2024,8 +2024,8 @@ Nuova password richiesta: ${nuovaPassword}`);
 
                         <!-- Colonna destra - Conto Economico -->
                         <div>
-                            <div style="border: 2px solid #dc3545; border-radius: 8px; padding: 10px; background: #fff;">
-                                <h3 style="font-size: 0.85rem; margin-bottom: 8px; background: #dc3545; color: white; padding: 6px; margin: -10px -10px 8px -10px; border-radius: 6px 6px 0 0; text-align: center;">RIEPILOGO ECONOMICO</h3>
+                            <div style="border: 2px solid #E30613; border-radius: 8px; padding: 10px; background: #fff;">
+                                <h3 style="font-size: 0.85rem; margin-bottom: 8px; background: #E30613; color: white; padding: 6px; margin: -10px -10px 8px -10px; border-radius: 6px 6px 0 0; text-align: center;">RIEPILOGO ECONOMICO</h3>
                                 <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
                                     <tr style="border-bottom: 1px solid #ddd;">
                                         <td style="padding: 6px; font-weight: bold;">PREZZO VEICOLO</td>
@@ -2057,9 +2057,9 @@ Nuova password richiesta: ${nuovaPassword}`);
                                         <td style="padding: 6px;">Spese voltura</td>
                                         <td style="padding: 6px; text-align: right;">€${contratto.speseVoltura.toLocaleString()}</td>
                                     </tr>
-                                    <tr style="border-top: 2px solid #dc3545; background: #f8f9fa;">
+                                    <tr style="border-top: 2px solid #E30613; background: #f8f9fa;">
                                         <td style="padding: 8px; font-weight: bold; font-size: 0.8rem;">TOTALE A SALDO</td>
-                                        <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 0.9rem; color: #dc3545;">€${totaleASaldo.toLocaleString()}</td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 0.9rem; color: #E30613;">€${totaleASaldo.toLocaleString()}</td>
                                     </tr>
                                 </table>
 
@@ -2657,5 +2657,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bdf10046d2edb7',t:'MTc1NDY0NDg2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be05136764ed90',t:'MTc1NDY0NTY4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
