@@ -542,6 +542,10 @@
                         <input type="text" id="nomeCliente" placeholder="Mario Rossi">
                     </div>
                     <div class="form-group">
+                        <label>Data di Nascita</label>
+                        <input type="date" id="dataNascita">
+                    </div>
+                    <div class="form-group">
                         <label>Luogo di Nascita</label>
                         <input type="text" id="luogoNascita" placeholder="Torino">
                     </div>
@@ -1407,6 +1411,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         // GESTIONE CLIENTI
         function aggiungiCliente() {
             const nome = document.getElementById('nomeCliente').value;
+            const dataNascita = document.getElementById('dataNascita').value;
             const luogoNascita = document.getElementById('luogoNascita').value;
             const residenza = document.getElementById('residenza').value;
             const codiceFiscale = document.getElementById('codiceFiscale').value;
@@ -1422,6 +1427,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const cliente = {
                 id: Date.now(),
                 nome,
+                dataNascita,
                 luogoNascita,
                 residenza,
                 codiceFiscale,
@@ -1443,6 +1449,7 @@ Nuova password richiesta: ${nuovaPassword}`);
 
         function pulisciFormCliente() {
             document.getElementById('nomeCliente').value = '';
+            document.getElementById('dataNascita').value = '';
             document.getElementById('luogoNascita').value = '';
             document.getElementById('residenza').value = '';
             document.getElementById('codiceFiscale').value = '';
@@ -1816,6 +1823,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 oggetto = clienti.find(c => c.id == id);
                 campi = [
                     {nome: 'nome', label: 'Nome e Cognome', tipo: 'text'},
+                    {nome: 'dataNascita', label: 'Data di Nascita', tipo: 'date'},
                     {nome: 'luogoNascita', label: 'Luogo di Nascita', tipo: 'text'},
                     {nome: 'residenza', label: 'Residenza', tipo: 'text'},
                     {nome: 'codiceFiscale', label: 'Codice Fiscale', tipo: 'text'},
@@ -2312,8 +2320,12 @@ Nuova password richiesta: ${nuovaPassword}`);
                             <tr>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Il sottoscritto:</td>
                                 <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.nome}</td>
-                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Luogo nascita:</td>
-                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.luogoNascita || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Data nascita:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.dataNascita ? new Date(contratto.cliente.dataNascita).toLocaleDateString('it-IT') : '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Luogo nascita:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;" colspan="3">${contratto.cliente.luogoNascita || '___________'}</td>
                             </tr>
                             <tr>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Residenza:</td>
@@ -3207,5 +3219,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bff4a3e402cd47',t:'MTc1NDY2NTk4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bffc6bd34ebad9',t:'MTc1NDY2NjMwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
