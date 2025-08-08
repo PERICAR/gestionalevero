@@ -1437,6 +1437,16 @@ Nuova password richiesta: ${nuovaPassword}`);
                 return;
             }
 
+            // Converti i costi iniziali in spese con data di immatricolazione
+            const speseIniziali = costiAutoItems.map(costo => ({
+                id: Date.now() + Math.random(),
+                data: dataImmatricolazione || new Date().toISOString().split('T')[0],
+                importo: costo.importo,
+                categoria: 'Costo Iniziale',
+                descrizione: costo.descrizione,
+                isInitialCost: true
+            }));
+
             const autoObj = {
                 id: Date.now(),
                 marca,
@@ -1448,10 +1458,9 @@ Nuova password richiesta: ${nuovaPassword}`);
                 chilometri: parseInt(chilometri) || 0,
                 prezzoAcquisto,
                 prezzoVendita,
-                costiIniziali: [...costiAutoItems], // Copia dei costi iniziali
                 tipo,
                 stato,
-                speseAggiuntive: [] // Array per tracciare spese successive
+                speseAggiuntive: speseIniziali // Tutti i costi come spese unificate
             };
 
             auto.push(autoObj);
@@ -1943,8 +1952,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             autoFiltrate.forEach(autoObj => {
                 const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costiInizialiTotali = (autoObj.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
-                const costoTotale = autoObj.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
+                const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 const row = tbody.insertRow();
                 
@@ -2004,16 +2012,15 @@ Nuova password richiesta: ${nuovaPassword}`);
             tbody.innerHTML = '';
             
             auto.filter(autoObj => autoObj.stato !== 'Venduta').forEach(autoObj => {
-                const costiInizialiTotali = (autoObj.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
                 const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoObj.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
+                const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</td>
                     <td>€${autoObj.prezzoAcquisto.toLocaleString()}</td>
-                    <td>€${(costiInizialiTotali + speseAggiuntiveTotali).toLocaleString()}</td>
+                    <td>€${speseAggiuntiveTotali.toLocaleString()}</td>
                     <td>€${costoTotale.toLocaleString()}</td>
                     <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
@@ -2021,7 +2028,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                         <button class="btn btn-primary" onclick="mostraDettaglioMargine(${autoObj.id})" style="padding: 2px 6px; font-size: 0.7rem; margin-left: 8px;">📊</button>
                     </td>
                     <td class="actions">
-                        <button class="btn btn-warning" onclick="modificaCostiAuto(${autoObj.id})">💰 Costi</button>
+                        <button class="btn btn-warning" onclick="gestisciSpese(${autoObj.id})">💰 Spese</button>
                     </td>
                 `;
             });
@@ -2670,30 +2677,21 @@ Nuova password richiesta: ${nuovaPassword}`);
                 autoCorrente.speseAggiuntive = [];
             }
             
-            // Converti i costi iniziali in spese se non sono già stati convertiti
-            if (autoCorrente.costiIniziali && autoCorrente.costiIniziali.length > 0 && !autoCorrente.costiConvertitiInSpese) {
-                autoCorrente.costiIniziali.forEach(costo => {
-                    autoCorrente.speseAggiuntive.push({
-                        id: Date.now() + Math.random(),
-                        data: autoCorrente.dataImmatricolazione || new Date().toISOString().split('T')[0],
-                        importo: costo.importo,
-                        categoria: 'Costo Iniziale',
-                        descrizione: costo.descrizione,
-                        isInitialCost: true
-                    });
-                });
-                autoCorrente.costiConvertitiInSpese = true;
-                salvaAuto();
-            }
+            // I costi sono già unificati nel sistema di spese
             
-            const costiInizialiTotali = (autoCorrente.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
             const speseAggiuntiveTotali = (autoCorrente.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoCorrente.prezzoAcquisto + speseAggiuntiveTotali;
+            const margine = autoCorrente.prezzoVendita - costoTotale;
             
             document.getElementById('infoAuto').innerHTML = `
                 <h3>${autoCorrente.marca} ${autoCorrente.modello} (${autoCorrente.targa})</h3>
-                <p><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</p>
-                <p><strong>Costi Totali:</strong> €${(costiInizialiTotali + speseAggiuntiveTotali).toLocaleString()}</p>
-                <p><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</div>
+                    <div><strong>Spese Totali:</strong> €${speseAggiuntiveTotali.toLocaleString()}</div>
+                    <div><strong>Costo Totale:</strong> €${costoTotale.toLocaleString()}</div>
+                    <div><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</div>
+                    <div style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;"><strong>Margine:</strong> €${margine.toLocaleString()}</div>
+                </div>
             `;
             
             // Imposta data odierna
@@ -3007,9 +3005,8 @@ Nuova password richiesta: ${nuovaPassword}`);
             const autoObj = auto.find(a => a.id == autoId);
             if (!autoObj) return;
             
-            const costiInizialiTotali = (autoObj.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
             const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-            const costoTotale = autoObj.prezzoAcquisto + costiInizialiTotali + speseAggiuntiveTotali;
+            const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
             const margine = autoObj.prezzoVendita - costoTotale;
             
             // Info auto
@@ -3041,37 +3038,20 @@ Nuova password richiesta: ${nuovaPassword}`);
                 <td style="padding: 12px; text-align: right; color: #dc3545;">-€${autoObj.prezzoAcquisto.toLocaleString()}</td>
             `;
             
-            // Costi iniziali
-            if (costiInizialiTotali > 0) {
-                row = tbody.insertRow();
-                row.innerHTML = `
-                    <td style="padding: 12px;">🔧 Costi iniziali</td>
-                    <td style="padding: 12px; text-align: right; color: #dc3545;">-€${costiInizialiTotali.toLocaleString()}</td>
-                `;
-                
-                // Dettaglio costi iniziali
-                (autoObj.costiIniziali || []).forEach(costo => {
-                    row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td style="padding: 8px 12px 8px 30px; font-size: 0.9rem; color: #666;">• ${costo.descrizione}</td>
-                        <td style="padding: 8px 12px; text-align: right; font-size: 0.9rem; color: #666;">-€${costo.importo.toLocaleString()}</td>
-                    `;
-                });
-            }
-            
-            // Spese aggiuntive
+            // Spese e costi (unificati)
             if (speseAggiuntiveTotali > 0) {
                 row = tbody.insertRow();
                 row.innerHTML = `
-                    <td style="padding: 12px;">📋 Spese aggiuntive</td>
+                    <td style="padding: 12px;">📋 Spese e costi sostenuti</td>
                     <td style="padding: 12px; text-align: right; color: #dc3545;">-€${speseAggiuntiveTotali.toLocaleString()}</td>
                 `;
                 
-                // Dettaglio spese aggiuntive
+                // Dettaglio spese (inclusi costi iniziali)
                 (autoObj.speseAggiuntive || []).forEach(spesa => {
+                    const icona = spesa.isInitialCost ? '🔧' : '📋';
                     row = tbody.insertRow();
                     row.innerHTML = `
-                        <td style="padding: 8px 12px 8px 30px; font-size: 0.9rem; color: #666;">• ${spesa.descrizione || spesa.categoria} (${new Date(spesa.data).toLocaleDateString('it-IT')})</td>
+                        <td style="padding: 8px 12px 8px 30px; font-size: 0.9rem; color: #666;">${icona} ${spesa.descrizione || spesa.categoria} (${new Date(spesa.data).toLocaleDateString('it-IT')})</td>
                         <td style="padding: 8px 12px; text-align: right; font-size: 0.9rem; color: #666;">-€${spesa.importo.toLocaleString()}</td>
                     `;
                 });
@@ -3080,7 +3060,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             // Totale costi
             row = tbody.insertRow();
             row.innerHTML = `
-                <td style="padding: 12px; font-weight: bold; background: #ffe6e6; border-top: 2px solid #ddd;">📊 TOTALE COSTI</td>
+                <td style="padding: 12px; font-weight: bold; background: #ffe6e6; border-top: 2px solid #ddd;">📊 TOTALE COSTI E SPESE</td>
                 <td style="padding: 12px; text-align: right; font-weight: bold; background: #ffe6e6; color: #dc3545; border-top: 2px solid #ddd;">-€${costoTotale.toLocaleString()}</td>
             `;
             
@@ -3136,5 +3116,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfadef1463b5aa',t:'MTc1NDY2MzA4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfb5e2419eed9f',t:'MTc1NDY2MzQxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
