@@ -1516,6 +1516,32 @@ Nuova password richiesta: ${nuovaPassword}`);
                 valutazione: parseFloat(document.getElementById('valutazionePermuta').value) || 0
             };
 
+            let permutaAutoId = null;
+
+            // Se c'è una permuta con dati completi, aggiungila automaticamente allo stock
+            if (permuta.marca && permuta.modello && permuta.targa && permuta.valutazione > 0) {
+                const autoPermuta = {
+                    id: Date.now() + 1, // ID diverso dal contratto
+                    marca: permuta.marca,
+                    modello: permuta.modello,
+                    versione: permuta.versione || '',
+                    targa: permuta.targa,
+                    telaio: permuta.telaio || '',
+                    dataImmatricolazione: permuta.dataImmatricolazione || '',
+                    chilometri: permuta.chilometri,
+                    prezzoAcquisto: permuta.valutazione, // Il prezzo di acquisto è la valutazione
+                    prezzoVendita: Math.round(permuta.valutazione * 1.15), // Prezzo vendita suggerito (+15%)
+                    tipo: 'USATO',
+                    stato: 'Disponibile',
+                    speseAggiuntive: [], // Nessuna spesa iniziale
+                    isPermuta: true, // Flag per identificare le permute
+                    contrattoOriginale: null // Sarà impostato dopo
+                };
+                
+                auto.push(autoPermuta);
+                permutaAutoId = autoPermuta.id;
+            }
+
             const contratto = {
                 id: Date.now(),
                 clienteId,
@@ -1523,6 +1549,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 dataContratto,
                 luogo,
                 permuta,
+                permutaAutoId, // ID dell'auto permuta aggiunta allo stock
                 depositoCauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
                 speseVoltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
                 canaleVendita: document.getElementById('canaleVendita').value,
@@ -1533,9 +1560,17 @@ Nuova password richiesta: ${nuovaPassword}`);
                 auto: autoVenduta
             };
 
+            // Collega l'auto permuta al contratto
+            if (permutaAutoId) {
+                const autoPermuta = auto.find(a => a.id == permutaAutoId);
+                if (autoPermuta) {
+                    autoPermuta.contrattoOriginale = contratto.id;
+                }
+            }
+
             contratti.push(contratto);
             
-            // Aggiorna stato auto
+            // Aggiorna stato auto venduta
             autoVenduta.stato = 'Venduta';
             
             salvaContratti();
@@ -1544,6 +1579,11 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaStatistiche();
             aggiornaSelectAuto();
             pulisciFormContratto();
+            
+            // Mostra messaggio se permuta aggiunta
+            if (permutaAutoId) {
+                alert('✅ Contratto creato! La permuta è stata automaticamente aggiunta allo stock delle auto disponibili.');
+            }
             
             // Mostra contratto
             mostraContratto(contratto);
@@ -1856,12 +1896,19 @@ Nuova password richiesta: ${nuovaPassword}`);
             if (confirm('Sei sicuro di voler eliminare questo contratto?')) {
                 const contratto = contratti.find(c => c.id == id);
                 if (contratto) {
-                    // Rimetti l'auto come disponibile
+                    // Rimetti l'auto venduta come disponibile
                     const autoContratto = auto.find(a => a.id == contratto.autoId);
                     if (autoContratto) {
                         autoContratto.stato = 'Disponibile';
-                        salvaAuto();
                     }
+                    
+                    // Rimuovi l'auto permuta dallo stock se esiste
+                    if (contratto.permutaAutoId) {
+                        auto = auto.filter(a => a.id != contratto.permutaAutoId);
+                        console.log('Permuta rimossa dallo stock automaticamente');
+                    }
+                    
+                    salvaAuto();
                 }
                 
                 contratti = contratti.filter(c => c.id != id);
@@ -1960,7 +2007,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                                  autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
                 
                 row.innerHTML = `
-                    <td>${autoObj.marca} ${autoObj.modello}</td>
+                    <td>${autoObj.marca} ${autoObj.modello}${autoObj.isPermuta ? ' <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">🔄 PERMUTA</span>' : ''}</td>
                     <td>${autoObj.targa}</td>
                     <td>${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</td>
                     <td>${autoObj.chilometri.toLocaleString()}</td>
@@ -3116,5 +3163,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfb5e2419eed9f',t:'MTc1NDY2MzQxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfbf779187ed4e',t:'MTc1NDY2MzgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
