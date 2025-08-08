@@ -986,6 +986,7 @@
                         <option value="Revisione">Revisione</option>
                         <option value="Bollo">Bollo</option>
                         <option value="Assicurazione">Assicurazione</option>
+                        <option value="Costo Iniziale">Costo Iniziale</option>
                         <option value="Altro">Altro</option>
                     </select>
                 </div>
@@ -2060,12 +2061,12 @@ Nuova password richiesta: ${nuovaPassword}`);
             const dataOggi = new Date();
             const mesiTrascorsi = ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1;
             
-            // Vendite di partenza: 4 di media fino a luglio, 1 ad agosto
-            const venditePartenza = 4; // Media fino a luglio
+            // Vendite di partenza: 4 di media a fine luglio, 1 ad agosto
+            const venditeFinoLuglio = 4; // Vendite a fine luglio
             const venditeAgosto = 1; // Vendite di agosto
             const venditeNuove = contratti.length;
             
-            const totaleVendite = venditePartenza + venditeAgosto + venditeNuove;
+            const totaleVendite = venditeFinoLuglio + venditeAgosto + venditeNuove;
             const mediaVendite = totaleVendite / mesiTrascorsi;
             document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
             
@@ -2596,10 +2597,29 @@ Nuova password richiesta: ${nuovaPassword}`);
                 autoCorrente.speseAggiuntive = [];
             }
             
+            // Converti i costi iniziali in spese se non sono già stati convertiti
+            if (autoCorrente.costiIniziali && autoCorrente.costiIniziali.length > 0 && !autoCorrente.costiConvertitiInSpese) {
+                autoCorrente.costiIniziali.forEach(costo => {
+                    autoCorrente.speseAggiuntive.push({
+                        id: Date.now() + Math.random(),
+                        data: autoCorrente.dataImmatricolazione || new Date().toISOString().split('T')[0],
+                        importo: costo.importo,
+                        categoria: 'Costo Iniziale',
+                        descrizione: costo.descrizione,
+                        isInitialCost: true
+                    });
+                });
+                autoCorrente.costiConvertitiInSpese = true;
+                salvaAuto();
+            }
+            
+            const costiInizialiTotali = (autoCorrente.costiIniziali || []).reduce((sum, costo) => sum + costo.importo, 0);
+            const speseAggiuntiveTotali = (autoCorrente.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+            
             document.getElementById('infoAuto').innerHTML = `
                 <h3>${autoCorrente.marca} ${autoCorrente.modello} (${autoCorrente.targa})</h3>
                 <p><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</p>
-                <p><strong>Costi Iniziali:</strong> €${(autoCorrente.costiAggiuntivi || 0).toLocaleString()}</p>
+                <p><strong>Costi Totali:</strong> €${(costiInizialiTotali + speseAggiuntiveTotali).toLocaleString()}</p>
                 <p><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</p>
             `;
             
@@ -2628,7 +2648,8 @@ Nuova password richiesta: ${nuovaPassword}`);
                 data,
                 importo,
                 categoria,
-                descrizione
+                descrizione,
+                isInitialCost: categoria === 'Costo Iniziale'
             };
             
             autoCorrente.speseAggiuntive.push(spesa);
@@ -2640,6 +2661,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             // Pulisci form
             document.getElementById('importoSpesa').value = '';
             document.getElementById('descrizioneSpesa').value = '';
+            document.getElementById('categoriaSpesa').value = 'Riparazione';
         }
 
         function aggiornaTabellaSpese() {
@@ -2654,12 +2676,18 @@ Nuova password richiesta: ${nuovaPassword}`);
             spese.forEach(spesa => {
                 totaleSpese += spesa.importo;
                 const row = tbody.insertRow();
+                
+                // Colore diverso per i costi iniziali
+                const categoriaColor = spesa.isInitialCost ? '#1e40af' : '#6c757d';
+                const categoriaText = spesa.isInitialCost ? 'Costo Iniziale' : spesa.categoria;
+                
                 row.innerHTML = `
                     <td>${new Date(spesa.data).toLocaleDateString('it-IT')}</td>
-                    <td><span style="background: #6c757d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">${spesa.categoria}</span></td>
+                    <td><span style="background: ${categoriaColor}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">${categoriaText}</span></td>
                     <td style="font-weight: bold;">€${spesa.importo.toLocaleString()}</td>
                     <td>${spesa.descrizione || '-'}</td>
                     <td class="actions">
+                        <button class="btn btn-warning" onclick="modificaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">✏️</button>
                         <button class="btn btn-danger" onclick="eliminaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button>
                     </td>
                 `;
@@ -2671,11 +2699,46 @@ Nuova password richiesta: ${nuovaPassword}`);
                 row.style.background = '#f8f9fa';
                 row.style.fontWeight = 'bold';
                 row.innerHTML = `
-                    <td colspan="2"><strong>TOTALE SPESE AGGIUNTIVE</strong></td>
+                    <td colspan="2"><strong>TOTALE COSTI E SPESE</strong></td>
                     <td style="color: #dc3545;"><strong>€${totaleSpese.toLocaleString()}</strong></td>
                     <td colspan="2"></td>
                 `;
             }
+        }
+
+        function modificaSpesa(spesaId) {
+            if (!autoCorrente) return;
+            
+            const spesa = autoCorrente.speseAggiuntive.find(s => s.id == spesaId);
+            if (!spesa) return;
+            
+            // Popola i campi con i dati della spesa
+            document.getElementById('dataSpesa').value = spesa.data;
+            document.getElementById('importoSpesa').value = spesa.importo;
+            document.getElementById('categoriaSpesa').value = spesa.isInitialCost ? 'Costo Iniziale' : spesa.categoria;
+            document.getElementById('descrizioneSpesa').value = spesa.descrizione || '';
+            
+            // Aggiungi categoria "Costo Iniziale" se non esiste
+            const selectCategoria = document.getElementById('categoriaSpesa');
+            let hasInitialCost = false;
+            for (let option of selectCategoria.options) {
+                if (option.value === 'Costo Iniziale') {
+                    hasInitialCost = true;
+                    break;
+                }
+            }
+            if (!hasInitialCost) {
+                const option = document.createElement('option');
+                option.value = 'Costo Iniziale';
+                option.textContent = 'Costo Iniziale';
+                selectCategoria.appendChild(option);
+            }
+            
+            // Elimina la spesa esistente
+            autoCorrente.speseAggiuntive = autoCorrente.speseAggiuntive.filter(s => s.id != spesaId);
+            aggiornaTabellaSpese();
+            
+            alert('Spesa caricata per la modifica. Modifica i dati e clicca "Aggiungi Spesa" per salvare.');
         }
 
         function eliminaSpesa(spesaId) {
@@ -2891,5 +2954,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be223b1498ee78',t:'MTc1NDY0Njg4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be2fdbd721f615',t:'MTc1NDY0NzQzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
