@@ -12,9 +12,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
             font-size: 0.9rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -30,10 +30,10 @@
 
         .header {
             background: white;
-            color: #2c3e50;
+            color: #1f2937;
             padding: 30px;
             text-align: center;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #1e40af;
         }
 
         .header h1 {
@@ -62,13 +62,13 @@
             cursor: pointer;
             font-size: 1.1rem;
             font-weight: 600;
-            color: #6c757d;
+            color: #6b7280;
             transition: all 0.3s ease;
             position: relative;
         }
 
         .nav-tab.active {
-            color: #2c3e50;
+            color: #1f2937;
             background: white;
         }
 
@@ -79,7 +79,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: #667eea;
+            background: #1e40af;
         }
 
         .nav-tab:hover:not(.active) {
@@ -111,7 +111,7 @@
         .form-group label {
             font-weight: 600;
             margin-bottom: 8px;
-            color: #2c3e50;
+            color: #374151;
             font-size: 0.95rem;
         }
 
@@ -126,8 +126,8 @@
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
         }
 
         .btn {
@@ -144,43 +144,43 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 20px rgba(30, 64, 175, 0.3);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             color: white;
         }
 
         .btn-success:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(86, 171, 47, 0.3);
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
         }
 
         .btn-warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             color: white;
         }
 
         .btn-warning:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.3);
+            box-shadow: 0 10px 20px rgba(217, 119, 6, 0.3);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
         }
 
         .btn-danger:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
         }
 
         .data-table {
@@ -194,7 +194,7 @@
         }
 
         .data-table th {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             padding: 15px;
             text-align: left;
@@ -261,12 +261,12 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
             color: white;
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 10px 20px rgba(30, 64, 175, 0.2);
         }
 
         .stat-card h3 {
@@ -306,7 +306,7 @@
             background: #f8f9fa;
             padding: 6px;
             margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #1e40af;
             font-size: 0.85rem;
         }
 
@@ -490,6 +490,10 @@
                     <input type="number" id="costiAggiuntivi" placeholder="500">
                 </div>
                 <div class="form-group">
+                    <label>Descrizione Costi</label>
+                    <textarea id="descrizioneCosti" placeholder="Es: Riparazione freni, Tagliando, Pneumatici..." style="min-height: 60px; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
                     <label>Tipo</label>
                     <select id="tipoAuto">
                         <option value="NUOVO">NUOVO</option>
@@ -509,8 +513,16 @@
 
             <button class="btn btn-success" onclick="aggiungiAuto()">🚗 Aggiungi Auto</button>
 
-            <div style="margin: 20px 0;">
-                <input type="text" id="searchAuto" placeholder="🔍 Cerca auto per marca, modello, targa..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraAuto()">
+            <div style="margin: 20px 0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-weight: 600;">Visualizza:</label>
+                    <select id="filtroStato" onchange="filtraPerStato()" style="padding: 8px 12px; border: 2px solid #e9ecef; border-radius: 6px; font-size: 0.9rem;">
+                        <option value="stock">🚗 Auto in Stock</option>
+                        <option value="vendute">✅ Auto Vendute</option>
+                        <option value="tutte">📋 Tutte le Auto</option>
+                    </select>
+                </div>
+                <input type="text" id="searchAuto" placeholder="🔍 Cerca auto per marca, modello, targa..." style="flex: 1; min-width: 300px; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraAuto()">
             </div>
 
             <table class="data-table">
@@ -521,6 +533,7 @@
                         <th>Immatricolazione</th>
                         <th>Km</th>
                         <th>Tipo</th>
+                        <th>Stato</th>
                         <th>Prezzo Vendita</th>
                         <th>Margine</th>
                         <th>Azioni</th>
@@ -706,6 +719,65 @@
         </div>
     </div>
 
+    <!-- MODAL GESTIONE SPESE -->
+    <div id="modalSpese" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="chiudiModalSpese()">&times;</span>
+            <h2 id="titoloSpese">Gestione Spese Auto</h2>
+            
+            <div id="infoAuto" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <h3>Aggiungi Nuova Spesa</h3>
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="form-group">
+                    <label>Data Spesa</label>
+                    <input type="date" id="dataSpesa">
+                </div>
+                <div class="form-group">
+                    <label>Importo (€)</label>
+                    <input type="number" id="importoSpesa" placeholder="150">
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="categoriaSpesa">
+                        <option value="Riparazione">Riparazione</option>
+                        <option value="Manutenzione">Manutenzione</option>
+                        <option value="Pneumatici">Pneumatici</option>
+                        <option value="Carrozzeria">Carrozzeria</option>
+                        <option value="Revisione">Revisione</option>
+                        <option value="Bollo">Bollo</option>
+                        <option value="Assicurazione">Assicurazione</option>
+                        <option value="Altro">Altro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descrizione</label>
+                <textarea id="descrizioneSpesa" placeholder="Descrizione dettagliata della spesa..." style="min-height: 60px;"></textarea>
+            </div>
+            
+            <button class="btn btn-success" onclick="aggiungiSpesa()">➕ Aggiungi Spesa</button>
+            
+            <h3 style="margin-top: 30px;">Spese Registrate</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Categoria</th>
+                        <th>Importo</th>
+                        <th>Descrizione</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaSpese"></tbody>
+            </table>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-danger" onclick="chiudiModalSpese()">❌ Chiudi</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Dati globali
         let clienti = JSON.parse(localStorage.getItem('clienti')) || [];
@@ -713,6 +785,7 @@
         let contratti = JSON.parse(localStorage.getItem('contratti')) || [];
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
+        let autoCorrente = null;
 
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
@@ -815,8 +888,10 @@
                 prezzoAcquisto,
                 prezzoVendita,
                 costiAggiuntivi: parseFloat(document.getElementById('costiAggiuntivi').value) || 0,
+                descrizioneCosti: document.getElementById('descrizioneCosti').value,
                 tipo,
-                stato
+                stato,
+                speseAggiuntive: [] // Array per tracciare spese successive
             };
 
             auto.push(autoObj);
@@ -838,6 +913,7 @@
             document.getElementById('prezzoAcquisto').value = '';
             document.getElementById('prezzoVendita').value = '';
             document.getElementById('costiAggiuntivi').value = '';
+            document.getElementById('descrizioneCosti').value = '';
             document.getElementById('tipoAuto').value = 'NUOVO';
             document.getElementById('statoAuto').value = 'Disponibile';
         }
@@ -1113,6 +1189,10 @@
             });
         }
 
+        function filtraPerStato() {
+            aggiornaTabellaAuto();
+        }
+
         function filtraContratti() {
             const searchTerm = document.getElementById('searchContratti').value.toLowerCase();
             const rows = document.querySelectorAll('#tabellaContratti tr');
@@ -1154,20 +1234,39 @@
             const tbody = document.getElementById('tabellaAuto');
             tbody.innerHTML = '';
             
-            auto.filter(autoObj => autoObj.stato !== 'Venduta').forEach(autoObj => {
-                const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0);
+            // Determina quali auto mostrare in base al filtro
+            const filtroStato = document.getElementById('filtroStato').value;
+            let autoFiltrate;
+            
+            if (filtroStato === 'stock') {
+                autoFiltrate = auto.filter(autoObj => autoObj.stato !== 'Venduta');
+            } else if (filtroStato === 'vendute') {
+                autoFiltrate = auto.filter(autoObj => autoObj.stato === 'Venduta');
+            } else {
+                autoFiltrate = auto;
+            }
+            
+            autoFiltrate.forEach(autoObj => {
+                const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+                const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0) + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 const row = tbody.insertRow();
+                
+                const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' : 
+                                 autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
+                
                 row.innerHTML = `
                     <td>${autoObj.marca} ${autoObj.modello}</td>
                     <td>${autoObj.targa}</td>
                     <td>${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</td>
                     <td>${autoObj.chilometri.toLocaleString()}</td>
                     <td><span style="background: ${autoObj.tipo === 'NUOVO' ? '#28a745' : autoObj.tipo === 'KM0' ? '#ffc107' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.tipo}</span></td>
+                    <td><span style="background: ${statoColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.stato}</span></td>
                     <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">€${margine.toLocaleString()}</td>
                     <td class="actions">
                         <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">💰 Spese</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
                         <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
                     </td>
                 `;
@@ -1332,7 +1431,6 @@
 
                     <!-- Dati Veicolo -->
                     <div style="margin-bottom: 12px;">
-                        <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #dc3545; color: white; padding: 6px; margin: 0 -30px 8px -30px; font-weight: bold; text-align: center;">VEICOLO DA ACQUISTARE</h3>
                         <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
                             <tr>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Marca:</td>
@@ -1759,10 +1857,291 @@
             localStorage.setItem('contratti', JSON.stringify(contratti));
         }
 
+        // GESTIONE SPESE AUTO
+        function gestisciSpese(autoId) {
+            autoCorrente = auto.find(a => a.id == autoId);
+            if (!autoCorrente) return;
+            
+            // Inizializza array spese se non esiste
+            if (!autoCorrente.speseAggiuntive) {
+                autoCorrente.speseAggiuntive = [];
+            }
+            
+            document.getElementById('infoAuto').innerHTML = `
+                <h3>${autoCorrente.marca} ${autoCorrente.modello} (${autoCorrente.targa})</h3>
+                <p><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</p>
+                <p><strong>Costi Iniziali:</strong> €${(autoCorrente.costiAggiuntivi || 0).toLocaleString()}</p>
+                <p><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</p>
+            `;
+            
+            // Imposta data odierna
+            document.getElementById('dataSpesa').value = new Date().toISOString().split('T')[0];
+            
+            aggiornaTabellaSpese();
+            document.getElementById('modalSpese').style.display = 'block';
+        }
+
+        function aggiungiSpesa() {
+            if (!autoCorrente) return;
+            
+            const data = document.getElementById('dataSpesa').value;
+            const importo = parseFloat(document.getElementById('importoSpesa').value);
+            const categoria = document.getElementById('categoriaSpesa').value;
+            const descrizione = document.getElementById('descrizioneSpesa').value;
+            
+            if (!data || !importo || importo <= 0) {
+                alert('Data e importo sono obbligatori!');
+                return;
+            }
+            
+            const spesa = {
+                id: Date.now(),
+                data,
+                importo,
+                categoria,
+                descrizione
+            };
+            
+            autoCorrente.speseAggiuntive.push(spesa);
+            salvaAuto();
+            aggiornaTabellaSpese();
+            aggiornaTabelle();
+            aggiornaStatistiche();
+            
+            // Pulisci form
+            document.getElementById('importoSpesa').value = '';
+            document.getElementById('descrizioneSpesa').value = '';
+        }
+
+        function aggiornaTabellaSpese() {
+            if (!autoCorrente) return;
+            
+            const tbody = document.getElementById('tabellaSpese');
+            tbody.innerHTML = '';
+            
+            const spese = autoCorrente.speseAggiuntive || [];
+            let totaleSpese = 0;
+            
+            spese.forEach(spesa => {
+                totaleSpese += spesa.importo;
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(spesa.data).toLocaleDateString('it-IT')}</td>
+                    <td><span style="background: #6c757d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem;">${spesa.categoria}</span></td>
+                    <td style="font-weight: bold;">€${spesa.importo.toLocaleString()}</td>
+                    <td>${spesa.descrizione || '-'}</td>
+                    <td class="actions">
+                        <button class="btn btn-danger" onclick="eliminaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button>
+                    </td>
+                `;
+            });
+            
+            // Aggiungi riga totale
+            if (spese.length > 0) {
+                const row = tbody.insertRow();
+                row.style.background = '#f8f9fa';
+                row.style.fontWeight = 'bold';
+                row.innerHTML = `
+                    <td colspan="2"><strong>TOTALE SPESE AGGIUNTIVE</strong></td>
+                    <td style="color: #dc3545;"><strong>€${totaleSpese.toLocaleString()}</strong></td>
+                    <td colspan="2"></td>
+                `;
+            }
+        }
+
+        function eliminaSpesa(spesaId) {
+            if (!autoCorrente || !confirm('Sei sicuro di voler eliminare questa spesa?')) return;
+            
+            autoCorrente.speseAggiuntive = autoCorrente.speseAggiuntive.filter(s => s.id != spesaId);
+            salvaAuto();
+            aggiornaTabellaSpese();
+            aggiornaTabelle();
+            aggiornaStatistiche();
+        }
+
+        function chiudiModalSpese() {
+            document.getElementById('modalSpese').style.display = 'none';
+            autoCorrente = null;
+        }
+
+        // REPORT AUTO VENDUTA
+        function stampaReportAuto(autoId) {
+            const autoObj = auto.find(a => a.id == autoId);
+            if (!autoObj) return;
+            
+            const contratto = contratti.find(c => c.autoId == autoId);
+            const speseAggiuntive = autoObj.speseAggiuntive || [];
+            const speseAggiuntiveTotali = speseAggiuntive.reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0) + speseAggiuntiveTotali;
+            const margine = autoObj.prezzoVendita - costoTotale;
+            
+            const printWindow = window.open('', '_blank');
+            
+            let speseHtml = '';
+            if (speseAggiuntive.length > 0) {
+                speseHtml = `
+                    <h3>Spese Aggiuntive Sostenute</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Data</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Categoria</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Importo</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrizione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${speseAggiuntive.map(spesa => `
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(spesa.data).toLocaleDateString('it-IT')}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${spesa.categoria}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${spesa.importo.toLocaleString()}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${spesa.descrizione || '-'}</td>
+                                </tr>
+                            `).join('')}
+                            <tr style="background: #f8f9fa; font-weight: bold;">
+                                <td colspan="2" style="border: 1px solid #ddd; padding: 8px;">TOTALE SPESE AGGIUNTIVE</td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; color: #dc3545;">€${speseAggiuntiveTotali.toLocaleString()}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Report Auto - ${autoObj.marca} ${autoObj.modello}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+                        .info-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+                        .riepilogo { background: #f8f9fa; border: 2px solid #1e40af; padding: 20px; border-radius: 10px; margin-top: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background: #f8f9fa; }
+                        .margine-positivo { color: #28a745; font-weight: bold; }
+                        .margine-negativo { color: #dc3545; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>REPORT ECONOMICO AUTO VENDUTA</h1>
+                        <h2>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</h2>
+                        <p>Data Report: ${new Date().toLocaleDateString('it-IT')}</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <h3>Dati Veicolo</h3>
+                            <p><strong>Marca:</strong> ${autoObj.marca}</p>
+                            <p><strong>Modello:</strong> ${autoObj.modello}</p>
+                            <p><strong>Versione:</strong> ${autoObj.versione || '-'}</p>
+                            <p><strong>Targa:</strong> ${autoObj.targa}</p>
+                            <p><strong>Telaio:</strong> ${autoObj.telaio || '-'}</p>
+                            <p><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</p>
+                            <p><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</p>
+                            <p><strong>Tipo:</strong> ${autoObj.tipo}</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h3>Dati Vendita</h3>
+                            <p><strong>Cliente:</strong> ${contratto ? contratto.cliente.nome : 'N/D'}</p>
+                            <p><strong>Data Vendita:</strong> ${contratto ? new Date(contratto.dataContratto).toLocaleDateString('it-IT') : 'N/D'}</p>
+                            <p><strong>Prezzo Vendita:</strong> €${autoObj.prezzoVendita.toLocaleString()}</p>
+                            ${contratto && contratto.permuta.valutazione > 0 ? `<p><strong>Permuta:</strong> ${contratto.permuta.marca} ${contratto.permuta.modello} - €${contratto.permuta.valutazione.toLocaleString()}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <h3>Costi Sostenuti</h3>
+                    <table style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Tipo Costo</th>
+                                <th style="text-align: right;">Importo</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Prezzo Acquisto</td>
+                                <td style="text-align: right;">€${autoObj.prezzoAcquisto.toLocaleString()}</td>
+                                <td>Costo iniziale del veicolo</td>
+                            </tr>
+                            ${(autoObj.costiAggiuntivi || 0) > 0 ? `
+                            <tr>
+                                <td>Costi Iniziali</td>
+                                <td style="text-align: right;">€${(autoObj.costiAggiuntivi || 0).toLocaleString()}</td>
+                                <td>${autoObj.descrizioneCosti || 'Costi sostenuti all\'acquisto'}</td>
+                            </tr>
+                            ` : ''}
+                        </tbody>
+                    </table>
+                    
+                    ${speseHtml}
+                    
+                    <div class="riepilogo">
+                        <h2>RIEPILOGO ECONOMICO</h2>
+                        <table>
+                            <tr>
+                                <td><strong>Prezzo Vendita</strong></td>
+                                <td style="text-align: right;"><strong>€${autoObj.prezzoVendita.toLocaleString()}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Costo Acquisto</td>
+                                <td style="text-align: right;">-€${autoObj.prezzoAcquisto.toLocaleString()}</td>
+                            </tr>
+                            ${(autoObj.costiAggiuntivi || 0) > 0 ? `
+                            <tr>
+                                <td>Costi Iniziali</td>
+                                <td style="text-align: right;">-€${(autoObj.costiAggiuntivi || 0).toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
+                            ${speseAggiuntiveTotali > 0 ? `
+                            <tr>
+                                <td>Spese Aggiuntive</td>
+                                <td style="text-align: right;">-€${speseAggiuntiveTotali.toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
+                            <tr style="border-top: 2px solid #333; font-size: 1.2rem;">
+                                <td><strong>MARGINE NETTO</strong></td>
+                                <td style="text-align: right;" class="${margine >= 0 ? 'margine-positivo' : 'margine-negativo'}">
+                                    <strong>${margine >= 0 ? '+' : ''}€${margine.toLocaleString()}</strong>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: ${margine >= 0 ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                            <p style="margin: 0; font-weight: bold; color: ${margine >= 0 ? '#155724' : '#721c24'};">
+                                ${margine >= 0 ? '✅ Vendita in UTILE' : '❌ Vendita in PERDITA'}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center; font-size: 0.9rem; color: #666;">
+                        <p>Report generato da PERICAR - Sistema Gestione Concessionaria</p>
+                        <p>Corso Casale 99, 14100 Asti (AT) - Tel: +39 339 6831296</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
         // Chiudi modal cliccando fuori
         window.onclick = function(event) {
             const modalModifica = document.getElementById('modalModifica');
             const modalContratto = document.getElementById('modalContratto');
+            const modalSpese = document.getElementById('modalSpese');
             
             if (event.target == modalModifica) {
                 chiudiModal();
@@ -1770,7 +2149,10 @@
             if (event.target == modalContratto) {
                 chiudiModalContratto();
             }
+            if (event.target == modalSpese) {
+                chiudiModalSpese();
+            }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b88f07e589ee69',t:'MTc1NDU4ODQyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bd8c4d7362ed1a',t:'MTc1NDY0MDczOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
