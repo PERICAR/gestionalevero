@@ -584,98 +584,114 @@
         <div id="auto" class="tab-content">
             <h2>Gestione Auto in Stock</h2>
             
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Marca</label>
-                    <input type="text" id="marca" placeholder="BMW">
-                </div>
-                <div class="form-group">
-                    <label>Modello</label>
-                    <input type="text" id="modello" placeholder="Serie 3">
-                </div>
-                <div class="form-group">
-                    <label>Versione</label>
-                    <input type="text" id="versione" placeholder="320d xDrive">
-                </div>
-                <div class="form-group">
-                    <label>Targa</label>
-                    <input type="text" id="targa" placeholder="AB123CD">
-                </div>
-                <div class="form-group">
-                    <label>Telaio</label>
-                    <input type="text" id="telaio" placeholder="WBA123456789">
-                </div>
-                <div class="form-group">
-                    <label>Data Immatricolazione</label>
-                    <input type="date" id="dataImmatricolazione">
-                </div>
-                <div class="form-group">
-                    <label>Chilometri</label>
-                    <input type="number" id="chilometri" placeholder="50000">
-                </div>
-                <div class="form-group">
-                    <label>Prezzo di Acquisto (€)</label>
-                    <input type="number" id="prezzoAcquisto" placeholder="25000">
-                </div>
-                <div class="form-group">
-                    <label>Prezzo di Vendita (€)</label>
-                    <input type="number" id="prezzoVendita" placeholder="28000">
-                </div>
-                </div>
-
-            <h3>Costi Aggiuntivi</h3>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
-                    <div class="form-group">
-                        <label>Descrizione Costo</label>
-                        <input type="text" id="descrizioneCostoAuto" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">
-                    </div>
-                    <div class="form-group">
-                        <label>Importo (€)</label>
-                        <input type="number" id="importoCostoAuto" placeholder="500">
-                    </div>
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button type="button" class="btn btn-success" onclick="aggiungiCostoAuto()" style="margin-top: 0;">➕ Aggiungi</button>
-                    </div>
+            <!-- FORM AGGIUNTA AUTO (nascosto inizialmente) -->
+            <div id="formAggiungiAuto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuova Auto</h3>
+                    <button class="btn btn-danger" onclick="chiudiFormAuto()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
-                <div id="listaCostiAuto" style="margin-top: 15px;"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="marca" placeholder="BMW">
+                    </div>
+                    <div class="form-group">
+                        <label>Modello</label>
+                        <input type="text" id="modello" placeholder="Serie 3">
+                    </div>
+                    <div class="form-group">
+                        <label>Versione</label>
+                        <input type="text" id="versione" placeholder="320d xDrive">
+                    </div>
+                    <div class="form-group">
+                        <label>Targa</label>
+                        <input type="text" id="targa" placeholder="AB123CD">
+                    </div>
+                    <div class="form-group">
+                        <label>Telaio</label>
+                        <input type="text" id="telaio" placeholder="WBA123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Immatricolazione</label>
+                        <input type="date" id="dataImmatricolazione">
+                    </div>
+                    <div class="form-group">
+                        <label>Chilometri</label>
+                        <input type="number" id="chilometri" placeholder="50000">
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo di Acquisto (€)</label>
+                        <input type="number" id="prezzoAcquisto" placeholder="25000">
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo di Vendita (€)</label>
+                        <input type="number" id="prezzoVendita" placeholder="28000">
+                    </div>
+                </div>
+
+                <h4>Costi Aggiuntivi</h4>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                        <div class="form-group">
+                            <label>Descrizione Costo</label>
+                            <input type="text" id="descrizioneCostoAuto" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">
+                        </div>
+                        <div class="form-group">
+                            <label>Importo (€)</label>
+                            <input type="number" id="importoCostoAuto" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-success" onclick="aggiungiCostoAuto()" style="margin-top: 0;">➕ Aggiungi</button>
+                        </div>
+                    </div>
+                    
+                    <div id="listaCostiAuto" style="margin-top: 15px;"></div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="tipoAuto">
+                            <option value="NUOVO">NUOVO</option>
+                            <option value="KM0">KM0</option>
+                            <option value="USATO">USATO</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Stato</label>
+                        <select id="statoAuto">
+                            <option value="Disponibile">Disponibile</option>
+                            <option value="Venduta">Venduta</option>
+                            <option value="In Trattativa">In Trattativa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-success" onclick="aggiungiAuto()" style="padding: 15px 30px; font-size: 1.1rem;">🚗 Salva Auto</button>
+                </div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="tipoAuto">
-                        <option value="NUOVO">NUOVO</option>
-                        <option value="KM0">KM0</option>
-                        <option value="USATO">USATO</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Stato</label>
-                    <select id="statoAuto">
-                        <option value="Disponibile">Disponibile</option>
-                        <option value="Venduta">Venduta</option>
-                        <option value="In Trattativa">In Trattativa</option>
-                    </select>
+            <!-- PULSANTE AGGIUNGI AUTO E FILTRI -->
+            <div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+                <button class="btn btn-success" onclick="mostraFormAuto()" style="padding: 12px 25px; font-size: 1rem;">➕ Aggiungi Auto</button>
+                
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label style="font-weight: 600;">Visualizza:</label>
+                        <select id="filtroStato" onchange="filtraPerStato()" style="padding: 8px 12px; border: 2px solid #e9ecef; border-radius: 6px; font-size: 0.9rem;">
+                            <option value="stock">🚗 Auto in Stock</option>
+                            <option value="vendute">✅ Auto Vendute</option>
+                            <option value="tutte">📋 Tutte le Auto</option>
+                        </select>
+                    </div>
+                    <input type="text" id="searchAuto" placeholder="🔍 Cerca auto per marca, modello, targa..." style="min-width: 300px; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraAuto()">
                 </div>
             </div>
 
-            <button class="btn btn-success" onclick="aggiungiAuto()">🚗 Aggiungi Auto</button>
-
-            <div style="margin: 20px 0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <label style="font-weight: 600;">Visualizza:</label>
-                    <select id="filtroStato" onchange="filtraPerStato()" style="padding: 8px 12px; border: 2px solid #e9ecef; border-radius: 6px; font-size: 0.9rem;">
-                        <option value="stock">🚗 Auto in Stock</option>
-                        <option value="vendute">✅ Auto Vendute</option>
-                        <option value="tutte">📋 Tutte le Auto</option>
-                    </select>
-                </div>
-                <input type="text" id="searchAuto" placeholder="🔍 Cerca auto per marca, modello, targa..." style="flex: 1; min-width: 300px; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraAuto()">
-            </div>
-
+            <!-- TABELLA AUTO -->
             <table class="data-table">
                 <thead>
                     <tr>
@@ -1418,6 +1434,17 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('emailCliente').value = '';
         }
 
+        // GESTIONE FORM AUTO
+        function mostraFormAuto() {
+            document.getElementById('formAggiungiAuto').style.display = 'block';
+            document.getElementById('formAggiungiAuto').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function chiudiFormAuto() {
+            document.getElementById('formAggiungiAuto').style.display = 'none';
+            pulisciFormAuto();
+        }
+
         // GESTIONE AUTO
         function aggiungiAuto() {
             const marca = document.getElementById('marca').value;
@@ -1469,6 +1496,9 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaStatistiche();
             aggiornaSelectAuto();
             pulisciFormAuto();
+            chiudiFormAuto();
+            
+            alert('✅ Auto aggiunta con successo!');
         }
 
         function pulisciFormAuto() {
@@ -3163,5 +3193,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfbf779187ed4e',t:'MTc1NDY2MzgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfc562b703ed4e',t:'MTc1NDY2NDA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
