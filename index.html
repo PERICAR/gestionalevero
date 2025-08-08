@@ -618,6 +618,26 @@
                 </div>
             </div>
 
+            <h3>Servizi/Accessori Aggiuntivi</h3>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                    <div class="form-group">
+                        <label>Descrizione</label>
+                        <input type="text" id="descrizioneExtra" placeholder="Es: Assicurazione Kasko, Navigatore, Cerchi in lega...">
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo (€)</label>
+                        <input type="number" id="prezzoExtra" placeholder="500">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-success" onclick="aggiungiExtra()" style="margin-top: 0;">➕ Aggiungi</button>
+                    </div>
+                </div>
+                
+                <div id="listaExtra" style="margin-top: 15px;"></div>
+            </div>
+
             <button class="btn btn-primary" onclick="creaContratto()">📋 Crea Contratto</button>
 
             <div style="margin: 20px 0;">
@@ -786,6 +806,7 @@
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
+        let extraItems = []; // Array per servizi/accessori aggiuntivi
 
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
@@ -793,6 +814,7 @@
             aggiornaStatistiche();
             aggiornaSelectClienti();
             aggiornaSelectAuto();
+            aggiornaListaExtra();
             
             // Imposta data odierna
             document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
@@ -954,6 +976,7 @@
                 permuta,
                 depositoCauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
                 speseVoltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
+                extraItems: [...extraItems], // Copia degli extra items
                 cliente,
                 auto: autoVenduta
             };
@@ -988,6 +1011,71 @@
             document.getElementById('valutazionePermuta').value = '';
             document.getElementById('depositoCauzionale').value = '';
             document.getElementById('speseVoltura').value = '';
+            document.getElementById('descrizioneExtra').value = '';
+            document.getElementById('prezzoExtra').value = '';
+            extraItems = [];
+            aggiornaListaExtra();
+        }
+
+        // GESTIONE SERVIZI/ACCESSORI AGGIUNTIVI
+        function aggiungiExtra() {
+            const descrizione = document.getElementById('descrizioneExtra').value.trim();
+            const prezzo = parseFloat(document.getElementById('prezzoExtra').value) || 0;
+            
+            if (!descrizione || prezzo <= 0) {
+                alert('Descrizione e prezzo sono obbligatori!');
+                return;
+            }
+            
+            const extra = {
+                id: Date.now(),
+                descrizione,
+                prezzo
+            };
+            
+            extraItems.push(extra);
+            aggiornaListaExtra();
+            
+            // Pulisci campi
+            document.getElementById('descrizioneExtra').value = '';
+            document.getElementById('prezzoExtra').value = '';
+        }
+
+        function rimuoviExtra(id) {
+            extraItems = extraItems.filter(item => item.id !== id);
+            aggiornaListaExtra();
+        }
+
+        function aggiornaListaExtra() {
+            const container = document.getElementById('listaExtra');
+            
+            if (extraItems.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Nessun servizio/accessorio aggiunto</p>';
+                return;
+            }
+            
+            let html = '<div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">';
+            html += '<div style="background: #e9ecef; padding: 8px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;">';
+            html += '<div>Descrizione</div><div style="text-align: right;">Prezzo</div><div style="width: 60px;"></div>';
+            html += '</div>';
+            
+            extraItems.forEach(item => {
+                html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
+                    <div>${item.descrizione}</div>
+                    <div style="text-align: right; font-weight: bold;">€${item.prezzo.toLocaleString()}</div>
+                    <div><button class="btn btn-danger" onclick="rimuoviExtra(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
+                </div>`;
+            });
+            
+            const totale = extraItems.reduce((sum, item) => sum + item.prezzo, 0);
+            html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
+                <div>TOTALE EXTRA</div>
+                <div style="text-align: right; color: #1e40af;">€${totale.toLocaleString()}</div>
+                <div></div>
+            </div>`;
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         // MODIFICA GENERALE
@@ -1280,12 +1368,14 @@
             contratti.forEach(contratto => {
                 const row = tbody.insertRow();
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
+                const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+                const prezzoTotale = contratto.auto.prezzoVendita + totaleExtra;
                 
                 row.innerHTML = `
                     <td>${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</td>
                     <td>${contratto.cliente.nome}</td>
                     <td>${contratto.auto.marca} ${contratto.auto.modello}</td>
-                    <td>€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                    <td>€${prezzoTotale.toLocaleString()}${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}</td>
                     <td>${permutaText}</td>
                     <td class="actions">
                         <button class="btn btn-primary" onclick="mostraContratto(${JSON.stringify(contratto).replace(/"/g, '&quot;')})">📋 Visualizza</button>
@@ -1377,7 +1467,8 @@
 
         // CONTRATTO
         function mostraContratto(contratto) {
-            const totaleASaldo = contratto.auto.prezzoVendita - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
+            const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+            const totaleASaldo = contratto.auto.prezzoVendita + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
             
             const html = `
                 <div class="contract-preview">
@@ -1512,6 +1603,18 @@
                                         <td style="padding: 6px; font-weight: bold;">PREZZO VEICOLO</td>
                                         <td style="padding: 6px; text-align: right; font-weight: bold;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
                                     </tr>
+                                    ${(contratto.extraItems || []).map(item => `
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">${item.descrizione}</td>
+                                        <td style="padding: 6px; text-align: right;">€${item.prezzo.toLocaleString()}</td>
+                                    </tr>
+                                    `).join('')}
+                                    ${totaleExtra > 0 ? `
+                                    <tr style="border-bottom: 1px solid #ddd; background: #f0f8ff;">
+                                        <td style="padding: 6px; font-weight: bold;">SUBTOTALE</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${(contratto.auto.prezzoVendita + totaleExtra).toLocaleString()}</td>
+                                    </tr>
+                                    ` : ''}
                                     ${contratto.permuta.valutazione > 0 ? `
                                     <tr style="border-bottom: 1px solid #ddd;">
                                         <td style="padding: 6px;">Valore ritiro</td>
@@ -1684,11 +1787,33 @@
                         </div>
 
                         <div style="margin-bottom: 8px; font-size: 0.55rem;">
-                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 16 - Trattamento dei dati personali</h3>
-                            <p>Ai sensi del Regolamento UE 2016/679 (GDPR), il Titolare del trattamento PERICAR di Giacomo Perissinotto informa che i dati personali raccolti saranno trattati per finalità contrattuali, fiscali e di legge. I dati saranno conservati per 10 anni. L'interessato ha diritto di accesso, rettifica, cancellazione e portabilità dei dati. Per informazioni: giacomo@pericar.it</p>
-                            <div style="display: flex; gap: 15px; margin: 5px 0;">
-                                <label style="font-size: 0.5rem;"><input type="checkbox"> ACCONSENTO al trattamento per finalità di marketing</label>
-                                <label style="font-size: 0.5rem;"><input type="checkbox"> NON acconsento al trattamento per finalità di marketing</label>
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 16 - Trattamento dei dati personali (GDPR 2016/679)</h3>
+                            <p>Ai sensi del Regolamento UE 2016/679 (GDPR), il Titolare del trattamento PERICAR di Giacomo Perissinotto, con sede in Corso Casale 99, 14100 Asti, P.IVA 01671440053, informa che i dati personali raccolti saranno trattati per le seguenti finalità:</p>
+                            <p><strong>a) Finalità contrattuali:</strong> esecuzione del contratto di vendita, gestione del rapporto commerciale, adempimento di obblighi precontrattuali e contrattuali (base giuridica: art. 6, par. 1, lett. b) GDPR);</p>
+                            <p><strong>b) Finalità legali:</strong> adempimento di obblighi di legge in materia fiscale, contabile, civilistica e amministrativa (base giuridica: art. 6, par. 1, lett. c) GDPR);</p>
+                            <p><strong>c) Finalità di marketing:</strong> invio di comunicazioni commerciali, newsletter, offerte promozionali tramite email, SMS, telefono, posta (base giuridica: consenso dell'interessato ex art. 6, par. 1, lett. a) GDPR).</p>
+                            <p><strong>Modalità del trattamento:</strong> I dati saranno trattati con strumenti informatici e cartacei, con logiche strettamente correlate alle finalità e comunque in modo da garantire la sicurezza e la riservatezza dei dati stessi.</p>
+                            <p><strong>Conservazione:</strong> I dati saranno conservati per 10 anni dalla cessazione del rapporto contrattuale per finalità fiscali e contabili, salvo diversi termini previsti dalla legge.</p>
+                            <p><strong>Comunicazione e diffusione:</strong> I dati potranno essere comunicati a: consulenti fiscali e legali, istituti di credito per pratiche di finanziamento, enti pubblici per adempimenti di legge, fornitori di servizi informatici. I dati non saranno diffusi.</p>
+                            <p><strong>Diritti dell'interessato:</strong> L'interessato ha diritto di ottenere dal Titolare: l'accesso ai propri dati personali, la rettifica o la cancellazione degli stessi, la limitazione del trattamento, la portabilità dei dati, l'opposizione al trattamento. Per esercitare tali diritti: giacomo@pericar.it o Corso Casale 99, 14100 Asti. È possibile proporre reclamo al Garante per la Protezione dei Dati Personali.</p>
+                            <p><strong>Consenso al marketing:</strong> Il consenso per le finalità di marketing è facoltativo e può essere revocato in qualsiasi momento senza pregiudicare la liceità del trattamento basata sul consenso prestato prima della revoca.</p>
+                            
+                            <div style="display: flex; gap: 15px; margin: 8px 0; padding: 8px; border: 1px solid #ddd; background: #f9f9f9;">
+                                <label style="font-size: 0.5rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox"> <strong>ACCONSENTO</strong> al trattamento dei miei dati personali per finalità di marketing diretto</label>
+                                <label style="font-size: 0.5rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox"> <strong>NON ACCONSENTO</strong> al trattamento dei miei dati personali per finalità di marketing diretto</label>
+                            </div>
+                            
+                            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                                    <div style="text-align: center;">
+                                        <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                        <strong style="font-size: 0.6rem;">Firma per presa visione<br/>dell'informativa privacy<br/>(Acquirente)</strong>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                        <strong style="font-size: 0.6rem;">Firma del Titolare<br/>del trattamento<br/>(PERICAR)</strong>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1771,6 +1896,10 @@
             // Dettagli economici
             document.getElementById('depositoCauzionale').value = contratto.depositoCauzionale || '';
             document.getElementById('speseVoltura').value = contratto.speseVoltura || '';
+            
+            // Ripristina extra items
+            extraItems = [...(contratto.extraItems || [])];
+            aggiornaListaExtra();
             
             // Elimina il contratto esistente per permettere la modifica
             eliminaContratto(id);
@@ -2092,5 +2221,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bdd1966021ee7e',t:'MTc1NDY0MzU3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bde2f7f484ed6b',t:'MTc1NDY0NDI4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
