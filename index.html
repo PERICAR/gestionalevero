@@ -779,6 +779,27 @@
                 </div>
             </div>
 
+            <h3>Sconto e Prezzo Finale</h3>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label>Prezzo Base Auto (€)</label>
+                        <input type="number" id="prezzoBaseAuto" readonly style="background: #e9ecef; font-weight: bold;">
+                    </div>
+                    <div class="form-group">
+                        <label>Sconto Applicato (€)</label>
+                        <input type="number" id="scontoApplicato" placeholder="0" onchange="calcolaPrezzoFinale()">
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo Finale Auto (€)</label>
+                        <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding: 8px; background: #d1ecf1; border-radius: 6px; font-size: 0.9rem;">
+                    <strong>💡 Suggerimento:</strong> Puoi inserire lo sconto o modificare direttamente il prezzo finale - il calcolo si aggiorna automaticamente!
+                </div>
+            </div>
+
             <h3>Servizi/Accessori Aggiuntivi</h3>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                 <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
@@ -1474,6 +1495,8 @@ Nuova password richiesta: ${nuovaPassword}`);
                 depositoCauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
                 speseVoltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
                 canaleVendita: document.getElementById('canaleVendita').value,
+                scontoApplicato: parseFloat(document.getElementById('scontoApplicato').value) || 0,
+                prezzoFinaleAuto: parseFloat(document.getElementById('prezzoFinaleAuto').value) || autoVenduta.prezzoVendita,
                 extraItems: [...extraItems], // Copia degli extra items
                 cliente,
                 auto: autoVenduta
@@ -1510,6 +1533,9 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('depositoCauzionale').value = '';
             document.getElementById('speseVoltura').value = '';
             document.getElementById('canaleVendita').value = 'Autoscout';
+            document.getElementById('scontoApplicato').value = '';
+            document.getElementById('prezzoFinaleAuto').value = '';
+            document.getElementById('prezzoBaseAuto').value = '';
             document.getElementById('descrizioneExtra').value = '';
             document.getElementById('prezzoExtra').value = '';
             extraItems = [];
@@ -1930,13 +1956,14 @@ Nuova password richiesta: ${nuovaPassword}`);
                 const row = tbody.insertRow();
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
                 const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
-                const prezzoTotale = contratto.auto.prezzoVendita + totaleExtra;
+                const prezzoBaseAuto = contratto.prezzoFinaleAuto || contratto.auto.prezzoVendita;
+                const prezzoTotale = prezzoBaseAuto + totaleExtra;
                 
                 row.innerHTML = `
                     <td>${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</td>
                     <td>${contratto.cliente.nome}</td>
                     <td>${contratto.auto.marca} ${contratto.auto.modello}</td>
-                    <td>€${prezzoTotale.toLocaleString()}${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}</td>
+                    <td>€${prezzoTotale.toLocaleString()}${(contratto.scontoApplicato || 0) > 0 ? `<br><small style="color: #dc3545;">(-€${contratto.scontoApplicato.toLocaleString()} sconto)</small>` : ''}${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}</td>
                     <td>${permutaText}</td>
                     <td class="actions">
                         <button class="btn btn-primary" onclick="mostraContratto(${JSON.stringify(contratto).replace(/"/g, '&quot;')})">📋 Visualizza</button>
@@ -1998,6 +2025,45 @@ Nuova password richiesta: ${nuovaPassword}`);
                 select.appendChild(option);
             });
         }
+
+        // FUNZIONI CALCOLO SCONTO
+        function calcolaPrezzoFinale() {
+            const prezzoBase = parseFloat(document.getElementById('prezzoBaseAuto').value) || 0;
+            const sconto = parseFloat(document.getElementById('scontoApplicato').value) || 0;
+            const prezzoFinale = prezzoBase - sconto;
+            
+            document.getElementById('prezzoFinaleAuto').value = prezzoFinale > 0 ? prezzoFinale : 0;
+        }
+
+        function calcolaSconto() {
+            const prezzoBase = parseFloat(document.getElementById('prezzoBaseAuto').value) || 0;
+            const prezzoFinale = parseFloat(document.getElementById('prezzoFinaleAuto').value) || 0;
+            const sconto = prezzoBase - prezzoFinale;
+            
+            document.getElementById('scontoApplicato').value = sconto > 0 ? sconto : 0;
+        }
+
+        // Event listener per aggiornare i prezzi quando si seleziona un'auto
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoSelect = document.getElementById('autoContratto');
+            if (autoSelect) {
+                autoSelect.addEventListener('change', function() {
+                    const autoId = this.value;
+                    if (autoId) {
+                        const autoSelezionata = auto.find(a => a.id == autoId);
+                        if (autoSelezionata) {
+                            document.getElementById('prezzoBaseAuto').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('prezzoFinaleAuto').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('scontoApplicato').value = 0;
+                        }
+                    } else {
+                        document.getElementById('prezzoBaseAuto').value = '';
+                        document.getElementById('prezzoFinaleAuto').value = '';
+                        document.getElementById('scontoApplicato').value = '';
+                    }
+                });
+            }
+        });
 
         // STATISTICHE
         function aggiornaStatistiche() {
@@ -2086,7 +2152,10 @@ Nuova password richiesta: ${nuovaPassword}`);
         // CONTRATTO
         function mostraContratto(contratto) {
             const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
-            const totaleASaldo = contratto.auto.prezzoVendita + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
+            const prezzoBaseAuto = contratto.auto.prezzoVendita;
+            const scontoApplicato = contratto.scontoApplicato || 0;
+            const prezzoFinaleAuto = contratto.prezzoFinaleAuto || prezzoBaseAuto;
+            const totaleASaldo = prezzoFinaleAuto + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
             
             const html = `
                 <div class="contract-preview">
@@ -2218,9 +2287,19 @@ Nuova password richiesta: ${nuovaPassword}`);
                                 <h3 style="font-size: 0.85rem; margin-bottom: 8px; background: #E30613; color: white; padding: 6px; margin: -10px -10px 8px -10px; border-radius: 6px 6px 0 0; text-align: center;">RIEPILOGO ECONOMICO</h3>
                                 <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
                                     <tr style="border-bottom: 1px solid #ddd;">
-                                        <td style="padding: 6px; font-weight: bold;">PREZZO VEICOLO</td>
-                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                                        <td style="padding: 6px; font-weight: bold;">PREZZO LISTINO VEICOLO</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${prezzoBaseAuto.toLocaleString()}</td>
                                     </tr>
+                                    ${scontoApplicato > 0 ? `
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px; color: #dc3545;">Sconto applicato</td>
+                                        <td style="padding: 6px; text-align: right; color: #dc3545;">-€${scontoApplicato.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #ddd; background: #f0f8ff;">
+                                        <td style="padding: 6px; font-weight: bold;">PREZZO SCONTATO VEICOLO</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${prezzoFinaleAuto.toLocaleString()}</td>
+                                    </tr>
+                                    ` : ''}
                                     ${(contratto.extraItems || []).map(item => `
                                     <tr style="border-bottom: 1px solid #ddd;">
                                         <td style="padding: 6px;">${item.descrizione}</td>
@@ -2230,7 +2309,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                                     ${totaleExtra > 0 ? `
                                     <tr style="border-bottom: 1px solid #ddd; background: #f0f8ff;">
                                         <td style="padding: 6px; font-weight: bold;">SUBTOTALE</td>
-                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${(contratto.auto.prezzoVendita + totaleExtra).toLocaleString()}</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${(prezzoFinaleAuto + totaleExtra).toLocaleString()}</td>
                                     </tr>
                                     ` : ''}
                                     ${contratto.permuta.valutazione > 0 ? `
@@ -2515,6 +2594,11 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('depositoCauzionale').value = contratto.depositoCauzionale || '';
             document.getElementById('speseVoltura').value = contratto.speseVoltura || '';
             document.getElementById('canaleVendita').value = contratto.canaleVendita || 'Autoscout';
+            
+            // Sconto e prezzo finale
+            document.getElementById('prezzoBaseAuto').value = contratto.auto.prezzoVendita;
+            document.getElementById('scontoApplicato').value = contratto.scontoApplicato || 0;
+            document.getElementById('prezzoFinaleAuto').value = contratto.prezzoFinaleAuto || contratto.auto.prezzoVendita;
             
             // Ripristina extra items
             extraItems = [...(contratto.extraItems || [])];
@@ -2910,5 +2994,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be385bf276f615',t:'MTc1NDY0Nzc4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96be48f523124c57',t:'MTc1NDY0ODQ2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
