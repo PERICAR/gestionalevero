@@ -529,43 +529,59 @@
         <div id="clienti" class="tab-content active">
             <h2>Gestione Clienti</h2>
             
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Nome e Cognome</label>
-                    <input type="text" id="nomeCliente" placeholder="Mario Rossi">
+            <!-- FORM AGGIUNTA CLIENTE (nascosto inizialmente) -->
+            <div id="formAggiungiCliente" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuovo Cliente</h3>
+                    <button class="btn btn-danger" onclick="chiudiFormCliente()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
-                <div class="form-group">
-                    <label>Luogo di Nascita</label>
-                    <input type="text" id="luogoNascita" placeholder="Torino">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome e Cognome</label>
+                        <input type="text" id="nomeCliente" placeholder="Mario Rossi">
+                    </div>
+                    <div class="form-group">
+                        <label>Luogo di Nascita</label>
+                        <input type="text" id="luogoNascita" placeholder="Torino">
+                    </div>
+                    <div class="form-group">
+                        <label>Residenza</label>
+                        <input type="text" id="residenza" placeholder="Via Roma 123, Asti">
+                    </div>
+                    <div class="form-group">
+                        <label>Codice Fiscale</label>
+                        <input type="text" id="codiceFiscale" placeholder="RSSMRA80A01L219K">
+                    </div>
+                    <div class="form-group">
+                        <label>Professione</label>
+                        <input type="text" id="professione" placeholder="Impiegato">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefono</label>
+                        <input type="text" id="telefono" placeholder="+39 333 1234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="emailCliente" placeholder="mario.rossi@email.com">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Residenza</label>
-                    <input type="text" id="residenza" placeholder="Via Roma 123, Asti">
-                </div>
-                <div class="form-group">
-                    <label>Codice Fiscale</label>
-                    <input type="text" id="codiceFiscale" placeholder="RSSMRA80A01L219K">
-                </div>
-                <div class="form-group">
-                    <label>Professione</label>
-                    <input type="text" id="professione" placeholder="Impiegato">
-                </div>
-                <div class="form-group">
-                    <label>Telefono</label>
-                    <input type="text" id="telefono" placeholder="+39 333 1234567">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="emailCliente" placeholder="mario.rossi@email.com">
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-success" onclick="aggiungiCliente()" style="padding: 15px 30px; font-size: 1.1rem;">👤 Salva Cliente</button>
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="aggiungiCliente()">➕ Aggiungi Cliente</button>
-
-            <div style="margin: 20px 0;">
-                <input type="text" id="searchClienti" placeholder="🔍 Cerca clienti per nome, telefono, email..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraClienti()">
+            <!-- PULSANTE AGGIUNGI CLIENTE E RICERCA -->
+            <div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+                <button class="btn btn-success" onclick="mostraFormCliente()" style="padding: 12px 25px; font-size: 1rem;">➕ Aggiungi Cliente</button>
+                
+                <div style="flex: 1; max-width: 400px;">
+                    <input type="text" id="searchClienti" placeholder="🔍 Cerca clienti per nome, telefono, email..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraClienti()">
+                </div>
             </div>
 
+            <!-- TABELLA CLIENTI -->
             <table class="data-table">
                 <thead>
                     <tr>
@@ -654,9 +670,9 @@
                     <div class="form-group">
                         <label>Tipo</label>
                         <select id="tipoAuto">
+                            <option value="USATO">USATO</option>
                             <option value="NUOVO">NUOVO</option>
                             <option value="KM0">KM0</option>
-                            <option value="USATO">USATO</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -714,134 +730,150 @@
         <div id="contratti" class="tab-content">
             <h2>Gestione Contratti</h2>
             
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Cliente</label>
-                    <select id="clienteContratto">
-                        <option value="">Seleziona Cliente</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Auto da Vendere</label>
-                    <select id="autoContratto">
-                        <option value="">Seleziona Auto</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Data Contratto</label>
-                    <input type="date" id="dataContratto">
-                </div>
-                <div class="form-group">
-                    <label>Luogo</label>
-                    <input type="text" id="luogoContratto" value="Asti" placeholder="Asti">
-                </div>
-            </div>
-
-            <h3>Auto in Permuta (Opzionale)</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Marca Permuta</label>
-                    <input type="text" id="marcaPermuta" placeholder="Fiat">
-                </div>
-                <div class="form-group">
-                    <label>Modello Permuta</label>
-                    <input type="text" id="modelloPermuta" placeholder="Punto">
-                </div>
-                <div class="form-group">
-                    <label>Targa Permuta</label>
-                    <input type="text" id="targaPermuta" placeholder="EF456GH">
-                </div>
-                <div class="form-group">
-                    <label>Telaio Permuta</label>
-                    <input type="text" id="telaioPermuta" placeholder="ZFA123456789">
-                </div>
-                <div class="form-group">
-                    <label>Data Immatricolazione Permuta</label>
-                    <input type="date" id="dataImmatricolazionePermuta">
-                </div>
-                <div class="form-group">
-                    <label>Km Permuta</label>
-                    <input type="number" id="chilometriPermuta" placeholder="80000">
-                </div>
-                <div class="form-group">
-                    <label>Versione Permuta</label>
-                    <input type="text" id="versionePermuta" placeholder="1.2 Benzina">
-                </div>
-                <div class="form-group">
-                    <label>Valutazione Permuta (€)</label>
-                    <input type="number" id="valutazionePermuta" placeholder="8000">
-                </div>
-            </div>
-
-            <h3>Dettagli Economici</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Deposito Cauzionale (€)</label>
-                    <input type="number" id="depositoCauzionale" placeholder="1000">
-                </div>
-                <div class="form-group">
-                    <label>Spese Voltura/Minivoltura (€)</label>
-                    <input type="number" id="speseVoltura" placeholder="350">
-                </div>
-                <div class="form-group">
-                    <label>Canale di Vendita (interno)</label>
-                    <select id="canaleVendita">
-                        <option value="Autoscout">Autoscout</option>
-                        <option value="Subito">Subito</option>
-                        <option value="Conoscenze">Conoscenze</option>
-                        <option value="Ingresso spontaneo">Ingresso spontaneo</option>
-                        <option value="Cip">Cip</option>
-                    </select>
-                </div>
-            </div>
-
-            <h3>Sconto e Prezzo Finale</h3>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <div class="form-group">
-                        <label>Prezzo Base Auto (€)</label>
-                        <input type="number" id="prezzoBaseAuto" readonly style="background: #e9ecef; font-weight: bold;">
-                    </div>
-                    <div class="form-group">
-                        <label>Sconto Applicato (€)</label>
-                        <input type="number" id="scontoApplicato" placeholder="0" onchange="calcolaPrezzoFinale()">
-                    </div>
-                    <div class="form-group">
-                        <label>Prezzo Finale Auto (€)</label>
-                        <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;">
-                    </div>
-                </div>
-                <div style="margin-top: 10px; padding: 8px; background: #d1ecf1; border-radius: 6px; font-size: 0.9rem;">
-                    <strong>💡 Suggerimento:</strong> Puoi inserire lo sconto o modificare direttamente il prezzo finale - il calcolo si aggiorna automaticamente!
-                </div>
-            </div>
-
-            <h3>Servizi/Accessori Aggiuntivi</h3>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
-                    <div class="form-group">
-                        <label>Descrizione</label>
-                        <input type="text" id="descrizioneExtra" placeholder="Es: Assicurazione Kasko, Navigatore, Cerchi in lega...">
-                    </div>
-                    <div class="form-group">
-                        <label>Prezzo (€)</label>
-                        <input type="number" id="prezzoExtra" placeholder="500">
-                    </div>
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <button type="button" class="btn btn-success" onclick="aggiungiExtra()" style="margin-top: 0;">➕ Aggiungi</button>
-                    </div>
+            <!-- FORM CREAZIONE CONTRATTO (nascosto inizialmente) -->
+            <div id="formAggiungiContratto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #1e40af;">📋 Crea Nuovo Contratto</h3>
+                    <button class="btn btn-danger" onclick="chiudiFormContratto()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
-                <div id="listaExtra" style="margin-top: 15px;"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select id="clienteContratto">
+                            <option value="">Seleziona Cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Auto da Vendere</label>
+                        <select id="autoContratto">
+                            <option value="">Seleziona Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Contratto</label>
+                        <input type="date" id="dataContratto">
+                    </div>
+                    <div class="form-group">
+                        <label>Luogo</label>
+                        <input type="text" id="luogoContratto" value="Asti" placeholder="Asti">
+                    </div>
+                </div>
+
+                <h4>Auto in Permuta (Opzionale)</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Marca Permuta</label>
+                        <input type="text" id="marcaPermuta" placeholder="Fiat">
+                    </div>
+                    <div class="form-group">
+                        <label>Modello Permuta</label>
+                        <input type="text" id="modelloPermuta" placeholder="Punto">
+                    </div>
+                    <div class="form-group">
+                        <label>Targa Permuta</label>
+                        <input type="text" id="targaPermuta" placeholder="EF456GH">
+                    </div>
+                    <div class="form-group">
+                        <label>Telaio Permuta</label>
+                        <input type="text" id="telaioPermuta" placeholder="ZFA123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Immatricolazione Permuta</label>
+                        <input type="date" id="dataImmatricolazionePermuta">
+                    </div>
+                    <div class="form-group">
+                        <label>Km Permuta</label>
+                        <input type="number" id="chilometriPermuta" placeholder="80000">
+                    </div>
+                    <div class="form-group">
+                        <label>Versione Permuta</label>
+                        <input type="text" id="versionePermuta" placeholder="1.2 Benzina">
+                    </div>
+                    <div class="form-group">
+                        <label>Valutazione Permuta (€)</label>
+                        <input type="number" id="valutazionePermuta" placeholder="8000">
+                    </div>
+                </div>
+
+                <h4>Dettagli Economici</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Deposito Cauzionale (€)</label>
+                        <input type="number" id="depositoCauzionale" placeholder="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Spese Voltura/Minivoltura (€)</label>
+                        <input type="number" id="speseVoltura" placeholder="350">
+                    </div>
+                    <div class="form-group">
+                        <label>Canale di Vendita (interno)</label>
+                        <select id="canaleVendita">
+                            <option value="Autoscout">Autoscout</option>
+                            <option value="Subito">Subito</option>
+                            <option value="Conoscenze">Conoscenze</option>
+                            <option value="Ingresso spontaneo">Ingresso spontaneo</option>
+                            <option value="Cip">Cip</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4>Sconto e Prezzo Finale</h4>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label>Prezzo Base Auto (€)</label>
+                            <input type="number" id="prezzoBaseAuto" readonly style="background: #e9ecef; font-weight: bold;">
+                        </div>
+                        <div class="form-group">
+                            <label>Sconto Applicato (€)</label>
+                            <input type="number" id="scontoApplicato" placeholder="0" onchange="calcolaPrezzoFinale()">
+                        </div>
+                        <div class="form-group">
+                            <label>Prezzo Finale Auto (€)</label>
+                            <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 8px; background: #d1ecf1; border-radius: 6px; font-size: 0.9rem;">
+                        <strong>💡 Suggerimento:</strong> Puoi inserire lo sconto o modificare direttamente il prezzo finale - il calcolo si aggiorna automaticamente!
+                    </div>
+                </div>
+
+                <h4>Servizi/Accessori Aggiuntivi</h4>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                        <div class="form-group">
+                            <label>Descrizione</label>
+                            <input type="text" id="descrizioneExtra" placeholder="Es: Assicurazione Kasko, Navigatore, Cerchi in lega...">
+                        </div>
+                        <div class="form-group">
+                            <label>Prezzo (€)</label>
+                            <input type="number" id="prezzoExtra" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-success" onclick="aggiungiExtra()" style="margin-top: 0;">➕ Aggiungi</button>
+                        </div>
+                    </div>
+                    
+                    <div id="listaExtra" style="margin-top: 15px;"></div>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-success" onclick="creaContratto()" style="padding: 15px 30px; font-size: 1.1rem;">📋 Crea Contratto</button>
+                </div>
             </div>
 
-            <button class="btn btn-primary" onclick="creaContratto()">📋 Crea Contratto</button>
-
-            <div style="margin: 20px 0;">
-                <input type="text" id="searchContratti" placeholder="🔍 Cerca contratti per cliente, auto, data..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraContratti()">
+            <!-- PULSANTE CREA CONTRATTO E RICERCA -->
+            <div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+                <button class="btn btn-success" onclick="mostraFormContratto()" style="padding: 12px 25px; font-size: 1rem;">📋 Crea Contratto</button>
+                
+                <div style="flex: 1; max-width: 400px;">
+                    <input type="text" id="searchContratti" placeholder="🔍 Cerca contratti per cliente, auto, data..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraContratti()">
+                </div>
             </div>
 
+            <!-- TABELLA CONTRATTI -->
             <table class="data-table">
                 <thead>
                     <tr>
@@ -885,24 +917,6 @@
             </div>
 
             <div class="contract-preview">
-                <h3>📊 Conto Economico Stock Auto</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Auto</th>
-                            <th>Prezzo Acquisto</th>
-                            <th>Costi Aggiuntivi</th>
-                            <th>Costo Totale</th>
-                            <th>Prezzo Vendita</th>
-                            <th>Margine</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contoEconomicoStock"></tbody>
-                </table>
-            </div>
-
-            <div class="contract-preview" style="margin-top: 30px;">
                 <h3>📊 Statistiche Canali di Vendita</h3>
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
@@ -1422,6 +1436,9 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaStatistiche();
             aggiornaSelectClienti();
             pulisciFormCliente();
+            chiudiFormCliente();
+            
+            alert('✅ Cliente aggiunto con successo!');
         }
 
         function pulisciFormCliente() {
@@ -1432,6 +1449,28 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('professione').value = '';
             document.getElementById('telefono').value = '';
             document.getElementById('emailCliente').value = '';
+        }
+
+        // GESTIONE FORM CLIENTI
+        function mostraFormCliente() {
+            document.getElementById('formAggiungiCliente').style.display = 'block';
+            document.getElementById('formAggiungiCliente').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function chiudiFormCliente() {
+            document.getElementById('formAggiungiCliente').style.display = 'none';
+            pulisciFormCliente();
+        }
+
+        // GESTIONE FORM CONTRATTI
+        function mostraFormContratto() {
+            document.getElementById('formAggiungiContratto').style.display = 'block';
+            document.getElementById('formAggiungiContratto').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function chiudiFormContratto() {
+            document.getElementById('formAggiungiContratto').style.display = 'none';
+            pulisciFormContratto();
         }
 
         // GESTIONE FORM AUTO
@@ -1513,7 +1552,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('prezzoVendita').value = '';
             document.getElementById('descrizioneCostoAuto').value = '';
             document.getElementById('importoCostoAuto').value = '';
-            document.getElementById('tipoAuto').value = 'NUOVO';
+            document.getElementById('tipoAuto').value = 'USATO';
             document.getElementById('statoAuto').value = 'Disponibile';
             costiAutoItems = [];
             aggiornaListaCostiAuto();
@@ -1609,10 +1648,13 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaStatistiche();
             aggiornaSelectAuto();
             pulisciFormContratto();
+            chiudiFormContratto();
             
             // Mostra messaggio se permuta aggiunta
             if (permutaAutoId) {
                 alert('✅ Contratto creato! La permuta è stata automaticamente aggiunta allo stock delle auto disponibili.');
+            } else {
+                alert('✅ Contratto creato con successo!');
             }
             
             // Mostra contratto
@@ -1989,7 +2031,6 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaTabelliaClienti();
             aggiornaTabellaAuto();
             aggiornaTabellaContratti();
-            aggiornaContoEconomicoStock();
         }
 
         function aggiornaTabelliaClienti() {
@@ -2084,34 +2125,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             });
         }
 
-        function aggiornaContoEconomicoStock() {
-            const tbody = document.getElementById('contoEconomicoStock');
-            tbody.innerHTML = '';
-            
-            auto.filter(autoObj => autoObj.stato !== 'Venduta').forEach(autoObj => {
-                const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
-                const margine = autoObj.prezzoVendita - costoTotale;
-                
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</td>
-                    <td>€${autoObj.prezzoAcquisto.toLocaleString()}</td>
-                    <td>€${speseAggiuntiveTotali.toLocaleString()}</td>
-                    <td>€${costoTotale.toLocaleString()}</td>
-                    <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
-                    <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
-                        €${margine.toLocaleString()}
-                        <button class="btn btn-primary" onclick="mostraDettaglioMargine(${autoObj.id})" style="padding: 2px 6px; font-size: 0.7rem; margin-left: 8px;">📊</button>
-                    </td>
-                    <td class="actions">
-                        <button class="btn btn-warning" onclick="gestisciSpese(${autoObj.id})">💰 Spese</button>
-                    </td>
-                `;
-            });
-            
 
-        }
 
         // AGGIORNAMENTO SELECT
         function aggiornaSelectClienti() {
@@ -3193,5 +3207,5 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bfc562b703ed4e',t:'MTc1NDY2NDA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bff4a3e402cd47',t:'MTc1NDY2NTk4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
