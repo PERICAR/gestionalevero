@@ -5,6 +5,38 @@
   const SUPABASE_URL = 'https://fcfeylrovatqvskbfyem.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZmV5bHJvdmF0cXZza2JmeWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzY4MzQsImV4cCI6MjA3MDM1MjgzNH0.ZoxNn-GBy2D84fOUdgmjgP9A_6PKf1cHAFR8uQTavx8';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+  let currentUser = null;
+
+  supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    currentUser = session?.user || null;
+    document.getElementById('authBox').style.display = currentUser ? 'none' : 'block';
+    document.getElementById('mainSystem').style.display = currentUser ? 'block' : 'none';
+    if (currentUser) {
+      await mostraSistema(); // ricarica dati dopo login
+    }
+  });
+
+  async function emailSignIn(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) alert('Login fallito: ' + error.message);
+  }
+
+  async function emailSignUp(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) alert('Registrazione fallita: ' + error.message);
+    else alert('Registrato. Ora effettua il login.');
+  }
+
+  async function signOut(){
+    await supabaseClient.auth.signOut();
+  }
+</script>
+
 </script>
 <head>
     <meta charset="UTF-8">
@@ -386,7 +418,17 @@
 <body>
     <div class="container">
         <!-- SISTEMA PRINCIPALE -->
-        <div id="mainSystem">
+      <div id="authBox" style="max-width:500px;margin:40px auto;display:block;background:#fff;padding:24px;border-radius:12px">
+  <h2>Pericar – Login</h2>
+  <div style="margin-top:12px">
+    <input id="email" type="email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #ddd;border-radius:8px">
+    <input id="password" type="password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px">
+    <button class="btn btn-primary" onclick="emailSignIn()">Entra</button>
+    <button class="btn btn-success" onclick="emailSignUp()">Registrati</button>
+  </div>
+</div>
+      
+      <div id="mainSystem" style="display:none">
             <div class="header">
                 <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 80px; width: auto; margin-bottom: 15px;">
                 <p>Sistema di Gestione Concessionaria - Corso Casale 99, Asti</p>
@@ -1036,10 +1078,11 @@
         async function caricaClienti() {
             try {
                 const { data, error } = await supabaseClient
-                    .from('clienti')
-                    .select('*')
-                    .order('id', { ascending: true });
-                
+.from('clienti')
+.select('*')
+.eq('user_id', currentUser.id)
+.order('id', { ascending: true });
+              
                 if (error) {
                     console.error('Errore caricamento clienti:', error);
                     clienti = [];
@@ -2484,21 +2527,24 @@
         }
 
         // SALVATAGGIO DATI SU SUPABASE
-        async function salvaAuto() {
-            try {
-                const { error } = await supabaseClient
-                    .from('auto')
-                    .upsert(auto, { onConflict: 'id' });
-                
-                if (error) {
-                    console.error('Errore salvataggio auto:', error);
-                    throw error;
-                }
-            } catch (err) {
-                console.error('Errore connessione salvataggio auto:', err);
-                throw err;
-            }
-        }
+async function salvaAuto() {
+  try {
+    // aggiunge user_id a ogni auto prima di salvare
+    auto = auto.map(a => ({ ...a, user_id: currentUser.id }));
+
+    const { error } = await supabaseClient
+      .from('auto')
+      .upsert(auto, { onConflict: 'id' });
+
+    if (error) {
+      console.error('Errore salvataggio auto:', error);
+      throw error;
+    }
+  } catch (err) {
+    console.error('Errore connessione salvataggio auto:', err);
+    throw err;
+  }
+}
 
         // GESTIONE SPESE AUTO
         function gestisciSpese(autoId) {
@@ -2922,11 +2968,12 @@
 
         async function caricaAuto() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('auto')
-                    .select('*')
-                    .order('id', { ascending: true });
-                
+               const { data, error } = await supabaseClient
+    .from('auto')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('id', { ascending: true });
+              
                 if (error) {
                     console.error('Errore caricamento auto:', error);
                     auto = [];
@@ -2969,3 +3016,4 @@
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e11e0315785602',t:'MTc1NTAxMzcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
