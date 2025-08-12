@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://fcfeylrovatqvskbfyem.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZmV5bHJvdmF0cXZza2JmeWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzY4MzQsImV4cCI6MjA3MDM1MjgzNH0.ZoxNn-GBy2D84fOUdgmjgP9A_6PKf1cHAFR8uQTavx8';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -374,148 +380,16 @@
             width: auto;
         }
 
-        /* STILI LOGIN */
-        .login-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            padding: 20px;
-        }
 
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
-
-        .login-header h1 {
-            color: #1f2937;
-            margin-bottom: 10px;
-            font-size: 2rem;
-        }
-
-        .login-header p {
-            color: #6b7280;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-
-        .login-form {
-            text-align: left;
-        }
-
-        .login-form .form-group {
-            margin-bottom: 25px;
-        }
-
-        .login-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 1rem;
-        }
-
-        .login-form input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        .login-form input:focus {
-            outline: none;
-            border-color: #1e40af;
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 20px 0;
-            border-radius: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .login-links {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .login-links a {
-            display: block;
-            color: #1e40af;
-            text-decoration: none;
-            margin: 8px 0;
-            font-size: 0.95rem;
-            transition: color 0.3s ease;
-        }
-
-        .login-links a:hover {
-            color: #1e3a8a;
-            text-decoration: underline;
-        }
-
-        .header {
-            position: relative;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- SCHERMATA LOGIN -->
-        <div id="loginScreen" class="login-screen">
-            <div class="login-container">
-                <div class="login-header">
-                    <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 100px; width: auto; margin-bottom: 20px;">
-                    <h1>ACCESSO SISTEMA</h1>
-                    <p>Sistema di Gestione Concessionaria</p>
-                </div>
-                
-                <div class="login-form">
-                    <div class="form-group">
-                        <label>👤 Username</label>
-                        <input type="text" id="loginUsername" placeholder="Inserisci username" autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label>🔒 Password</label>
-                        <input type="password" id="loginPassword" placeholder="Inserisci password" autocomplete="current-password">
-                    </div>
-                    
-                    <button class="btn btn-primary login-btn" onclick="effettuaLogin()">🔓 ACCEDI</button>
-                    
-                    <div class="login-links">
-                        <a href="#" onclick="mostraRecuperoPassword()">🔑 Password dimenticata?</a>
-                        <a href="#" onclick="mostraCambioPassword()">🔧 Cambia password</a>
-                    </div>
-                </div>
-                
-                <div id="loginError" class="alert alert-danger" style="display: none; margin-top: 15px;"></div>
-                <div id="loginSuccess" class="alert alert-success" style="display: none; margin-top: 15px;"></div>
-            </div>
-        </div>
-
-        <!-- SISTEMA PRINCIPALE (nascosto inizialmente) -->
-        <div id="mainSystem" style="display: none;">
+        <!-- SISTEMA PRINCIPALE -->
+        <div id="mainSystem">
             <div class="header">
                 <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 80px; width: auto; margin-bottom: 15px;">
                 <p>Sistema di Gestione Concessionaria - Corso Casale 99, Asti</p>
-                <div style="position: absolute; top: 20px; right: 20px;">
-                    <span style="color: #666; margin-right: 15px;">👤 <span id="utenteLoggato"></span></span>
-                    <button class="btn btn-danger" onclick="effettuaLogout()" style="padding: 8px 15px; font-size: 0.9rem;">🚪 Esci</button>
-                </div>
             </div>
 
         <div class="nav-tabs">
@@ -1058,82 +932,7 @@
         </div>
     </div>
 
-    <!-- MODAL RECUPERO PASSWORD -->
-    <div id="modalRecuperoPassword" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close" onclick="chiudiModalRecupero()">&times;</span>
-            <h2>🔑 Recupero Password</h2>
-            
-            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0; color: #856404;">
-                    <strong>⚠️ Attenzione:</strong> Per motivi di sicurezza, il recupero password richiede la conferma dell'account master.
-                </p>
-            </div>
-            
-            <div class="form-group">
-                <label>👤 Username da recuperare</label>
-                <input type="text" id="usernameRecupero" placeholder="Inserisci username">
-            </div>
-            
-            <div class="form-group">
-                <label>📧 Email di conferma</label>
-                <input type="email" id="emailRecupero" placeholder="giacomo@pericar.it" readonly value="giacomo@pericar.it" style="background: #f8f9fa;">
-            </div>
-            
-            <div class="form-group">
-                <label>📝 Motivo della richiesta</label>
-                <textarea id="motivoRecupero" placeholder="Descrivi brevemente il motivo della richiesta di recupero password..." style="min-height: 80px;"></textarea>
-            </div>
-            
-            <div style="margin-top: 20px; text-align: right;">
-                <button class="btn btn-primary" onclick="inviaRichiestaRecupero()">📧 Invia Richiesta</button>
-                <button class="btn btn-danger" onclick="chiudiModalRecupero()">❌ Annulla</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- MODAL CAMBIO PASSWORD -->
-    <div id="modalCambioPassword" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close" onclick="chiudiModalCambio()">&times;</span>
-            <h2>🔧 Cambio Password</h2>
-            
-            <div class="form-group">
-                <label>👤 Username</label>
-                <input type="text" id="usernameCambio" placeholder="Inserisci username">
-            </div>
-            
-            <div class="form-group">
-                <label>🔒 Password attuale</label>
-                <input type="password" id="passwordAttuale" placeholder="Inserisci password attuale">
-            </div>
-            
-            <div class="form-group">
-                <label>🔑 Nuova password</label>
-                <input type="password" id="nuovaPassword" placeholder="Inserisci nuova password">
-            </div>
-            
-            <div class="form-group">
-                <label>🔑 Conferma nuova password</label>
-                <input type="password" id="confermaNuovaPassword" placeholder="Conferma nuova password">
-            </div>
-            
-            <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                <p style="margin: 0; color: #0c5460; font-size: 0.9rem;">
-                    <strong>💡 Suggerimenti per una password sicura:</strong><br>
-                    • Almeno 8 caratteri<br>
-                    • Combina lettere maiuscole e minuscole<br>
-                    • Includi numeri e simboli<br>
-                    • Evita parole comuni o dati personali
-                </p>
-            </div>
-            
-            <div style="margin-top: 20px; text-align: right;">
-                <button class="btn btn-success" onclick="cambiaPassword()">💾 Cambia Password</button>
-                <button class="btn btn-danger" onclick="chiudiModalCambio()">❌ Annulla</button>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL DETTAGLIO MARGINE -->
     <div id="modalDettaglioMargine" class="modal">
@@ -1159,61 +958,51 @@
 
     <script>
         // Dati globali
-        let clienti = JSON.parse(localStorage.getItem('clienti')) || [];
-        let auto = JSON.parse(localStorage.getItem('auto')) || [];
-        let contratti = JSON.parse(localStorage.getItem('contratti')) || [];
+        let clienti = [];
+        let auto = [];
+        let contratti = [];
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
         let extraItems = []; // Array per servizi/accessori aggiuntivi
         let costiAutoItems = []; // Array per costi aggiuntivi auto
-        let utenteCorrente = null;
 
-        // Sistema di autenticazione
-        const utenti = {
-            'admin': 'pericar2024',
-            'giacomo': 'giacomo123',
-            'staff': 'staff2024'
-        };
 
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
-            // Controlla se l'utente è già loggato
-            const sessioneAttiva = localStorage.getItem('sessionePericar');
-            if (sessioneAttiva) {
-                const sessione = JSON.parse(sessioneAttiva);
-                const ora = new Date().getTime();
-                // Sessione valida per 8 ore (28800000 ms)
-                if (ora - sessione.timestamp < 28800000) {
-                    utenteCorrente = sessione.username;
-                    mostraSistema();
-                    return;
-                }
-            }
-            
-            // Mostra schermata di login
-            mostraLogin();
-            
-            // Event listener per Enter nei campi login
-            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    effettuaLogin();
-                }
-            });
+            mostraSistema();
         });
 
-        // SISTEMA DI LOGIN
-        function mostraLogin() {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainSystem').style.display = 'none';
-            document.getElementById('loginUsername').focus();
+        async function mostraSistema() {
+            try {
+                // Carica tutti i dati da Supabase
+                await Promise.all([
+                    caricaClienti(),
+                    caricaAuto(),
+                    caricaContratti()
+                ]);
+                
+                document.getElementById('mainSystem').style.display = 'block';
+                
+                // Inizializza il sistema
+                inizializzaSistema();
+                
+            } catch (error) {
+                console.error('Errore caricamento sistema:', error);
+                document.getElementById('mainSystem').innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #dc3545;">
+                        <h2>❌ Errore di Connessione</h2>
+                        <p>Impossibile connettersi al database Supabase.</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 20px;">Verifica la connessione internet e riprova.</p>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">🔄 Riprova</button>
+                    </div>
+                `;
+                document.getElementById('mainSystem').style.display = 'block';
+            }
         }
 
-        function mostraSistema() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainSystem').style.display = 'block';
-            document.getElementById('utenteLoggato').textContent = utenteCorrente;
-            
+        // Funzione per inizializzare il sistema dopo il caricamento
+        function inizializzaSistema() {
             // Inizializza il sistema
             aggiornaTabelle();
             aggiornaStatistiche();
@@ -1226,172 +1015,7 @@
             document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
         }
 
-        function effettuaLogin() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!username || !password) {
-                mostraErroreLogin('Inserisci username e password');
-                return;
-            }
-            
-            if (utenti[username] && utenti[username] === password) {
-                utenteCorrente = username;
-                
-                // Salva sessione
-                const sessione = {
-                    username: username,
-                    timestamp: new Date().getTime()
-                };
-                localStorage.setItem('sessionePericar', JSON.stringify(sessione));
-                
-                mostraSuccessoLogin('Accesso effettuato con successo!');
-                setTimeout(() => {
-                    mostraSistema();
-                }, 1000);
-            } else {
-                mostraErroreLogin('Username o password non corretti');
-                
-                // Log del tentativo di accesso non autorizzato
-                console.warn(`Tentativo di accesso fallito per: ${username} - ${new Date().toLocaleString()}`);
-            }
-            
-            // Pulisci campi
-            document.getElementById('loginPassword').value = '';
-        }
 
-        function effettuaLogout() {
-            if (confirm('Sei sicuro di voler uscire dal sistema?')) {
-                localStorage.removeItem('sessionePericar');
-                utenteCorrente = null;
-                
-                // Pulisci campi login
-                document.getElementById('loginUsername').value = '';
-                document.getElementById('loginPassword').value = '';
-                
-                mostraLogin();
-            }
-        }
-
-        function mostraErroreLogin(messaggio) {
-            const errorDiv = document.getElementById('loginError');
-            const successDiv = document.getElementById('loginSuccess');
-            
-            successDiv.style.display = 'none';
-            errorDiv.textContent = messaggio;
-            errorDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
-
-        function mostraSuccessoLogin(messaggio) {
-            const errorDiv = document.getElementById('loginError');
-            const successDiv = document.getElementById('loginSuccess');
-            
-            errorDiv.style.display = 'none';
-            successDiv.textContent = messaggio;
-            successDiv.style.display = 'block';
-        }
-
-        // RECUPERO PASSWORD
-        function mostraRecuperoPassword() {
-            document.getElementById('modalRecuperoPassword').style.display = 'block';
-        }
-
-        function chiudiModalRecupero() {
-            document.getElementById('modalRecuperoPassword').style.display = 'none';
-            document.getElementById('usernameRecupero').value = '';
-            document.getElementById('motivoRecupero').value = '';
-        }
-
-        function inviaRichiestaRecupero() {
-            const username = document.getElementById('usernameRecupero').value.trim();
-            const motivo = document.getElementById('motivoRecupero').value.trim();
-            
-            if (!username) {
-                alert('Inserisci l\'username da recuperare');
-                return;
-            }
-            
-            if (!motivo) {
-                alert('Inserisci il motivo della richiesta');
-                return;
-            }
-            
-            // Simula invio email (in un sistema reale invierebbe email a giacomo@pericar.it)
-            const emailBody = `
-RICHIESTA RECUPERO PASSWORD - SISTEMA PERICAR
-
-Username da recuperare: ${username}
-Data richiesta: ${new Date().toLocaleString('it-IT')}
-Motivo: ${motivo}
-
-Per autorizzare il recupero, rispondere a questa email con la nuova password temporanea.
-
-Sistema di Gestione PERICAR
-            `.trim();
-            
-            // Crea link mailto
-            const mailtoLink = `mailto:giacomo@pericar.it?subject=RECUPERO PASSWORD SISTEMA PERICAR - ${username}&body=${encodeURIComponent(emailBody)}`;
-            
-            // Apri client email
-            window.location.href = mailtoLink;
-            
-            alert('Richiesta inviata! Controlla la tua email per aprire il client di posta e inviare la richiesta a giacomo@pericar.it');
-            chiudiModalRecupero();
-        }
-
-        // CAMBIO PASSWORD
-        function mostraCambioPassword() {
-            document.getElementById('modalCambioPassword').style.display = 'block';
-        }
-
-        function chiudiModalCambio() {
-            document.getElementById('modalCambioPassword').style.display = 'none';
-            document.getElementById('usernameCambio').value = '';
-            document.getElementById('passwordAttuale').value = '';
-            document.getElementById('nuovaPassword').value = '';
-            document.getElementById('confermaNuovaPassword').value = '';
-        }
-
-        function cambiaPassword() {
-            const username = document.getElementById('usernameCambio').value.trim();
-            const passwordAttuale = document.getElementById('passwordAttuale').value;
-            const nuovaPassword = document.getElementById('nuovaPassword').value;
-            const confermaPassword = document.getElementById('confermaNuovaPassword').value;
-            
-            if (!username || !passwordAttuale || !nuovaPassword || !confermaPassword) {
-                alert('Compila tutti i campi');
-                return;
-            }
-            
-            if (!utenti[username] || utenti[username] !== passwordAttuale) {
-                alert('Username o password attuale non corretti');
-                return;
-            }
-            
-            if (nuovaPassword.length < 6) {
-                alert('La nuova password deve essere di almeno 6 caratteri');
-                return;
-            }
-            
-            if (nuovaPassword !== confermaPassword) {
-                alert('Le password non coincidono');
-                return;
-            }
-            
-            // Nota: In un sistema reale, le password sarebbero salvate in un database sicuro
-            // Qui mostriamo solo un messaggio informativo
-            alert(`⚠️ ATTENZIONE: Per motivi di sicurezza, il cambio password deve essere effettuato dall'amministratore di sistema.
-
-Contatta giacomo@pericar.it per richiedere il cambio password per l'utente: ${username}
-
-Nuova password richiesta: ${nuovaPassword}`);
-            
-            chiudiModalCambio();
-        }
 
         // Gestione tab
         function showTab(tabName) {
@@ -1408,8 +1032,47 @@ Nuova password richiesta: ${nuovaPassword}`);
             event.target.classList.add('active');
         }
 
+        // FUNZIONI CARICAMENTO DA SUPABASE
+        async function caricaClienti() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('clienti')
+                    .select('*')
+                    .order('id', { ascending: true });
+                
+                if (error) {
+                    console.error('Errore caricamento clienti:', error);
+                    clienti = [];
+                } else {
+                    clienti = data || [];
+                }
+            } catch (err) {
+                console.error('Errore connessione clienti:', err);
+                clienti = [];
+            }
+        }
+
+        async function caricaContratti() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('contratti')
+                    .select('*')
+                    .order('id', { ascending: true });
+                
+                if (error) {
+                    console.error('Errore caricamento contratti:', error);
+                    contratti = [];
+                } else {
+                    contratti = data || [];
+                }
+            } catch (err) {
+                console.error('Errore connessione contratti:', err);
+                contratti = [];
+            }
+        }
+
         // GESTIONE CLIENTI
-        function aggiungiCliente() {
+        async function aggiungiCliente() {
             const nome = document.getElementById('nomeCliente').value;
             const dataNascita = document.getElementById('dataNascita').value;
             const luogoNascita = document.getElementById('luogoNascita').value;
@@ -1436,8 +1099,23 @@ Nuova password richiesta: ${nuovaPassword}`);
                 email
             };
 
-            clienti.push(cliente);
-            salvaClienti();
+            // Salva su Supabase
+            const { data, error } = await supabaseClient
+                .from('clienti')
+                .insert([cliente])
+                .select();
+
+            if (error) {
+                console.error('Errore salvataggio cliente:', error);
+                alert('❌ Errore nel salvataggio del cliente');
+                return;
+            }
+
+            // Aggiorna array locale con i dati restituiti da Supabase
+            if (data && data.length > 0) {
+                clienti.push(data[0]);
+            }
+            
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectClienti();
@@ -1492,7 +1170,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         }
 
         // GESTIONE AUTO
-        function aggiungiAuto() {
+        async function aggiungiAuto() {
             const marca = document.getElementById('marca').value;
             const modello = document.getElementById('modello').value;
             const versione = document.getElementById('versione').value;
@@ -1537,7 +1215,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             };
 
             auto.push(autoObj);
-            salvaAuto();
+            await salvaAuto();
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectAuto();
@@ -1566,7 +1244,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         }
 
         // GESTIONE CONTRATTI
-        function creaContratto() {
+        async function creaContratto() {
             const clienteId = document.getElementById('clienteContratto').value;
             const autoId = document.getElementById('autoContratto').value;
             const dataContratto = document.getElementById('dataContratto').value;
@@ -1644,13 +1322,27 @@ Nuova password richiesta: ${nuovaPassword}`);
                 }
             }
 
-            contratti.push(contratto);
+            // Salva contratto su Supabase
+            const { data: contrattoData, error: contrattoError } = await supabaseClient
+                .from('contratti')
+                .insert([contratto])
+                .select();
+
+            if (contrattoError) {
+                console.error('Errore salvataggio contratto:', contrattoError);
+                alert('❌ Errore nel salvataggio del contratto');
+                return;
+            }
+
+            // Aggiorna array locale
+            if (contrattoData && contrattoData.length > 0) {
+                contratti.push(contrattoData[0]);
+            }
             
             // Aggiorna stato auto venduta
             autoVenduta.stato = 'Venduta';
             
-            salvaContratti();
-            salvaAuto();
+            await salvaAuto();
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectAuto();
@@ -1879,7 +1571,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('modalModifica').style.display = 'block';
         }
 
-        function salvaModifica() {
+        async function salvaModifica() {
             if (!oggettoInModifica) return;
             
             // Aggiorna tutti i campi dell'oggetto
@@ -1893,12 +1585,22 @@ Nuova password richiesta: ${nuovaPassword}`);
                 }
             });
             
-            // Salva nel localStorage
+            // Salva su Supabase
             if (tipoOggettoInModifica === 'cliente') {
-                salvaClienti();
+                const { error } = await supabaseClient
+                    .from('clienti')
+                    .update(oggettoInModifica)
+                    .eq('id', oggettoInModifica.id);
+
+                if (error) {
+                    console.error('Errore aggiornamento cliente:', error);
+                    alert('❌ Errore nell\'aggiornamento del cliente');
+                    return;
+                }
+                
                 aggiornaSelectClienti();
             } else if (tipoOggettoInModifica === 'auto') {
-                salvaAuto();
+                await salvaAuto();
                 aggiornaSelectAuto();
             }
             
@@ -1952,27 +1654,39 @@ Nuova password richiesta: ${nuovaPassword}`);
         }
 
         // ELIMINAZIONE
-        function eliminaCliente(id) {
+        async function eliminaCliente(id) {
             if (confirm('Sei sicuro di voler eliminare questo cliente?')) {
+                // Elimina da Supabase
+                const { error } = await supabaseClient
+                    .from('clienti')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Errore eliminazione cliente:', error);
+                    alert('❌ Errore nell\'eliminazione del cliente');
+                    return;
+                }
+
+                // Aggiorna array locale
                 clienti = clienti.filter(c => c.id != id);
-                salvaClienti();
                 aggiornaTabelle();
                 aggiornaStatistiche();
                 aggiornaSelectClienti();
             }
         }
 
-        function eliminaAuto(id) {
+        async function eliminaAuto(id) {
             if (confirm('Sei sicuro di voler eliminare questa auto?')) {
                 auto = auto.filter(a => a.id != id);
-                salvaAuto();
+                await salvaAuto();
                 aggiornaTabelle();
                 aggiornaStatistiche();
                 aggiornaSelectAuto();
             }
         }
 
-        function eliminaContratto(id) {
+        async function eliminaContratto(id) {
             if (confirm('Sei sicuro di voler eliminare questo contratto?')) {
                 const contratto = contratti.find(c => c.id == id);
                 if (contratto) {
@@ -1988,11 +1702,23 @@ Nuova password richiesta: ${nuovaPassword}`);
                         console.log('Permuta rimossa dallo stock automaticamente');
                     }
                     
-                    salvaAuto();
+                    await salvaAuto();
                 }
                 
+                // Elimina da Supabase
+                const { error } = await supabaseClient
+                    .from('contratti')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Errore eliminazione contratto:', error);
+                    alert('❌ Errore nell\'eliminazione del contratto');
+                    return;
+                }
+
+                // Aggiorna array locale
                 contratti = contratti.filter(c => c.id != id);
-                salvaContratti();
                 aggiornaTabelle();
                 aggiornaStatistiche();
                 aggiornaSelectAuto();
@@ -2757,17 +2483,21 @@ Nuova password richiesta: ${nuovaPassword}`);
             alert('Contratto caricato per la modifica. Modifica i dati e clicca "Crea Contratto" per salvare.');
         }
 
-        // SALVATAGGIO DATI
-        function salvaClienti() {
-            localStorage.setItem('clienti', JSON.stringify(clienti));
-        }
-
-        function salvaAuto() {
-            localStorage.setItem('auto', JSON.stringify(auto));
-        }
-
-        function salvaContratti() {
-            localStorage.setItem('contratti', JSON.stringify(contratti));
+        // SALVATAGGIO DATI SU SUPABASE
+        async function salvaAuto() {
+            try {
+                const { error } = await supabaseClient
+                    .from('auto')
+                    .upsert(auto, { onConflict: 'id' });
+                
+                if (error) {
+                    console.error('Errore salvataggio auto:', error);
+                    throw error;
+                }
+            } catch (err) {
+                console.error('Errore connessione salvataggio auto:', err);
+                throw err;
+            }
         }
 
         // GESTIONE SPESE AUTO
@@ -2804,7 +2534,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('modalSpese').style.display = 'block';
         }
 
-        function aggiungiSpesa() {
+        async function aggiungiSpesa() {
             if (!autoCorrente) return;
             
             const data = document.getElementById('dataSpesa').value;
@@ -2827,7 +2557,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             };
             
             autoCorrente.speseAggiuntive.push(spesa);
-            salvaAuto();
+            await salvaAuto();
             aggiornaTabellaSpese();
             aggiornaTabelle();
             aggiornaStatistiche();
@@ -3190,13 +2920,36 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('modalDettaglioMargine').style.display = 'none';
         }
 
+        async function caricaAuto() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('auto')
+                    .select('*')
+                    .order('id', { ascending: true });
+                
+                if (error) {
+                    console.error('Errore caricamento auto:', error);
+                    auto = [];
+                } else {
+                    auto = data || [];
+                }
+            } catch (err) {
+                console.error('Errore connessione auto:', err);
+                auto = [];
+            }
+        }
+
+        async function salvaAuto() {
+            const { error } = await supabaseClient.from('auto').upsert(auto, { onConflict: 'id' });
+            if (error) console.error('Errore salvataggio auto:', error);
+        }
+
         // Chiudi modal cliccando fuori
         window.onclick = function(event) {
             const modalModifica = document.getElementById('modalModifica');
             const modalContratto = document.getElementById('modalContratto');
             const modalSpese = document.getElementById('modalSpese');
-            const modalRecupero = document.getElementById('modalRecuperoPassword');
-            const modalCambio = document.getElementById('modalCambioPassword');
+
             const modalDettaglioMargine = document.getElementById('modalDettaglioMargine');
             
             if (event.target == modalModifica) {
@@ -3208,16 +2961,11 @@ Nuova password richiesta: ${nuovaPassword}`);
             if (event.target == modalSpese) {
                 chiudiModalSpese();
             }
-            if (event.target == modalRecupero) {
-                chiudiModalRecupero();
-            }
-            if (event.target == modalCambio) {
-                chiudiModalCambio();
-            }
+
             if (event.target == modalDettaglioMargine) {
                 chiudiModalDettaglioMargine();
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bffc6bd34ebad9',t:'MTc1NDY2NjMwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e11e0315785602',t:'MTc1NTAxMzcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
