@@ -5,7 +5,38 @@
   const SUPABASE_URL = 'https://fcfeylrovatqvskbfyem.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZmV5bHJvdmF0cXZza2JmeWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzY4MzQsImV4cCI6MjA3MDM1MjgzNH0.ZoxNn-GBy2D84fOUdgmjgP9A_6PKf1cHAFR8uQTavx8';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  <script>
+ <script>
+  let currentUser = null;
+
+  supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    currentUser = session?.user || null;
+    document.getElementById('authBox').style.display = currentUser ? 'none' : 'block';
+    document.getElementById('mainSystem').style.display = currentUser ? 'block' : 'none';
+    if (currentUser) {
+      await mostraSistema(); // ricarica dati dopo login
+    }
+  });
+
+  async function emailSignIn(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) alert('Login fallito: ' + error.message);
+  }
+
+  async function emailSignUp(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) alert('Registrazione fallita: ' + error.message);
+    else alert('Registrato. Ora effettua il login.');
+  }
+
+  async function signOut(){
+    await supabaseClient.auth.signOut();
+  }
+</script>
+
   let currentUser = null;
 
   supabaseClient.auth.onAuthStateChange(async (_event, session) => {
@@ -3016,4 +3047,5 @@ async function salvaAuto() {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e11e0315785602',t:'MTc1NTAxMzcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
