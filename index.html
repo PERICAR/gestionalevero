@@ -3224,23 +3224,54 @@ Nuova password richiesta: ${nuovaPassword}`);
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // 🔹 Config Firestore — QUI ci metti il tuo firebaseConfig
+  // -- CONFIG FIREBASE (la tua) --
   const firebaseConfig = {
-    apiKey: "TUO_API_KEY",
-    authDomain: "TUO_AUTH_DOMAIN",
-    projectId: "TUO_PROJECT_ID",
-    storageBucket: "TUO_BUCKET",
-    messagingSenderId: "TUO_SENDER_ID",
-    appId: "TUO_APP_ID"
+    apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
+    authDomain: "gestionale-pericar.firebaseapp.com",
+    projectId: "gestionale-pericar",
+    storageBucket: "gestionale-pericar.firebasestorage.app",
+    messagingSenderId: "595124490704",
+    appId: "1:595124490704:web:af46e4f701262bcbf8e9d5"
   };
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Raccolte gestite
-  const KEYS = ["clienti", "auto", "contratti"];
+  const KEYS = ["clienti","auto","contratti"];
+  const VERSION = "v3";  // bumpa se fai altre modifiche
 
+  async function fetchCollectionToLocal(key){
+    const snap = await getDocs(collection(db, key));
+    const arr = snap.docs.map(d => d.data());
+    localStorage.setItem(key, JSON.stringify(Array.isArray(arr) ? arr : []));
+  }
+
+  async function initialSync(){
+    try {
+      // svuota solo le chiavi del gestionale
+      KEYS.forEach(k => localStorage.removeItem(k));
+      await Promise.all(KEYS.map(fetchCollectionToLocal));
+      localStorage.setItem("_lastSync", new Date().toISOString());
+      localStorage.setItem("_syncedOnce","1");
+      // ricarica una volta per far leggere i dati appena messi
+      location.reload();
+    } catch(e){ console.warn("Initial sync failed", e); }
+  }
+
+  // forza resync se è una nuova versione o primo avvio
+  const needVersionBump = localStorage.getItem("_appVersion") !== VERSION;
+  const firstRun = !localStorage.getItem("_syncedOnce");
+  if (needVersionBump) {
+    KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem("_appVersion", VERSION);
+  }
+  if (needVersionBump || firstRun) {
+    initialSync();
+  }
+
+  // write-through + DELETE in Firestore
   const realSetItem = localStorage.setItem.bind(localStorage);
-  localStorage.setItem = function(key, value) {
+  localStorage.setItem = function(key, value){
     realSetItem(key, value);
     if (!KEYS.includes(key)) return;
 
@@ -3249,7 +3280,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         const arr = JSON.parse(value);
         if (!Array.isArray(arr)) return;
 
-        // Salvataggio/aggiornamento
+        // upsert
         const wantedIds = new Set();
         for (let i = 0; i < arr.length; i++) {
           const obj = arr[i] ?? {};
@@ -3258,24 +3289,18 @@ Nuova password richiesta: ${nuovaPassword}`);
           await setDoc(doc(db, key, id), obj);
         }
 
-        // Eliminazione di ciò che non è più presente
+        // delete dei doc non più presenti
         const snap = await getDocs(collection(db, key));
         const deletes = [];
-        snap.forEach(d => {
-          if (!wantedIds.has(d.id)) {
-            deletes.push(deleteDoc(doc(db, key, d.id)));
-          }
-        });
+        snap.forEach(d => { if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id))); });
         await Promise.all(deletes);
-
-      } catch (e) {
-        console.warn("Sync Firestore fallita:", key, e);
-      }
+      } catch(e){ console.warn("Cloud sync error:", key, e); }
     })();
   };
 </script>
 </body>
 </html>
+
 
 
 
