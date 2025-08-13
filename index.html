@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Gestione Concessionaria PERICAR</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -375,57 +374,149 @@
             width: auto;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #1e40af;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        /* STILI LOGIN */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            padding: 20px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
         }
 
-        .connection-status {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            padding: 8px 15px;
-            border-radius: 6px;
-            display: inline-block;
+        .login-header h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 2rem;
         }
 
-        .status-connecting {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
+        .login-header p {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
         }
 
-        .status-connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .login-form {
+            text-align: left;
         }
 
-        .status-offline {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .login-form .form-group {
+            margin-bottom: 25px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 20px 0;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-links a {
+            display: block;
+            color: #1e40af;
+            text-decoration: none;
+            margin: 8px 0;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .login-links a:hover {
+            color: #1e3a8a;
+            text-decoration: underline;
+        }
+
+        .header {
+            position: relative;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 80px; width: auto; margin-bottom: 15px;">
-            <p>Sistema di Gestione Concessionaria - Corso Casale 99, Asti</p>
-            <div id="connectionStatus" class="connection-status status-connecting">
-                <span class="loading"></span> Connessione al database...
+        <!-- SCHERMATA LOGIN -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 100px; width: auto; margin-bottom: 20px;">
+                    <h1>ACCESSO SISTEMA</h1>
+                    <p>Sistema di Gestione Concessionaria</p>
+                </div>
+                
+                <div class="login-form">
+                    <div class="form-group">
+                        <label>👤 Username</label>
+                        <input type="text" id="loginUsername" placeholder="Inserisci username" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label>🔒 Password</label>
+                        <input type="password" id="loginPassword" placeholder="Inserisci password" autocomplete="current-password">
+                    </div>
+                    
+                    <button class="btn btn-primary login-btn" onclick="effettuaLogin()">🔓 ACCEDI</button>
+                    
+                    <div class="login-links">
+                        <a href="#" onclick="mostraRecuperoPassword()">🔑 Password dimenticata?</a>
+                        <a href="#" onclick="mostraCambioPassword()">🔧 Cambia password</a>
+                    </div>
+                </div>
+                
+                <div id="loginError" class="alert alert-danger" style="display: none; margin-top: 15px;"></div>
+                <div id="loginSuccess" class="alert alert-success" style="display: none; margin-top: 15px;"></div>
             </div>
         </div>
+
+        <!-- SISTEMA PRINCIPALE (nascosto inizialmente) -->
+        <div id="mainSystem" style="display: none;">
+            <div class="header">
+                <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 80px; width: auto; margin-bottom: 15px;">
+                <p>Sistema di Gestione Concessionaria - Corso Casale 99, Asti</p>
+                <div style="position: absolute; top: 20px; right: 20px;">
+                    <span style="color: #666; margin-right: 15px;">👤 <span id="utenteLoggato"></span></span>
+                    <button class="btn btn-danger" onclick="effettuaLogout()" style="padding: 8px 15px; font-size: 0.9rem;">🚪 Esci</button>
+                </div>
+            </div>
 
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="showTab('clienti')">👥 Clienti</button>
@@ -438,7 +529,7 @@
         <div id="clienti" class="tab-content active">
             <h2>Gestione Clienti</h2>
             
-            <!-- FORM AGGIUNTA CLIENTE -->
+            <!-- FORM AGGIUNTA CLIENTE (nascosto inizialmente) -->
             <div id="formAggiungiCliente" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuovo Cliente</h3>
@@ -447,8 +538,8 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nome e Cognome *</label>
-                        <input type="text" id="nomeCliente" placeholder="Mario Rossi" required>
+                        <label>Nome e Cognome</label>
+                        <input type="text" id="nomeCliente" placeholder="Mario Rossi">
                     </div>
                     <div class="form-group">
                         <label>Data di Nascita</label>
@@ -464,15 +555,15 @@
                     </div>
                     <div class="form-group">
                         <label>Codice Fiscale</label>
-                        <input type="text" id="codiceFiscale" placeholder="RSSMRA80A01L219K" style="text-transform: uppercase;">
+                        <input type="text" id="codiceFiscale" placeholder="RSSMRA80A01L219K">
                     </div>
                     <div class="form-group">
                         <label>Professione</label>
                         <input type="text" id="professione" placeholder="Impiegato">
                     </div>
                     <div class="form-group">
-                        <label>Telefono *</label>
-                        <input type="text" id="telefono" placeholder="+39 333 1234567" required>
+                        <label>Telefono</label>
+                        <input type="text" id="telefono" placeholder="+39 333 1234567">
                     </div>
                     <div class="form-group">
                         <label>Email</label>
@@ -513,33 +604,33 @@
         <div id="auto" class="tab-content">
             <h2>Gestione Auto in Stock</h2>
             
-            <!-- FORM AGGIUNTA AUTO -->
+            <!-- FORM AGGIUNTA AUTO (nascosto inizialmente) -->
             <div id="formAggiungiAuto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuova Auto</h3>
                     <button class="btn btn-danger" onclick="chiudiFormAuto()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Marca *</label>
-                        <input type="text" id="marca" placeholder="BMW" required>
+                        <label>Marca</label>
+                        <input type="text" id="marca" placeholder="BMW">
                     </div>
                     <div class="form-group">
-                        <label>Modello *</label>
-                        <input type="text" id="modello" placeholder="Serie 3" required>
+                        <label>Modello</label>
+                        <input type="text" id="modello" placeholder="Serie 3">
                     </div>
                     <div class="form-group">
                         <label>Versione</label>
                         <input type="text" id="versione" placeholder="320d xDrive">
                     </div>
                     <div class="form-group">
-                        <label>Targa *</label>
-                        <input type="text" id="targa" placeholder="AB123CD" style="text-transform: uppercase;" required>
+                        <label>Targa</label>
+                        <input type="text" id="targa" placeholder="AB123CD">
                     </div>
                     <div class="form-group">
                         <label>Telaio</label>
-                        <input type="text" id="telaio" placeholder="WBA123456789" style="text-transform: uppercase;">
+                        <input type="text" id="telaio" placeholder="WBA123456789">
                     </div>
                     <div class="form-group">
                         <label>Data Immatricolazione</label>
@@ -547,15 +638,15 @@
                     </div>
                     <div class="form-group">
                         <label>Chilometri</label>
-                        <input type="number" id="chilometri" placeholder="50000" min="0">
+                        <input type="number" id="chilometri" placeholder="50000">
                     </div>
                     <div class="form-group">
                         <label>Prezzo di Acquisto (€)</label>
-                        <input type="number" id="prezzoAcquisto" placeholder="25000" min="0" step="0.01">
+                        <input type="number" id="prezzoAcquisto" placeholder="25000">
                     </div>
                     <div class="form-group">
                         <label>Prezzo di Vendita (€)</label>
-                        <input type="number" id="prezzoVendita" placeholder="28000" min="0" step="0.01">
+                        <input type="number" id="prezzoVendita" placeholder="28000">
                     </div>
                 </div>
 
@@ -568,7 +659,7 @@
                         </div>
                         <div class="form-group">
                             <label>Importo (€)</label>
-                            <input type="number" id="importoCostoAuto" placeholder="500" min="0" step="0.01">
+                            <input type="number" id="importoCostoAuto" placeholder="500">
                         </div>
                         <div class="form-group">
                             <label>&nbsp;</label>
@@ -643,7 +734,7 @@
         <div id="contratti" class="tab-content">
             <h2>Gestione Contratti</h2>
             
-            <!-- FORM CREAZIONE CONTRATTO -->
+            <!-- FORM CREAZIONE CONTRATTO (nascosto inizialmente) -->
             <div id="formAggiungiContratto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; color: #1e40af;">📋 Crea Nuovo Contratto</h3>
@@ -652,20 +743,20 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Cliente *</label>
-                        <select id="clienteContratto" required>
+                        <label>Cliente</label>
+                        <select id="clienteContratto">
                             <option value="">Seleziona Cliente</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Auto da Vendere *</label>
-                        <select id="autoContratto" required>
+                        <label>Auto da Vendere</label>
+                        <select id="autoContratto">
                             <option value="">Seleziona Auto</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Data Contratto *</label>
-                        <input type="date" id="dataContratto" required>
+                        <label>Data Contratto</label>
+                        <input type="date" id="dataContratto">
                     </div>
                     <div class="form-group">
                         <label>Luogo</label>
@@ -685,11 +776,11 @@
                     </div>
                     <div class="form-group">
                         <label>Targa Permuta</label>
-                        <input type="text" id="targaPermuta" placeholder="EF456GH" style="text-transform: uppercase;">
+                        <input type="text" id="targaPermuta" placeholder="EF456GH">
                     </div>
                     <div class="form-group">
                         <label>Telaio Permuta</label>
-                        <input type="text" id="telaioPermuta" placeholder="ZFA123456789" style="text-transform: uppercase;">
+                        <input type="text" id="telaioPermuta" placeholder="ZFA123456789">
                     </div>
                     <div class="form-group">
                         <label>Data Immatricolazione Permuta</label>
@@ -697,7 +788,7 @@
                     </div>
                     <div class="form-group">
                         <label>Km Permuta</label>
-                        <input type="number" id="chilometriPermuta" placeholder="80000" min="0">
+                        <input type="number" id="chilometriPermuta" placeholder="80000">
                     </div>
                     <div class="form-group">
                         <label>Versione Permuta</label>
@@ -705,7 +796,7 @@
                     </div>
                     <div class="form-group">
                         <label>Valutazione Permuta (€)</label>
-                        <input type="number" id="valutazionePermuta" placeholder="8000" min="0" step="0.01">
+                        <input type="number" id="valutazionePermuta" placeholder="8000">
                     </div>
                 </div>
 
@@ -713,14 +804,14 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Deposito Cauzionale (€)</label>
-                        <input type="number" id="depositoCauzionale" placeholder="1000" min="0" step="0.01">
+                        <input type="number" id="depositoCauzionale" placeholder="1000">
                     </div>
                     <div class="form-group">
                         <label>Spese Voltura/Minivoltura (€)</label>
-                        <input type="number" id="speseVoltura" placeholder="350" min="0" step="0.01">
+                        <input type="number" id="speseVoltura" placeholder="350">
                     </div>
                     <div class="form-group">
-                        <label>Canale di Vendita</label>
+                        <label>Canale di Vendita (interno)</label>
                         <select id="canaleVendita">
                             <option value="Autoscout">Autoscout</option>
                             <option value="Subito">Subito</option>
@@ -736,15 +827,15 @@
                     <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                         <div class="form-group">
                             <label>Prezzo Base Auto (€)</label>
-                            <input type="number" id="prezzoBaseAuto" readonly style="background: #e9ecef; font-weight: bold;" step="0.01">
+                            <input type="number" id="prezzoBaseAuto" readonly style="background: #e9ecef; font-weight: bold;">
                         </div>
                         <div class="form-group">
                             <label>Sconto Applicato (€)</label>
-                            <input type="number" id="scontoApplicato" placeholder="0" onchange="calcolaPrezzoFinale()" min="0" step="0.01">
+                            <input type="number" id="scontoApplicato" placeholder="0" onchange="calcolaPrezzoFinale()">
                         </div>
                         <div class="form-group">
                             <label>Prezzo Finale Auto (€)</label>
-                            <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;" min="0" step="0.01">
+                            <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;">
                         </div>
                     </div>
                     <div style="margin-top: 10px; padding: 8px; background: #d1ecf1; border-radius: 6px; font-size: 0.9rem;">
@@ -761,7 +852,7 @@
                         </div>
                         <div class="form-group">
                             <label>Prezzo (€)</label>
-                            <input type="number" id="prezzoExtra" placeholder="500" min="0" step="0.01">
+                            <input type="number" id="prezzoExtra" placeholder="500">
                         </div>
                         <div class="form-group">
                             <label>&nbsp;</label>
@@ -812,11 +903,11 @@
                     <p>Auto in Stock</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="totaleContratti">0</h3>
+                    <h3 id="totaleContratti">21</h3>
                     <p>Contratti Firmati</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="fatturatoTotale">€0</h3>
+                    <h3 id="fatturatoTotale">€132.020</h3>
                     <p>Fatturato Totale</p>
                 </div>
                 <div class="stat-card">
@@ -824,8 +915,8 @@
                     <p>Valore Stock Presente</p>
                 </div>
                 <div class="stat-card">
-                    <h3 id="margineComplessivo">€0</h3>
-                    <p>Margine Complessivo</p>
+                    <h3 id="mediaVendite">4.0</h3>
+                    <p>Media Auto/Mese</p>
                 </div>
             </div>
 
@@ -834,10 +925,8 @@
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
 
-            <div class="contract-preview">
-                <h3>📈 Andamento Vendite Mensili</h3>
-                <div id="graficoVendite" style="margin-top: 20px;"></div>
-            </div>
+
+        </div>
         </div>
     </div>
 
@@ -852,6 +941,7 @@
                 <button class="btn btn-danger" onclick="chiudiModal()">❌ Annulla</button>
             </div>
         </div>
+        </div>
     </div>
 
     <!-- MODAL CONTRATTO -->
@@ -862,6 +952,48 @@
             <div style="margin-top: 20px; text-align: center;">
                 <button class="btn btn-primary" onclick="stampaContratto()">🖨️ Stampa Contratto</button>
                 <button class="btn btn-danger" onclick="chiudiModalContratto()">❌ Chiudi</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIONE COSTI AUTO -->
+    <div id="modalCostiAuto" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="chiudiModalCostiAuto()">&times;</span>
+            <h2 id="titoloCostiAuto">Gestione Costi Auto</h2>
+            
+            <div id="infoAutoCosti" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+            
+            <h3>Aggiungi Nuovo Costo</h3>
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="form-group">
+                    <label>Descrizione Costo</label>
+                    <input type="text" id="descrizioneCostoModal" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">
+                </div>
+                <div class="form-group">
+                    <label>Importo (€)</label>
+                    <input type="number" id="importoCostoModal" placeholder="500">
+                </div>
+            </div>
+            
+            <button class="btn btn-success" onclick="aggiungiCostoModal()">➕ Aggiungi Costo</button>
+            
+            <h3 style="margin-top: 30px;">Costi Registrati</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Descrizione</th>
+                        <th>Importo</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaCostiAuto"></tbody>
+            </table>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-success" onclick="salvaCostiAuto()">💾 Salva Modifiche</button>
+                <button class="btn btn-danger" onclick="chiudiModalCostiAuto()">❌ Chiudi</button>
             </div>
         </div>
     </div>
@@ -882,7 +1014,7 @@
                 </div>
                 <div class="form-group">
                     <label>Importo (€)</label>
-                    <input type="number" id="importoSpesa" placeholder="150" min="0" step="0.01">
+                    <input type="number" id="importoSpesa" placeholder="150">
                 </div>
                 <div class="form-group">
                     <label>Categoria</label>
@@ -894,6 +1026,7 @@
                         <option value="Revisione">Revisione</option>
                         <option value="Bollo">Bollo</option>
                         <option value="Assicurazione">Assicurazione</option>
+                        <option value="Costo Iniziale">Costo Iniziale</option>
                         <option value="Altro">Altro</option>
                     </select>
                 </div>
@@ -925,6 +1058,83 @@
         </div>
     </div>
 
+    <!-- MODAL RECUPERO PASSWORD -->
+    <div id="modalRecuperoPassword" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="chiudiModalRecupero()">&times;</span>
+            <h2>🔑 Recupero Password</h2>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #856404;">
+                    <strong>⚠️ Attenzione:</strong> Per motivi di sicurezza, il recupero password richiede la conferma dell'account master.
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label>👤 Username da recuperare</label>
+                <input type="text" id="usernameRecupero" placeholder="Inserisci username">
+            </div>
+            
+            <div class="form-group">
+                <label>📧 Email di conferma</label>
+                <input type="email" id="emailRecupero" placeholder="giacomo@pericar.it" readonly value="giacomo@pericar.it" style="background: #f8f9fa;">
+            </div>
+            
+            <div class="form-group">
+                <label>📝 Motivo della richiesta</label>
+                <textarea id="motivoRecupero" placeholder="Descrivi brevemente il motivo della richiesta di recupero password..." style="min-height: 80px;"></textarea>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-primary" onclick="inviaRichiestaRecupero()">📧 Invia Richiesta</button>
+                <button class="btn btn-danger" onclick="chiudiModalRecupero()">❌ Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIO PASSWORD -->
+    <div id="modalCambioPassword" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="chiudiModalCambio()">&times;</span>
+            <h2>🔧 Cambio Password</h2>
+            
+            <div class="form-group">
+                <label>👤 Username</label>
+                <input type="text" id="usernameCambio" placeholder="Inserisci username">
+            </div>
+            
+            <div class="form-group">
+                <label>🔒 Password attuale</label>
+                <input type="password" id="passwordAttuale" placeholder="Inserisci password attuale">
+            </div>
+            
+            <div class="form-group">
+                <label>🔑 Nuova password</label>
+                <input type="password" id="nuovaPassword" placeholder="Inserisci nuova password">
+            </div>
+            
+            <div class="form-group">
+                <label>🔑 Conferma nuova password</label>
+                <input type="password" id="confermaNuovaPassword" placeholder="Conferma nuova password">
+            </div>
+            
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <p style="margin: 0; color: #0c5460; font-size: 0.9rem;">
+                    <strong>💡 Suggerimenti per una password sicura:</strong><br>
+                    • Almeno 8 caratteri<br>
+                    • Combina lettere maiuscole e minuscole<br>
+                    • Includi numeri e simboli<br>
+                    • Evita parole comuni o dati personali
+                </p>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-success" onclick="cambiaPassword()">💾 Cambia Password</button>
+                <button class="btn btn-danger" onclick="chiudiModalCambio()">❌ Annulla</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETTAGLIO MARGINE -->
     <div id="modalDettaglioMargine" class="modal">
         <div class="modal-content" style="max-width: 600px;">
@@ -948,65 +1158,63 @@
     </div>
 
     <script>
-        // ✅ CREDENZIALI SUPABASE CONFIGURATE
-        const SUPABASE_URL = 'https://fcfeylrovatqvskbfyem.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjZmV5bHJvdmF0cXZza2JmeWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzY4MzQsImV4cCI6MjA3MDM1MjgzNH0.ZoxNn-GBy2D84fOUdgmjgP9A_6PKf1cHAFR8uQTavx8';
-        
-        // Inizializza Supabase
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         // Dati globali
-        let clienti = [];
-        let auto = [];
-        let contratti = [];
+        let clienti = JSON.parse(localStorage.getItem('clienti')) || [];
+        let auto = JSON.parse(localStorage.getItem('auto')) || [];
+        let contratti = JSON.parse(localStorage.getItem('contratti')) || [];
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
-        let extraItems = [];
-        let costiAutoItems = [];
-        let isConnected = false;
+        let extraItems = []; // Array per servizi/accessori aggiuntivi
+        let costiAutoItems = []; // Array per costi aggiuntivi auto
+        let utenteCorrente = null;
+
+        // Sistema di autenticazione
+        const utenti = {
+            'admin': 'pericar2024',
+            'giacomo': 'giacomo123',
+            'staff': 'staff2024'
+        };
 
         // Inizializzazione
-        document.addEventListener('DOMContentLoaded', async function() {
-            await inizializzaApp();
-        });
-
-        async function inizializzaApp() {
-            try {
-                // Testa la connessione con un timeout più breve
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Timeout connessione')), 3000)
-                );
-                
-                // Test di connessione semplice
-                const connectionPromise = supabaseClient
-                    .from('clienti')
-                    .select('count', { count: 'exact', head: true });
-                
-                const result = await Promise.race([connectionPromise, timeoutPromise]);
-                
-                if (result.error && result.error.code !== 'PGRST116') {
-                    throw result.error;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Controlla se l'utente è già loggato
+            const sessioneAttiva = localStorage.getItem('sessionePericar');
+            if (sessioneAttiva) {
+                const sessione = JSON.parse(sessioneAttiva);
+                const ora = new Date().getTime();
+                // Sessione valida per 8 ore (28800000 ms)
+                if (ora - sessione.timestamp < 28800000) {
+                    utenteCorrente = sessione.username;
+                    mostraSistema();
+                    return;
                 }
-                
-                isConnected = true;
-                document.getElementById('connectionStatus').className = 'connection-status status-connected';
-                document.getElementById('connectionStatus').innerHTML = '✅ Database connesso e sincronizzato';
-                
-                // Carica i dati
-                await caricaDatiSupabase();
-                
-            } catch (error) {
-                console.error('Errore connessione Supabase:', error);
-                isConnected = false;
-                document.getElementById('connectionStatus').className = 'connection-status status-offline';
-                document.getElementById('connectionStatus').innerHTML = '❌ Modalità offline - I dati sono salvati localmente';
-                
-                // Fallback a localStorage
-                caricaDatiLocali();
             }
             
-            // Aggiorna interfaccia
+            // Mostra schermata di login
+            mostraLogin();
+            
+            // Event listener per Enter nei campi login
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    effettuaLogin();
+                }
+            });
+        });
+
+        // SISTEMA DI LOGIN
+        function mostraLogin() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainSystem').style.display = 'none';
+            document.getElementById('loginUsername').focus();
+        }
+
+        function mostraSistema() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainSystem').style.display = 'block';
+            document.getElementById('utenteLoggato').textContent = utenteCorrente;
+            
+            // Inizializza il sistema
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectClienti();
@@ -1015,168 +1223,179 @@
             aggiornaListaCostiAuto();
             
             // Imposta data odierna
-            const oggi = new Date().toISOString().split('T')[0];
-            document.getElementById('dataContratto').value = oggi;
+            document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
+        }
+
+        function effettuaLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
             
-            // Event listener per aggiornare i prezzi quando si seleziona un'auto
-            const autoSelect = document.getElementById('autoContratto');
-            if (autoSelect) {
-                autoSelect.addEventListener('change', function() {
-                    const autoId = this.value;
-                    if (autoId) {
-                        const autoSelezionata = auto.find(a => a.id == autoId);
-                        if (autoSelezionata) {
-                            document.getElementById('prezzoBaseAuto').value = autoSelezionata.prezzo_vendita;
-                            document.getElementById('prezzoFinaleAuto').value = autoSelezionata.prezzo_vendita;
-                            document.getElementById('scontoApplicato').value = 0;
-                        }
-                    } else {
-                        document.getElementById('prezzoBaseAuto').value = '';
-                        document.getElementById('prezzoFinaleAuto').value = '';
-                        document.getElementById('scontoApplicato').value = '';
-                    }
-                });
-            }
-        }
-
-        // FUNZIONI SALVATAGGIO SUPABASE
-        async function caricaDatiSupabase() {
-            try {
-                // Carica clienti
-                const { data: clientiData, error: clientiError } = await supabaseClient
-                    .from('clienti')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (clientiError) throw clientiError;
-                clienti = clientiData || [];
-                
-                // Carica auto
-                const { data: autoData, error: autoError } = await supabaseClient
-                    .from('auto')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (autoError) throw autoError;
-                auto = autoData || [];
-                
-                // Carica contratti
-                const { data: contrattiData, error: contrattiError } = await supabaseClient
-                    .from('contratti')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (contrattiError) throw contrattiError;
-                contratti = contrattiData || [];
-                
-                console.log('✅ Dati caricati da Supabase:', {
-                    clienti: clienti.length,
-                    auto: auto.length,
-                    contratti: contratti.length
-                });
-                
-            } catch (error) {
-                console.error('❌ Errore caricamento da Supabase:', error);
-                throw error;
-            }
-        }
-
-        async function salvaDatiSupabase() {
-            if (!isConnected) {
-                console.log('📱 Modalità offline - salvataggio su localStorage');
-                salvaDatiLocali();
+            if (!username || !password) {
+                mostraErroreLogin('Inserisci username e password');
                 return;
             }
             
-            try {
-                // Nota: In un'implementazione reale, dovresti salvare solo i record modificati
-                // Qui per semplicità salviamo tutto con upsert
+            if (utenti[username] && utenti[username] === password) {
+                utenteCorrente = username;
                 
-                console.log('💾 Sincronizzazione con Supabase...');
+                // Salva sessione
+                const sessione = {
+                    username: username,
+                    timestamp: new Date().getTime()
+                };
+                localStorage.setItem('sessionePericar', JSON.stringify(sessione));
                 
-                // Salva clienti
-                if (clienti.length > 0) {
-                    const { error: clientiError } = await supabaseClient
-                        .from('clienti')
-                        .upsert(clienti, { onConflict: 'id' });
-                    
-                    if (clientiError) throw clientiError;
-                }
+                mostraSuccessoLogin('Accesso effettuato con successo!');
+                setTimeout(() => {
+                    mostraSistema();
+                }, 1000);
+            } else {
+                mostraErroreLogin('Username o password non corretti');
                 
-                // Salva auto
-                if (auto.length > 0) {
-                    const { error: autoError } = await supabaseClient
-                        .from('auto')
-                        .upsert(auto, { onConflict: 'id' });
-                    
-                    if (autoError) throw autoError;
-                }
+                // Log del tentativo di accesso non autorizzato
+                console.warn(`Tentativo di accesso fallito per: ${username} - ${new Date().toLocaleString()}`);
+            }
+            
+            // Pulisci campi
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function effettuaLogout() {
+            if (confirm('Sei sicuro di voler uscire dal sistema?')) {
+                localStorage.removeItem('sessionePericar');
+                utenteCorrente = null;
                 
-                // Salva contratti
-                if (contratti.length > 0) {
-                    const { error: contrattiError } = await supabaseClient
-                        .from('contratti')
-                        .upsert(contratti, { onConflict: 'id' });
-                    
-                    if (contrattiError) throw contrattiError;
-                }
+                // Pulisci campi login
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
                 
-                console.log('✅ Dati sincronizzati con Supabase');
-                
-            } catch (error) {
-                console.error('❌ Errore sincronizzazione Supabase:', error);
-                // Fallback a localStorage
-                salvaDatiLocali();
-                
-                // Mostra notifica errore
-                mostrarNotifica('Errore sincronizzazione - Dati salvati localmente', 'warning');
+                mostraLogin();
             }
         }
 
-        // FUNZIONI SALVATAGGIO LOCALE (fallback)
-        function salvaDatiLocali() {
-            localStorage.setItem('pericar_clienti', JSON.stringify(clienti));
-            localStorage.setItem('pericar_auto', JSON.stringify(auto));
-            localStorage.setItem('pericar_contratti', JSON.stringify(contratti));
-            console.log('💾 Dati salvati in localStorage');
-        }
-
-        function caricaDatiLocali() {
-            const clientiSalvati = localStorage.getItem('pericar_clienti');
-            const autoSalvate = localStorage.getItem('pericar_auto');
-            const contrattiSalvati = localStorage.getItem('pericar_contratti');
+        function mostraErroreLogin(messaggio) {
+            const errorDiv = document.getElementById('loginError');
+            const successDiv = document.getElementById('loginSuccess');
             
-            clienti = clientiSalvati ? JSON.parse(clientiSalvati) : [];
-            auto = autoSalvate ? JSON.parse(autoSalvate) : [];
-            contratti = contrattiSalvati ? JSON.parse(contrattiSalvati) : [];
-            
-            console.log('📱 Dati caricati da localStorage:', {
-                clienti: clienti.length,
-                auto: auto.length,
-                contratti: contratti.length
-            });
-        }
-
-        // FUNZIONE NOTIFICHE
-        function mostrarNotifica(messaggio, tipo = 'success') {
-            const notifica = document.createElement('div');
-            notifica.className = `alert alert-${tipo}`;
-            notifica.style.position = 'fixed';
-            notifica.style.top = '20px';
-            notifica.style.right = '20px';
-            notifica.style.zIndex = '9999';
-            notifica.style.minWidth = '300px';
-            notifica.textContent = messaggio;
-            
-            document.body.appendChild(notifica);
+            successDiv.style.display = 'none';
+            errorDiv.textContent = messaggio;
+            errorDiv.style.display = 'block';
             
             setTimeout(() => {
-                notifica.remove();
-            }, 3000);
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function mostraSuccessoLogin(messaggio) {
+            const errorDiv = document.getElementById('loginError');
+            const successDiv = document.getElementById('loginSuccess');
+            
+            errorDiv.style.display = 'none';
+            successDiv.textContent = messaggio;
+            successDiv.style.display = 'block';
+        }
+
+        // RECUPERO PASSWORD
+        function mostraRecuperoPassword() {
+            document.getElementById('modalRecuperoPassword').style.display = 'block';
+        }
+
+        function chiudiModalRecupero() {
+            document.getElementById('modalRecuperoPassword').style.display = 'none';
+            document.getElementById('usernameRecupero').value = '';
+            document.getElementById('motivoRecupero').value = '';
+        }
+
+        function inviaRichiestaRecupero() {
+            const username = document.getElementById('usernameRecupero').value.trim();
+            const motivo = document.getElementById('motivoRecupero').value.trim();
+            
+            if (!username) {
+                alert('Inserisci l\'username da recuperare');
+                return;
+            }
+            
+            if (!motivo) {
+                alert('Inserisci il motivo della richiesta');
+                return;
+            }
+            
+            // Simula invio email (in un sistema reale invierebbe email a giacomo@pericar.it)
+            const emailBody = `
+RICHIESTA RECUPERO PASSWORD - SISTEMA PERICAR
+
+Username da recuperare: ${username}
+Data richiesta: ${new Date().toLocaleString('it-IT')}
+Motivo: ${motivo}
+
+Per autorizzare il recupero, rispondere a questa email con la nuova password temporanea.
+
+Sistema di Gestione PERICAR
+            `.trim();
+            
+            // Crea link mailto
+            const mailtoLink = `mailto:giacomo@pericar.it?subject=RECUPERO PASSWORD SISTEMA PERICAR - ${username}&body=${encodeURIComponent(emailBody)}`;
+            
+            // Apri client email
+            window.location.href = mailtoLink;
+            
+            alert('Richiesta inviata! Controlla la tua email per aprire il client di posta e inviare la richiesta a giacomo@pericar.it');
+            chiudiModalRecupero();
+        }
+
+        // CAMBIO PASSWORD
+        function mostraCambioPassword() {
+            document.getElementById('modalCambioPassword').style.display = 'block';
+        }
+
+        function chiudiModalCambio() {
+            document.getElementById('modalCambioPassword').style.display = 'none';
+            document.getElementById('usernameCambio').value = '';
+            document.getElementById('passwordAttuale').value = '';
+            document.getElementById('nuovaPassword').value = '';
+            document.getElementById('confermaNuovaPassword').value = '';
+        }
+
+        function cambiaPassword() {
+            const username = document.getElementById('usernameCambio').value.trim();
+            const passwordAttuale = document.getElementById('passwordAttuale').value;
+            const nuovaPassword = document.getElementById('nuovaPassword').value;
+            const confermaPassword = document.getElementById('confermaNuovaPassword').value;
+            
+            if (!username || !passwordAttuale || !nuovaPassword || !confermaPassword) {
+                alert('Compila tutti i campi');
+                return;
+            }
+            
+            if (!utenti[username] || utenti[username] !== passwordAttuale) {
+                alert('Username o password attuale non corretti');
+                return;
+            }
+            
+            if (nuovaPassword.length < 6) {
+                alert('La nuova password deve essere di almeno 6 caratteri');
+                return;
+            }
+            
+            if (nuovaPassword !== confermaPassword) {
+                alert('Le password non coincidono');
+                return;
+            }
+            
+            // Nota: In un sistema reale, le password sarebbero salvate in un database sicuro
+            // Qui mostriamo solo un messaggio informativo
+            alert(`⚠️ ATTENZIONE: Per motivi di sicurezza, il cambio password deve essere effettuato dall'amministratore di sistema.
+
+Contatta giacomo@pericar.it per richiedere il cambio password per l'utente: ${username}
+
+Nuova password richiesta: ${nuovaPassword}`);
+            
+            chiudiModalCambio();
         }
 
         // Gestione tab
         function showTab(tabName) {
+            // Nascondi tutti i tab
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1184,59 +1403,48 @@
                 tab.classList.remove('active');
             });
             
+            // Mostra tab selezionato
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
         }
 
         // GESTIONE CLIENTI
-        async function aggiungiCliente() {
-            const nome = document.getElementById('nomeCliente').value.trim();
+        function aggiungiCliente() {
+            const nome = document.getElementById('nomeCliente').value;
             const dataNascita = document.getElementById('dataNascita').value;
-            const luogoNascita = document.getElementById('luogoNascita').value.trim();
-            const residenza = document.getElementById('residenza').value.trim();
-            const codiceFiscale = document.getElementById('codiceFiscale').value.trim().toUpperCase();
-            const professione = document.getElementById('professione').value.trim();
-            const telefono = document.getElementById('telefono').value.trim();
-            const email = document.getElementById('emailCliente').value.trim();
+            const luogoNascita = document.getElementById('luogoNascita').value;
+            const residenza = document.getElementById('residenza').value;
+            const codiceFiscale = document.getElementById('codiceFiscale').value;
+            const professione = document.getElementById('professione').value;
+            const telefono = document.getElementById('telefono').value;
+            const email = document.getElementById('emailCliente').value;
 
             if (!nome || !telefono) {
-                mostrarNotifica('Nome e telefono sono obbligatori!', 'danger');
-                return;
-            }
-
-            // Verifica duplicati
-            const clienteEsistente = clienti.find(c => 
-                c.telefono === telefono || 
-                (codiceFiscale && c.codice_fiscale === codiceFiscale)
-            );
-            
-            if (clienteEsistente) {
-                mostrarNotifica('Cliente già esistente con questo telefono o codice fiscale!', 'danger');
+                alert('Nome e telefono sono obbligatori!');
                 return;
             }
 
             const cliente = {
                 id: Date.now(),
                 nome,
-                data_nascita: dataNascita || null,
-                luogo_nascita: luogoNascita || null,
-                residenza: residenza || null,
-                codice_fiscale: codiceFiscale || null,
-                professione: professione || null,
+                dataNascita,
+                luogoNascita,
+                residenza,
+                codiceFiscale,
+                professione,
                 telefono,
-                email: email || null,
-                created_at: new Date().toISOString()
+                email
             };
 
             clienti.push(cliente);
-            await salvaDatiSupabase();
+            salvaClienti();
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectClienti();
             pulisciFormCliente();
             chiudiFormCliente();
             
-            mostrarNotifica('✅ Cliente aggiunto con successo!', 'success');
+            alert('✅ Cliente aggiunto con successo!');
         }
 
         function pulisciFormCliente() {
@@ -1263,17 +1471,6 @@
 
         // GESTIONE FORM CONTRATTI
         function mostraFormContratto() {
-            if (clienti.length === 0) {
-                mostrarNotifica('Aggiungi almeno un cliente prima di creare un contratto!', 'warning');
-                return;
-            }
-            
-            const autoDisponibili = auto.filter(a => a.stato === 'Disponibile');
-            if (autoDisponibili.length === 0) {
-                mostrarNotifica('Nessuna auto disponibile per la vendita!', 'warning');
-                return;
-            }
-            
             document.getElementById('formAggiungiContratto').style.display = 'block';
             document.getElementById('formAggiungiContratto').scrollIntoView({ behavior: 'smooth' });
         }
@@ -1295,32 +1492,25 @@
         }
 
         // GESTIONE AUTO
-        async function aggiungiAuto() {
-            const marca = document.getElementById('marca').value.trim();
-            const modello = document.getElementById('modello').value.trim();
-            const versione = document.getElementById('versione').value.trim();
-            const targa = document.getElementById('targa').value.trim().toUpperCase();
-            const telaio = document.getElementById('telaio').value.trim().toUpperCase();
+        function aggiungiAuto() {
+            const marca = document.getElementById('marca').value;
+            const modello = document.getElementById('modello').value;
+            const versione = document.getElementById('versione').value;
+            const targa = document.getElementById('targa').value;
+            const telaio = document.getElementById('telaio').value;
             const dataImmatricolazione = document.getElementById('dataImmatricolazione').value;
-            const chilometri = parseInt(document.getElementById('chilometri').value) || 0;
+            const chilometri = document.getElementById('chilometri').value;
             const prezzoAcquisto = parseFloat(document.getElementById('prezzoAcquisto').value) || 0;
             const prezzoVendita = parseFloat(document.getElementById('prezzoVendita').value) || 0;
             const tipo = document.getElementById('tipoAuto').value;
             const stato = document.getElementById('statoAuto').value;
 
             if (!marca || !modello || !targa) {
-                mostrarNotifica('Marca, modello e targa sono obbligatori!', 'danger');
+                alert('Marca, modello e targa sono obbligatori!');
                 return;
             }
 
-            // Verifica duplicati
-            const autoEsistente = auto.find(a => a.targa === targa);
-            if (autoEsistente) {
-                mostrarNotifica('Auto già esistente con questa targa!', 'danger');
-                return;
-            }
-
-            // Converti i costi iniziali in spese
+            // Converti i costi iniziali in spese con data di immatricolazione
             const speseIniziali = costiAutoItems.map(costo => ({
                 id: Date.now() + Math.random(),
                 data: dataImmatricolazione || new Date().toISOString().split('T')[0],
@@ -1334,29 +1524,27 @@
                 id: Date.now(),
                 marca,
                 modello,
-                versione: versione || null,
+                versione,
                 targa,
-                telaio: telaio || null,
-                data_immatricolazione: dataImmatricolazione || null,
-                chilometri,
-                prezzo_acquisto: prezzoAcquisto,
-                prezzo_vendita: prezzoVendita,
+                telaio,
+                dataImmatricolazione,
+                chilometri: parseInt(chilometri) || 0,
+                prezzoAcquisto,
+                prezzoVendita,
                 tipo,
                 stato,
-                spese_aggiuntive: speseIniziali,
-                is_permuta: false,
-                created_at: new Date().toISOString()
+                speseAggiuntive: speseIniziali // Tutti i costi come spese unificate
             };
 
             auto.push(autoObj);
-            await salvaDatiSupabase();
+            salvaAuto();
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectAuto();
             pulisciFormAuto();
             chiudiFormAuto();
             
-            mostrarNotifica('✅ Auto aggiunta con successo!', 'success');
+            alert('✅ Auto aggiunta con successo!');
         }
 
         function pulisciFormAuto() {
@@ -1378,34 +1566,29 @@
         }
 
         // GESTIONE CONTRATTI
-        async function creaContratto() {
+        function creaContratto() {
             const clienteId = document.getElementById('clienteContratto').value;
             const autoId = document.getElementById('autoContratto').value;
             const dataContratto = document.getElementById('dataContratto').value;
-            const luogo = document.getElementById('luogoContratto').value.trim();
+            const luogo = document.getElementById('luogoContratto').value;
 
             if (!clienteId || !autoId || !dataContratto) {
-                mostrarNotifica('Cliente, auto e data sono obbligatori!', 'danger');
+                alert('Cliente, auto e data sono obbligatori!');
                 return;
             }
 
             const cliente = clienti.find(c => c.id == clienteId);
             const autoVenduta = auto.find(a => a.id == autoId);
 
-            if (!cliente || !autoVenduta) {
-                mostrarNotifica('Errore: Cliente o auto non trovati!', 'danger');
-                return;
-            }
-
             // Dati permuta (opzionali)
             const permuta = {
-                marca: document.getElementById('marcaPermuta').value.trim(),
-                modello: document.getElementById('modelloPermuta').value.trim(),
-                targa: document.getElementById('targaPermuta').value.trim().toUpperCase(),
-                telaio: document.getElementById('telaioPermuta').value.trim().toUpperCase(),
-                data_immatricolazione: document.getElementById('dataImmatricolazionePermuta').value,
+                marca: document.getElementById('marcaPermuta').value,
+                modello: document.getElementById('modelloPermuta').value,
+                targa: document.getElementById('targaPermuta').value,
+                telaio: document.getElementById('telaioPermuta').value,
+                dataImmatricolazione: document.getElementById('dataImmatricolazionePermuta').value,
                 chilometri: parseInt(document.getElementById('chilometriPermuta').value) || 0,
-                versione: document.getElementById('versionePermuta').value.trim(),
+                versione: document.getElementById('versionePermuta').value,
                 valutazione: parseFloat(document.getElementById('valutazionePermuta').value) || 0
             };
 
@@ -1413,30 +1596,22 @@
 
             // Se c'è una permuta con dati completi, aggiungila automaticamente allo stock
             if (permuta.marca && permuta.modello && permuta.targa && permuta.valutazione > 0) {
-                // Verifica che la targa permuta non esista già
-                const targaEsistente = auto.find(a => a.targa === permuta.targa);
-                if (targaEsistente) {
-                    mostrarNotifica('La targa della permuta esiste già nel sistema!', 'danger');
-                    return;
-                }
-
                 const autoPermuta = {
-                    id: Date.now() + 1,
+                    id: Date.now() + 1, // ID diverso dal contratto
                     marca: permuta.marca,
                     modello: permuta.modello,
-                    versione: permuta.versione || null,
+                    versione: permuta.versione || '',
                     targa: permuta.targa,
-                    telaio: permuta.telaio || null,
-                    data_immatricolazione: permuta.data_immatricolazione || null,
+                    telaio: permuta.telaio || '',
+                    dataImmatricolazione: permuta.dataImmatricolazione || '',
                     chilometri: permuta.chilometri,
-                    prezzo_acquisto: permuta.valutazione,
-                    prezzo_vendita: Math.round(permuta.valutazione * 1.15), // 15% di margine suggerito
+                    prezzoAcquisto: permuta.valutazione, // Il prezzo di acquisto è la valutazione
+                    prezzoVendita: Math.round(permuta.valutazione * 1.15), // Prezzo vendita suggerito (+15%)
                     tipo: 'USATO',
                     stato: 'Disponibile',
-                    spese_aggiuntive: [],
-                    is_permuta: true,
-                    contratto_originale: null,
-                    created_at: new Date().toISOString()
+                    speseAggiuntive: [], // Nessuna spesa iniziale
+                    isPermuta: true, // Flag per identificare le permute
+                    contrattoOriginale: null // Sarà impostato dopo
                 };
                 
                 auto.push(autoPermuta);
@@ -1445,28 +1620,27 @@
 
             const contratto = {
                 id: Date.now(),
-                cliente_id: parseInt(clienteId),
-                auto_id: parseInt(autoId),
-                data_contratto: dataContratto,
-                luogo: luogo || 'Asti',
+                clienteId,
+                autoId,
+                dataContratto,
+                luogo,
                 permuta,
-                permuta_auto_id: permutaAutoId,
-                deposito_cauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
-                spese_voltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
-                canale_vendita: document.getElementById('canaleVendita').value,
-                sconto_applicato: parseFloat(document.getElementById('scontoApplicato').value) || 0,
-                prezzo_finale_auto: parseFloat(document.getElementById('prezzoFinaleAuto').value) || autoVenduta.prezzo_vendita,
-                extra_items: [...extraItems],
+                permutaAutoId, // ID dell'auto permuta aggiunta allo stock
+                depositoCauzionale: parseFloat(document.getElementById('depositoCauzionale').value) || 0,
+                speseVoltura: parseFloat(document.getElementById('speseVoltura').value) || 0,
+                canaleVendita: document.getElementById('canaleVendita').value,
+                scontoApplicato: parseFloat(document.getElementById('scontoApplicato').value) || 0,
+                prezzoFinaleAuto: parseFloat(document.getElementById('prezzoFinaleAuto').value) || autoVenduta.prezzoVendita,
+                extraItems: [...extraItems], // Copia degli extra items
                 cliente,
-                auto: autoVenduta,
-                created_at: new Date().toISOString()
+                auto: autoVenduta
             };
 
             // Collega l'auto permuta al contratto
             if (permutaAutoId) {
                 const autoPermuta = auto.find(a => a.id == permutaAutoId);
                 if (autoPermuta) {
-                    autoPermuta.contratto_originale = contratto.id;
+                    autoPermuta.contrattoOriginale = contratto.id;
                 }
             }
 
@@ -1475,24 +1649,23 @@
             // Aggiorna stato auto venduta
             autoVenduta.stato = 'Venduta';
             
-            await salvaDatiSupabase();
+            salvaContratti();
+            salvaAuto();
             aggiornaTabelle();
             aggiornaStatistiche();
             aggiornaSelectAuto();
             pulisciFormContratto();
             chiudiFormContratto();
             
-            // Mostra messaggio appropriato
+            // Mostra messaggio se permuta aggiunta
             if (permutaAutoId) {
-                mostrarNotifica('✅ Contratto creato! La permuta è stata aggiunta allo stock.', 'success');
+                alert('✅ Contratto creato! La permuta è stata automaticamente aggiunta allo stock delle auto disponibili.');
             } else {
-                mostrarNotifica('✅ Contratto creato con successo!', 'success');
+                alert('✅ Contratto creato con successo!');
             }
             
             // Mostra contratto
-            setTimeout(() => {
-                mostraContratto(contratto);
-            }, 500);
+            mostraContratto(contratto);
         }
 
         function pulisciFormContratto() {
@@ -1525,7 +1698,7 @@
             const importo = parseFloat(document.getElementById('importoCostoAuto').value) || 0;
             
             if (!descrizione || importo <= 0) {
-                mostrarNotifica('Descrizione e importo sono obbligatori!', 'danger');
+                alert('Descrizione e importo sono obbligatori!');
                 return;
             }
             
@@ -1586,7 +1759,7 @@
             const prezzo = parseFloat(document.getElementById('prezzoExtra').value) || 0;
             
             if (!descrizione || prezzo <= 0) {
-                mostrarNotifica('Descrizione e prezzo sono obbligatori!', 'danger');
+                alert('Descrizione e prezzo sono obbligatori!');
                 return;
             }
             
@@ -1650,10 +1823,10 @@
                 oggetto = clienti.find(c => c.id == id);
                 campi = [
                     {nome: 'nome', label: 'Nome e Cognome', tipo: 'text'},
-                    {nome: 'data_nascita', label: 'Data di Nascita', tipo: 'date'},
-                    {nome: 'luogo_nascita', label: 'Luogo di Nascita', tipo: 'text'},
+                    {nome: 'dataNascita', label: 'Data di Nascita', tipo: 'date'},
+                    {nome: 'luogoNascita', label: 'Luogo di Nascita', tipo: 'text'},
                     {nome: 'residenza', label: 'Residenza', tipo: 'text'},
-                    {nome: 'codice_fiscale', label: 'Codice Fiscale', tipo: 'text'},
+                    {nome: 'codiceFiscale', label: 'Codice Fiscale', tipo: 'text'},
                     {nome: 'professione', label: 'Professione', tipo: 'text'},
                     {nome: 'telefono', label: 'Telefono', tipo: 'text'},
                     {nome: 'email', label: 'Email', tipo: 'email'}
@@ -1666,19 +1839,16 @@
                     {nome: 'versione', label: 'Versione', tipo: 'text'},
                     {nome: 'targa', label: 'Targa', tipo: 'text'},
                     {nome: 'telaio', label: 'Telaio', tipo: 'text'},
-                    {nome: 'data_immatricolazione', label: 'Data Immatricolazione', tipo: 'date'},
+                    {nome: 'dataImmatricolazione', label: 'Data Immatricolazione', tipo: 'date'},
                     {nome: 'chilometri', label: 'Chilometri', tipo: 'number'},
-                    {nome: 'prezzo_acquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
-                    {nome: 'prezzo_vendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
+                    {nome: 'prezzoAcquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
+                    {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
                     {nome: 'tipo', label: 'Tipo', tipo: 'select', opzioni: ['NUOVO', 'KM0', 'USATO']},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
             }
             
-            if (!oggetto) {
-                mostrarNotifica('Oggetto non trovato!', 'danger');
-                return;
-            }
+            if (!oggetto) return;
             
             oggettoInModifica = oggetto;
             tipoOggettoInModifica = tipo;
@@ -1698,8 +1868,7 @@
                     });
                     html += `</select>`;
                 } else {
-                    const value = oggetto[campo.nome] || '';
-                    html += `<input type="${campo.tipo}" id="modifica_${campo.nome}" value="${value}">`;
+                    html += `<input type="${campo.tipo}" id="modifica_${campo.nome}" value="${oggetto[campo.nome] || ''}">`;
                 }
                 
                 html += `</div>`;
@@ -1710,7 +1879,7 @@
             document.getElementById('modalModifica').style.display = 'block';
         }
 
-        async function salvaModifica() {
+        function salvaModifica() {
             if (!oggettoInModifica) return;
             
             // Aggiorna tutti i campi dell'oggetto
@@ -1720,22 +1889,22 @@
                 if (input.type === 'number') {
                     oggettoInModifica[campo] = parseFloat(input.value) || 0;
                 } else {
-                    oggettoInModifica[campo] = input.value || null;
+                    oggettoInModifica[campo] = input.value;
                 }
             });
             
-            await salvaDatiSupabase();
-            aggiornaTabelle();
-            aggiornaStatistiche();
-            
+            // Salva nel localStorage
             if (tipoOggettoInModifica === 'cliente') {
+                salvaClienti();
                 aggiornaSelectClienti();
             } else if (tipoOggettoInModifica === 'auto') {
+                salvaAuto();
                 aggiornaSelectAuto();
             }
             
+            aggiornaTabelle();
+            aggiornaStatistiche();
             chiudiModal();
-            mostrarNotifica('✅ Modifiche salvate con successo!', 'success');
         }
 
         function chiudiModal() {
@@ -1744,94 +1913,90 @@
             tipoOggettoInModifica = '';
         }
 
+        function modificaCostiAuto(id) {
+            const autoObj = auto.find(a => a.id == id);
+            if (!autoObj) return;
+            
+            oggettoInModifica = autoObj;
+            tipoOggettoInModifica = 'auto';
+            
+            document.getElementById('titoloModifica').textContent = 'Modifica Costi Auto';
+            
+            const html = `
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Auto</label>
+                        <input type="text" value="${autoObj.marca} ${autoObj.modello} (${autoObj.targa})" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo Acquisto (€)</label>
+                        <input type="number" id="modifica_prezzoAcquisto" value="${autoObj.prezzoAcquisto}">
+                    </div>
+                    <div class="form-group">
+                        <label>Costi Aggiuntivi (€)</label>
+                        <input type="number" id="modifica_costiAggiuntivi" value="${autoObj.costiAggiuntivi || 0}">
+                    </div>
+                    <div class="form-group">
+                        <label>Prezzo Vendita (€)</label>
+                        <input type="number" id="modifica_prezzoVendita" value="${autoObj.prezzoVendita}">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrizione Costi</label>
+                        <textarea id="modifica_descrizioneCosti" placeholder="Es: Riparazione freni, Tagliando, Pneumatici...">${autoObj.descrizioneCosti || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('contenutoModifica').innerHTML = html;
+            document.getElementById('modalModifica').style.display = 'block';
+        }
+
         // ELIMINAZIONE
-        async function eliminaCliente(id) {
-            if (!confirm('Sei sicuro di voler eliminare questo cliente?')) return;
-            
-            // Verifica se il cliente ha contratti
-            const contrattiCliente = contratti.filter(c => c.cliente_id == id);
-            if (contrattiCliente.length > 0) {
-                mostrarNotifica('Impossibile eliminare: il cliente ha contratti associati!', 'danger');
-                return;
+        function eliminaCliente(id) {
+            if (confirm('Sei sicuro di voler eliminare questo cliente?')) {
+                clienti = clienti.filter(c => c.id != id);
+                salvaClienti();
+                aggiornaTabelle();
+                aggiornaStatistiche();
+                aggiornaSelectClienti();
             }
-            
-            clienti = clienti.filter(c => c.id != id);
-            
-            if (isConnected) {
-                try {
-                    await supabaseClient.from('clienti').delete().eq('id', id);
-                } catch (error) {
-                    console.error('Errore eliminazione cliente da Supabase:', error);
-                }
-            }
-            
-            await salvaDatiSupabase();
-            aggiornaTabelle();
-            aggiornaStatistiche();
-            aggiornaSelectClienti();
-            mostrarNotifica('✅ Cliente eliminato con successo!', 'success');
         }
 
-        async function eliminaAuto(id) {
-            if (!confirm('Sei sicuro di voler eliminare questa auto?')) return;
-            
-            // Verifica se l'auto ha contratti
-            const contrattiAuto = contratti.filter(c => c.auto_id == id);
-            if (contrattiAuto.length > 0) {
-                mostrarNotifica('Impossibile eliminare: l\'auto ha contratti associati!', 'danger');
-                return;
+        function eliminaAuto(id) {
+            if (confirm('Sei sicuro di voler eliminare questa auto?')) {
+                auto = auto.filter(a => a.id != id);
+                salvaAuto();
+                aggiornaTabelle();
+                aggiornaStatistiche();
+                aggiornaSelectAuto();
             }
-            
-            auto = auto.filter(a => a.id != id);
-            
-            if (isConnected) {
-                try {
-                    await supabaseClient.from('auto').delete().eq('id', id);
-                } catch (error) {
-                    console.error('Errore eliminazione auto da Supabase:', error);
-                }
-            }
-            
-            await salvaDatiSupabase();
-            aggiornaTabelle();
-            aggiornaStatistiche();
-            aggiornaSelectAuto();
-            mostrarNotifica('✅ Auto eliminata con successo!', 'success');
         }
 
-        async function eliminaContratto(id) {
-            if (!confirm('Sei sicuro di voler eliminare questo contratto?')) return;
-            
-            const contratto = contratti.find(c => c.id == id);
-            if (contratto) {
-                // Rimetti l'auto venduta come disponibile
-                const autoContratto = auto.find(a => a.id == contratto.auto_id);
-                if (autoContratto) {
-                    autoContratto.stato = 'Disponibile';
+        function eliminaContratto(id) {
+            if (confirm('Sei sicuro di voler eliminare questo contratto?')) {
+                const contratto = contratti.find(c => c.id == id);
+                if (contratto) {
+                    // Rimetti l'auto venduta come disponibile
+                    const autoContratto = auto.find(a => a.id == contratto.autoId);
+                    if (autoContratto) {
+                        autoContratto.stato = 'Disponibile';
+                    }
+                    
+                    // Rimuovi l'auto permuta dallo stock se esiste
+                    if (contratto.permutaAutoId) {
+                        auto = auto.filter(a => a.id != contratto.permutaAutoId);
+                        console.log('Permuta rimossa dallo stock automaticamente');
+                    }
+                    
+                    salvaAuto();
                 }
                 
-                // Rimuovi l'auto permuta dallo stock se esiste
-                if (contratto.permuta_auto_id) {
-                    auto = auto.filter(a => a.id != contratto.permuta_auto_id);
-                    console.log('Permuta rimossa dallo stock automaticamente');
-                }
+                contratti = contratti.filter(c => c.id != id);
+                salvaContratti();
+                aggiornaTabelle();
+                aggiornaStatistiche();
+                aggiornaSelectAuto();
             }
-            
-            contratti = contratti.filter(c => c.id != id);
-            
-            if (isConnected) {
-                try {
-                    await supabaseClient.from('contratti').delete().eq('id', id);
-                } catch (error) {
-                    console.error('Errore eliminazione contratto da Supabase:', error);
-                }
-            }
-            
-            await salvaDatiSupabase();
-            aggiornaTabelle();
-            aggiornaStatistiche();
-            aggiornaSelectAuto();
-            mostrarNotifica('✅ Contratto eliminato con successo!', 'success');
         }
 
         // FUNZIONI DI RICERCA
@@ -1886,7 +2051,7 @@
                     <td>${cliente.nome}</td>
                     <td>${cliente.telefono}</td>
                     <td>${cliente.email || '-'}</td>
-                    <td>${cliente.codice_fiscale || '-'}</td>
+                    <td>${cliente.codiceFiscale || '-'}</td>
                     <td class="actions">
                         <button class="btn btn-warning" onclick="modificaOggetto('cliente', ${cliente.id})">✏️ Modifica</button>
                         <button class="btn btn-danger" onclick="eliminaCliente(${cliente.id})">🗑️ Elimina</button>
@@ -1912,44 +2077,29 @@
             }
             
             autoFiltrate.forEach(autoObj => {
-                const speseAggiuntiveTotali = (autoObj.spese_aggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoObj.prezzo_acquisto + speseAggiuntiveTotali;
-                const margine = autoObj.prezzo_vendita - costoTotale;
+                const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+                const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
+                const margine = autoObj.prezzoVendita - costoTotale;
                 const row = tbody.insertRow();
                 
                 const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' : 
                                  autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
                 
-                // Gestione data immatricolazione sicura
-                let dataImmatricolazioneFormatted = '-';
-                if (autoObj.data_immatricolazione) {
-                    try {
-                        const data = new Date(autoObj.data_immatricolazione);
-                        if (!isNaN(data.getTime())) {
-                            dataImmatricolazioneFormatted = data.toLocaleDateString('it-IT');
-                        }
-                    } catch (error) {
-                        console.warn('Errore formattazione data immatricolazione:', autoObj.data_immatricolazione);
-                    }
-                }
-                
                 row.innerHTML = `
-                    <td>
-                        ${autoObj.marca} ${autoObj.modello}
-                        ${autoObj.is_permuta ? ' <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">🔄 PERMUTA</span>' : ''}
-                    </td>
+                    <td>${autoObj.marca} ${autoObj.modello}${autoObj.isPermuta ? ' <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">🔄 PERMUTA</span>' : ''}</td>
                     <td>${autoObj.targa}</td>
-                    <td>${dataImmatricolazioneFormatted}</td>
+                    <td>${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</td>
                     <td>${autoObj.chilometri.toLocaleString()}</td>
                     <td><span style="background: ${autoObj.tipo === 'NUOVO' ? '#28a745' : autoObj.tipo === 'KM0' ? '#ffc107' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.tipo}</span></td>
                     <td><span style="background: ${statoColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.stato}</span></td>
-                    <td>€${autoObj.prezzo_vendita.toLocaleString()}</td>
+                    <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
                         €${margine.toLocaleString()}
                         <button class="btn btn-primary" onclick="mostraDettaglioMargine(${autoObj.id})" style="padding: 2px 6px; font-size: 0.7rem; margin-left: 8px;">📊</button>
                     </td>
                     <td class="actions">
                         <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciCostiAuto(${autoObj.id})">💰 Costi</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
                         ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>` : ''}
                         <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
                     </td>
@@ -1964,27 +2114,26 @@
             contratti.forEach(contratto => {
                 const row = tbody.insertRow();
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
-                const totaleExtra = (contratto.extra_items || []).reduce((sum, item) => sum + item.prezzo, 0);
-                const prezzoBaseAuto = contratto.prezzo_finale_auto || contratto.auto.prezzo_vendita;
+                const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+                const prezzoBaseAuto = contratto.prezzoFinaleAuto || contratto.auto.prezzoVendita;
                 const prezzoTotale = prezzoBaseAuto + totaleExtra;
                 
                 row.innerHTML = `
-                    <td>${new Date(contratto.data_contratto).toLocaleDateString('it-IT')}</td>
+                    <td>${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</td>
                     <td>${contratto.cliente.nome}</td>
                     <td>${contratto.auto.marca} ${contratto.auto.modello}</td>
-                    <td>
-                        €${prezzoTotale.toLocaleString()}
-                        ${(contratto.sconto_applicato || 0) > 0 ? `<br><small style="color: #dc3545;">(-€${contratto.sconto_applicato.toLocaleString()} sconto)</small>` : ''}
-                        ${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}
-                    </td>
+                    <td>€${prezzoTotale.toLocaleString()}${(contratto.scontoApplicato || 0) > 0 ? `<br><small style="color: #dc3545;">(-€${contratto.scontoApplicato.toLocaleString()} sconto)</small>` : ''}${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}</td>
                     <td>${permutaText}</td>
                     <td class="actions">
                         <button class="btn btn-primary" onclick="mostraContratto(${JSON.stringify(contratto).replace(/"/g, '&quot;')})">📋 Visualizza</button>
+                        <button class="btn btn-warning" onclick="modificaContratto(${contratto.id})">✏️ Modifica</button>
                         <button class="btn btn-danger" onclick="eliminaContratto(${contratto.id})">🗑️ Elimina</button>
                     </td>
                 `;
             });
         }
+
+
 
         // AGGIORNAMENTO SELECT
         function aggiornaSelectClienti() {
@@ -2006,7 +2155,7 @@
             auto.filter(a => a.stato === 'Disponibile').forEach(autoObj => {
                 const option = document.createElement('option');
                 option.value = autoObj.id;
-                option.textContent = `${autoObj.marca} ${autoObj.modello} (${autoObj.targa}) - €${autoObj.prezzo_vendita.toLocaleString()}`;
+                option.textContent = `${autoObj.marca} ${autoObj.modello} (${autoObj.targa}) - €${autoObj.prezzoVendita.toLocaleString()}`;
                 select.appendChild(option);
             });
         }
@@ -2028,64 +2177,95 @@
             document.getElementById('scontoApplicato').value = sconto > 0 ? sconto : 0;
         }
 
+        // Event listener per aggiornare i prezzi quando si seleziona un'auto
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoSelect = document.getElementById('autoContratto');
+            if (autoSelect) {
+                autoSelect.addEventListener('change', function() {
+                    const autoId = this.value;
+                    if (autoId) {
+                        const autoSelezionata = auto.find(a => a.id == autoId);
+                        if (autoSelezionata) {
+                            document.getElementById('prezzoBaseAuto').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('prezzoFinaleAuto').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('scontoApplicato').value = 0;
+                        }
+                    } else {
+                        document.getElementById('prezzoBaseAuto').value = '';
+                        document.getElementById('prezzoFinaleAuto').value = '';
+                        document.getElementById('scontoApplicato').value = '';
+                    }
+                });
+            }
+        });
+
         // STATISTICHE
         function aggiornaStatistiche() {
             const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
             document.getElementById('totaleAuto').textContent = autoInStock;
-            document.getElementById('totaleContratti').textContent = contratti.length;
+            document.getElementById('totaleContratti').textContent = 21 + contratti.length;
             
-            // Calcola fatturato totale
-            const fatturatoContratti = contratti.reduce((sum, contratto) => {
-                const totaleExtra = (contratto.extra_items || []).reduce((sum, item) => sum + item.prezzo, 0);
-                const prezzoFinale = contratto.prezzo_finale_auto || contratto.auto.prezzo_vendita;
-                return sum + prezzoFinale + totaleExtra;
-            }, 0);
-            
-            document.getElementById('fatturatoTotale').textContent = `€${fatturatoContratti.toLocaleString()}`;
+            const fatturatoContratti = contratti.reduce((sum, contratto) => sum + contratto.auto.prezzoVendita, 0);
+            const fatturatoTotale = 132020 + fatturatoContratti;
+            document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString()}`;
             
             // Calcola valore stock presente
-            const valoreStock = auto.filter(a => a.stato !== 'Venduta').reduce((sum, autoObj) => sum + (autoObj.prezzo_vendita || 0), 0);
+            const valoreStock = auto.filter(a => a.stato !== 'Venduta').reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
             document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString()}`;
             
-            // Calcola margine complessivo
-            const margineComplessivo = contratti.reduce((sum, contratto) => {
-                const autoVenduta = contratto.auto;
-                const speseAggiuntiveTotali = (autoVenduta.spese_aggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-                const costoTotale = autoVenduta.prezzo_acquisto + speseAggiuntiveTotali;
-                const prezzoFinale = contratto.prezzo_finale_auto || autoVenduta.prezzo_vendita;
-                const totaleExtra = (contratto.extra_items || []).reduce((sum, item) => sum + item.prezzo, 0);
-                const ricavoTotale = prezzoFinale + totaleExtra;
-                return sum + (ricavoTotale - costoTotale);
-            }, 0);
+            // Calcola media vendite mensili
+            const dataInizio = new Date('2025-03-01'); // Marzo 2025
+            const dataOggi = new Date();
+            const mesiTrascorsi = ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1;
             
-            document.getElementById('margineComplessivo').textContent = `€${margineComplessivo.toLocaleString()}`;
+            // Vendite storiche: 21 vendite da marzo a oggi
+            const venditeStoriche = 21; // 21 vendite da marzo a oggi
+            const venditeNuove = contratti.length;
+            
+            const totaleVendite = venditeStoriche + venditeNuove;
+            const mediaVendite = totaleVendite / mesiTrascorsi;
+            document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
             
             // Aggiorna statistiche canali
             aggiornaStatisticheCanali();
-            aggiornaGraficoVendite();
         }
         
         function aggiornaStatisticheCanali() {
-            // Conta vendite per canale
-            const canali = {};
+            // Dati di partenza
+            const canaliPartenza = {
+                'Conoscenze': 23,
+                'Autoscout': 45,
+                'Cip': 9,
+                'Ingresso spontaneo': 18,
+                'Subito': 5
+            };
+            
+            // Conta vendite per canale dai nuovi contratti
+            const canaliNuovi = {};
             contratti.forEach(contratto => {
-                const canale = contratto.canale_vendita || 'Autoscout';
-                canali[canale] = (canali[canale] || 0) + 1;
+                const canale = contratto.canaleVendita || 'Autoscout';
+                canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
             });
             
-            const totaleVendite = contratti.length;
+            // Calcola totale vendite
+            const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
+            const totaleVenditeNuove = Object.values(canaliNuovi).reduce((sum, val) => sum + val, 0);
+            const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
+            
+            // Calcola percentuali finali
+            const statisticheFinali = {};
+            Object.keys(canaliPartenza).forEach(canale => {
+                const venditePartenza = canaliPartenza[canale];
+                const venditeNuove = canaliNuovi[canale] || 0;
+                const totaleCanale = venditePartenza + venditeNuove;
+                statisticheFinali[canale] = ((totaleCanale / totaleVendite) * 100).toFixed(1);
+            });
             
             // Mostra statistiche
             const container = document.getElementById('statisticheCanali');
             container.innerHTML = '';
             
-            if (totaleVendite === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Nessun contratto presente</p>';
-                return;
-            }
-            
-            Object.entries(canali).forEach(([canale, count]) => {
-                const percentuale = ((count / totaleVendite) * 100).toFixed(1);
+            Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
                 const colore = {
                     'Autoscout': '#1e40af',
                     'Subito': '#dc2626',
@@ -2098,54 +2278,496 @@
                     <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
                         <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
                         <p style="margin: 0; font-size: 0.9rem;">${canale}</p>
-                        <small style="opacity: 0.8;">${count} vendite</small>
                     </div>
                 `;
             });
         }
 
-        function aggiornaGraficoVendite() {
-            const container = document.getElementById('graficoVendite');
+        // CONTRATTO
+        function mostraContratto(contratto) {
+            const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+            const prezzoBaseAuto = contratto.auto.prezzoVendita;
+            const scontoApplicato = contratto.scontoApplicato || 0;
+            const prezzoFinaleAuto = contratto.prezzoFinaleAuto || prezzoBaseAuto;
+            const totaleASaldo = prezzoFinaleAuto + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
             
-            if (contratti.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Nessun dato disponibile</p>';
-                return;
-            }
-            
-            // Raggruppa contratti per mese
-            const venditePerMese = {};
-            contratti.forEach(contratto => {
-                const data = new Date(contratto.data_contratto);
-                const mese = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-                venditePerMese[mese] = (venditePerMese[mese] || 0) + 1;
-            });
-            
-            // Crea grafico semplice
-            let html = '<div style="display: flex; align-items: end; gap: 10px; height: 200px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #ddd;">';
-            
-            const maxVendite = Math.max(...Object.values(venditePerMese));
-            
-            Object.entries(venditePerMese).sort().forEach(([mese, vendite]) => {
-                const altezza = (vendite / maxVendite) * 150;
-                const [anno, meseNum] = mese.split('-');
-                const nomiMesi = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-                const nomeCorto = nomiMesi[parseInt(meseNum) - 1];
-                
-                html += `
-                    <div style="display: flex; flex-direction: column; align-items: center; min-width: 60px;">
-                        <div style="background: #1e40af; width: 40px; height: ${altezza}px; border-radius: 4px 4px 0 0; display: flex; align-items: end; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; padding-bottom: 5px;">
-                            ${vendite}
+            const html = `
+                <div class="contract-preview">
+                    <!-- Header con logo, info azienda e titolo -->
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 4px; margin-top: -15px; align-items: start;">
+                        <!-- Colonna sinistra - Logo e titolo -->
+                        <div style="text-align: center;">
+                            <img src="https://gestionalevero.netlify.app/logopericar2.png" alt="PERICAR Logo" style="height: 3.1cm; width: auto; margin-bottom: 2px;">
+                            <div style="background: #E30613; color: white; padding: 6px; margin: 0 -30px; font-size: 0.9rem; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">PROPOSTA D'ACQUISTO</div>
+                            <div style="text-align: right; margin: 3px 0; font-size: 0.7rem;">
+                                <strong>Luogo e data:</strong> ${contratto.luogo}, ${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}
+                            </div>
                         </div>
-                        <div style="font-size: 0.8rem; margin-top: 5px; text-align: center;">
-                            <div>${nomeCorto}</div>
-                            <div style="font-size: 0.7rem; color: #666;">${anno}</div>
+                        
+                        <!-- Colonna destra - Info Azienda -->
+                        <div style="text-align: right; font-size: 0.7rem; border: 1px solid #ddd; padding: 8px; background: #f8f9fa; border-radius: 6px; margin-top: 10px;">
+                            <div style="font-weight: bold; margin-bottom: 2px; color: #E30613;">PERICAR di Giacomo Perissinotto</div>
+                            <div>P.IVA: 01671440053</div>
+                            <div>Corso Casale 99, 14100 Asti (AT)</div>
+                            <div>Tel: +39 339 6831296</div>
+                            <div>giacomo@pericar.it</div>
                         </div>
                     </div>
-                `;
-            });
+
+                    <!-- Dati Cliente -->
+                    <div style="margin-bottom: 12px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Il sottoscritto:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.nome}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Data nascita:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.cliente.dataNascita ? new Date(contratto.cliente.dataNascita).toLocaleDateString('it-IT') : '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Luogo nascita:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;" colspan="3">${contratto.cliente.luogoNascita || '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Residenza:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;" colspan="3">${contratto.cliente.residenza || '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Codice Fiscale:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.codiceFiscale || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Professione:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.professione || '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Telefono:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.telefono}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Email:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.cliente.email || '___________'}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Testo introduttivo -->
+                    <div style="margin-bottom: 10px; font-size: 0.7rem; line-height: 1.3; text-align: center;">
+                        <p style="margin: 6px 0; font-weight: bold;">
+                            conferisce alla spettabile <strong style="color: #cc0000;">PERICAR di Giacomo Perissinotto</strong>
+                        </p>
+                        
+                        <p style="margin: 6px 0; font-weight: bold; color: #E30613; font-size: 0.75rem;">
+                            L'ORDINE DI ACQUISTO DEL SEGUENTE VEICOLO:
+                        </p>
+                    </div>
+
+                    <!-- Dati Veicolo -->
+                    <div style="margin-bottom: 12px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Marca:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.auto.marca}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 20%;">Modello:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; width: 30%;">${contratto.auto.modello}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Versione:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.versione || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Targa:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.targa}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Telaio:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.telaio || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Immatricolazione:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.dataImmatricolazione ? new Date(contratto.auto.dataImmatricolazione).toLocaleDateString('it-IT') : '___________'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Chilometri:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.chilometri.toLocaleString()}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Prezzo:</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; color: #E30613;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Layout con due colonne per permuta e riepilogo -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                        <!-- Colonna sinistra - Dati Permuta -->
+                        <div>
+                            <div style="margin-bottom: 8px;">
+                                <h3 style="font-size: 0.8rem; margin-bottom: 5px; background: #E30613; color: white; padding: 6px; margin: 0 -10px 8px -10px; font-weight: bold; text-align: center;">RITIRO VEICOLO IN PERMUTA</h3>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; border: 1px solid #ddd;">
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; width: 35%;">Marca:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee; width: 65%;">${contratto.permuta.marca || '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Modello:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.modello || '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Versione:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.versione || '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Targa:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.targa || '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Telaio:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.telaio || '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Immatricolazione:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.dataImmatricolazione ? new Date(contratto.permuta.dataImmatricolazione).toLocaleDateString('it-IT') : '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Km:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee;">${contratto.permuta.chilometri ? contratto.permuta.chilometri.toLocaleString() : '___________'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Valutazione:</td>
+                                        <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; color: #28a745;">${contratto.permuta.valutazione ? '€' + contratto.permuta.valutazione.toLocaleString() : '€___________'}</td>
+                                    </tr>
+                                </table>
+                                <p style="margin-top: 3px; font-size: 0.65rem;">Importo determinato secondo lo stato d'uso attuale, salvo riduzione per deterioramenti successivi.</p>
+                            </div>
+                        </div>
+
+                        <!-- Colonna destra - Conto Economico -->
+                        <div>
+                            <div style="border: 2px solid #E30613; border-radius: 8px; padding: 10px; background: #fff;">
+                                <h3 style="font-size: 0.85rem; margin-bottom: 8px; background: #E30613; color: white; padding: 6px; margin: -10px -10px 8px -10px; border-radius: 6px 6px 0 0; text-align: center;">RIEPILOGO ECONOMICO</h3>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px; font-weight: bold;">PREZZO LISTINO VEICOLO</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${prezzoBaseAuto.toLocaleString()}</td>
+                                    </tr>
+                                    ${scontoApplicato > 0 ? `
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px; color: #dc3545;">Sconto applicato</td>
+                                        <td style="padding: 6px; text-align: right; color: #dc3545;">-€${scontoApplicato.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #ddd; background: #f0f8ff;">
+                                        <td style="padding: 6px; font-weight: bold;">PREZZO SCONTATO VEICOLO</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${prezzoFinaleAuto.toLocaleString()}</td>
+                                    </tr>
+                                    ` : ''}
+                                    ${(contratto.extraItems || []).map(item => `
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">${item.descrizione}</td>
+                                        <td style="padding: 6px; text-align: right;">€${item.prezzo.toLocaleString()}</td>
+                                    </tr>
+                                    `).join('')}
+                                    ${totaleExtra > 0 ? `
+                                    <tr style="border-bottom: 1px solid #ddd; background: #f0f8ff;">
+                                        <td style="padding: 6px; font-weight: bold;">SUBTOTALE</td>
+                                        <td style="padding: 6px; text-align: right; font-weight: bold;">€${(prezzoFinaleAuto + totaleExtra).toLocaleString()}</td>
+                                    </tr>
+                                    ` : ''}
+                                    ${contratto.permuta.valutazione > 0 ? `
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">Valore ritiro</td>
+                                        <td style="padding: 6px; text-align: right; color: #28a745;">-€${contratto.permuta.valutazione.toLocaleString()}</td>
+                                    </tr>
+                                    ` : ''}
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">Deposito cauzionale</td>
+                                        <td style="padding: 6px; text-align: right; color: #28a745;">-€${contratto.depositoCauzionale.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">Spese voltura</td>
+                                        <td style="padding: 6px; text-align: right;">€${contratto.speseVoltura.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #E30613; background: #f8f9fa;">
+                                        <td style="padding: 8px; font-weight: bold; font-size: 0.8rem;">TOTALE A SALDO</td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 0.9rem; color: #E30613;">€${totaleASaldo.toLocaleString()}</td>
+                                    </tr>
+                                </table>
+
+                                <!-- Firme sotto i calcoli -->
+                                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div style="text-align: center;">
+                                            <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                            <strong style="font-size: 0.85rem;">Firma acquirente</strong>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                            <strong style="font-size: 0.85rem;">Firma venditore</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <!-- Testo legale -->
+                    <div style="margin: 6px 0; font-size: 0.65rem; line-height: 1.2;">
+                        <p style="margin-bottom: 4px;">Il sottoscritto <strong>${contratto.cliente.nome}</strong> dichiara di essere stato informato di tutto quanto concerne l'acquisto del veicolo oggetto della presente proposta, nonché delle condizioni generali del contratto riportate a tergo, che dichiara di aver compreso e che accetta pienamente, e conferisce alla spettabile <strong>PERICAR di Giacomo Perissinotto</strong></p>
+                        
+                        <p style="margin: 4px 0; font-weight: bold;">L'ORDINE DI ACQUISTO DEL VEICOLO</p>
+                        
+                        <p style="margin: 4px 0;">nelle condizioni in cui si trova, accertato in sua presenza, alle condizioni a tergo riportate prendendo altresì atto che il venditore ne effettua la vendita:</p>
+                        
+                        <div style="margin: 4px 0;">
+                            <div style="margin-bottom: 2px;"><strong>☐ IN QUANTO PROPRIETARIO DELLO STESSO</strong></div>
+                            <div><strong>☐ IN FORZA DEL MANDATO SPECIALE ALL'UOPO CONFERITO DAL SIG. ________________________</strong></div>
+                        </div>
+                    </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Spazio per note -->
+                    <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <div style="font-size: 0.7rem; font-weight: bold; margin-bottom: 8px;">NOTE:</div>
+                        <div style="border-bottom: 1px solid #ccc; height: 20px;"></div>
+                    </div>
+
+                    <div style="page-break-before: always; margin-top: 10px;">
+                        <h2 style="text-align: center; margin-bottom: 15px; font-size: 1rem;">CONDIZIONI GENERALI DI VENDITA</h2>
+                        
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 1 - Definizioni</h3>
+                            <p>Ai fini del presente contratto si intende per: <strong>Buone condizioni:</strong> componente recentemente sostituito o revisionato; <strong>Condizioni standard:</strong> componente con usura conforme all'età del veicolo; <strong>Intervento consigliato:</strong> componente da ripristinare a breve termine; <strong>Intervento necessario:</strong> componente da sostituire immediatamente per sicurezza.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 2 - Regolamento generale</h3>
+                            <p>Con la sottoscrizione del presente documento il compratore versa il deposito cauzionale indicato e accetta integralmente le presenti condizioni generali di vendita. L'ordine diventa definitivo e vincolante per entrambe le parti solo dopo l'accettazione scritta da parte del venditore. Il venditore si riserva il diritto di rifiutare l'ordine entro 48 ore dalla ricezione.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 3 - Prezzo e modalità di pagamento</h3>
+                            <p>Il prezzo si intende Franco sede del venditore, salvo diversa pattuizione scritta. Il saldo deve essere corrisposto alla consegna del veicolo mediante bonifico bancario, assegno circolare o contanti nei limiti di legge. Eventuali finanziamenti sono soggetti ad approvazione dell'istituto di credito.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 4 - Consegna e ritiro del veicolo</h3>
+                            <p>Il veicolo deve essere ritirato entro 10 giorni dalla data di disponibilità se già presente, o entro 5 giorni dalla comunicazione di arrivo se ordinato. Il mancato ritiro nei termini stabiliti comporta la risoluzione automatica del contratto con incameramento del deposito cauzionale a titolo di penale. Il compratore è tenuto a verificare lo stato del veicolo al momento del ritiro.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 5 - Garanzia di conformità</h3>
+                            <p>Per i consumatori si applica la garanzia legale di conformità di 12 mesi prevista dal D.Lgs 206/2005. Il compratore dichiara di aver visionato personalmente il veicolo e di accettarlo nelle condizioni di fatto e di diritto in cui si trova. I difetti di conformità sono coperti solo se non derivanti da normale usura, uso improprio, mancata manutenzione o eventi accidentali. La responsabilità del venditore è esclusa per danni derivanti da uso improprio del veicolo. Per gli acquirenti titolari di partita IVA si applica esclusivamente l'art. 1490 e seguenti del Codice Civile con espressa esclusione della garanzia di conformità.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 6 - Trattamento dati personali (GDPR 2016/679)</h3>
+                            <p>Ai sensi del Regolamento UE 2016/679 (GDPR), il Titolare del trattamento PERICAR di Giacomo Perissinotto, con sede in Corso Casale 99, 14100 Asti, informa che i dati personali raccolti saranno trattati per le seguenti finalità: a) adempimento di obblighi contrattuali e di legge; b) gestione del rapporto commerciale; c) attività di marketing diretto (previo consenso). Base giuridica del trattamento: esecuzione del contratto, adempimento di obblighi legali, consenso dell'interessato per il marketing. I dati saranno conservati per 10 anni dalla cessazione del rapporto contrattuale per finalità fiscali e contabili. L'interessato ha diritto di accedere ai propri dati, di chiederne la rettifica, la cancellazione, la limitazione del trattamento, la portabilità e di opporsi al trattamento. Per esercitare tali diritti: giacomo@pericar.it. È possibile proporre reclamo al Garante per la Protezione dei Dati Personali.</p>
+                            <div style="display: flex; gap: 15px; margin: 5px 0;">
+                                <label style="font-size: 0.5rem;"><input type="checkbox"> NON acconsento al trattamento per finalità di marketing</label>
+                                <label style="font-size: 0.5rem;"><input type="checkbox"> ACCONSENTO al trattamento per finalità di marketing</label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 7 - Tributi e oneri</h3>
+                            <p>Tutti i tributi, oneri fiscali, imposte di bollo, spese di trasferimento di proprietà, tasse automobilistiche, assicurazione RC auto obbligatoria e ogni altro onere relativo al veicolo sono a carico esclusivo del compratore. Il venditore fornisce assistenza per le pratiche amministrative presso gli uffici competenti (PRA, Motorizzazione, ACI) dietro rimborso delle spese effettivamente sostenute e compenso per il servizio prestato secondo tariffario vigente. Il compratore è tenuto a provvedere alla copertura assicurativa RC auto prima del ritiro del veicolo.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 8 - Risoluzione controversie e foro competente</h3>
+                            <p>Per i rapporti con i consumatori, ai sensi dell'art. 33 del Codice del Consumo, è competente il foro del luogo di residenza o domicilio del compratore. Per i rapporti commerciali tra imprenditori è competente esclusivamente il Tribunale di Asti. Le parti si impegnano a tentare preventivamente la risoluzione amichevole delle controversie attraverso procedure di mediazione presso organismi di conciliazione riconosciuti prima di adire l'autorità giudiziaria. È esclusa la competenza arbitrale salvo diverso accordo scritto tra le parti.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 9 - Diritto di recesso (solo consumatori)</h3>
+                            <p>Il consumatore, ai sensi degli artt. 52 e seguenti del Codice del Consumo, ha diritto di recedere dal contratto entro 14 giorni lavorativi dalla consegna del veicolo senza dover fornire alcuna motivazione e senza sostenere penali. Il recesso deve essere comunicato per iscritto tramite raccomandata A/R o PEC. Il veicolo deve essere restituito nelle stesse condizioni in cui è stato consegnato, salvo il deterioramento derivante dalla normale manipolazione per stabilirne la natura e le caratteristiche. Le spese di restituzione sono a carico del consumatore. Il diritto di recesso decade se il veicolo presenta segni di usura, danni o modifiche oltre la normale prova d'uso.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 10 - Clausole finali e modifiche contrattuali</h3>
+                            <p>Eventuali modifiche, integrazioni o deroghe al presente contratto devono essere concordate per iscritto e sottoscritte da entrambe le parti per avere validità. La nullità, invalidità o inefficacia di singole clausole non comporta nullità dell'intero contratto, che rimane valido ed efficace nelle parti non viziate. Il contratto è regolato dalla legge italiana. Per quanto non espressamente previsto si applicano le norme del Codice Civile, del Codice del Consumo e della normativa speciale in materia automobilistica. Gli accordi verbali non hanno valore contrattuale.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 11 - Condizioni specifiche per veicoli usati</h3>
+                            <p>Il venditore dichiara che il veicolo oggetto della presente vendita è stato sottoposto a regolare manutenzione ordinaria e straordinaria e ai controlli tecnici previsti dalla legge. Tuttavia, trattandosi di veicolo usato, il compratore accetta espressamente che possano essere presenti segni di normale usura, piccoli graffi, ammaccature minori e deterioramenti compatibili con l'età, i chilometri percorsi e l'uso normale del veicolo. Il venditore garantisce la regolarità della documentazione, l'assenza di vincoli, gravami, pignoramenti o fermi amministrativi non dichiarati e la provenienza lecita del veicolo. È esclusa ogni responsabilità per vizi occulti non rilevabili con ordinaria diligenza al momento della consegna.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 12 - Limitazione di responsabilità</h3>
+                            <p>La responsabilità del venditore per vizi, difetti o non conformità del veicolo è limitata al valore del veicolo stesso e comunque non può eccedere il prezzo di vendita. È espressamente esclusa ogni responsabilità del venditore per danni indiretti, consequenziali, lucro cessante, perdite di profitto, danni morali, danni a cose o persone derivanti dall'uso del veicolo successivamente alla consegna. Il compratore si impegna a mantenere il veicolo in perfetta efficienza tecnica e di sicurezza, a effettuare regolare manutenzione e a rispettare tutte le norme del Codice della Strada e della circolazione stradale. Il venditore non risponde di sanzioni, multe o violazioni commesse dal compratore.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 13 - Passaggio di proprietà e responsabilità</h3>
+                            <p>Il passaggio di proprietà del veicolo avverrà mediante registrazione presso il Pubblico Registro Automobilistico (PRA) entro 60 giorni dalla data del contratto, salvo diversi accordi scritti. Il compratore si impegna a fornire tempestivamente tutta la documentazione necessaria per il perfezionamento delle pratiche. Fino al completamento del passaggio di proprietà presso il PRA, il compratore si assume ogni responsabilità civile, penale, amministrativa e fiscale derivante dalla proprietà, detenzione e uso del veicolo, incluse sanzioni per violazioni del Codice della Strada, tasse automobilistiche e ogni altro onere. Le spese per il passaggio di proprietà, IPT, emolumenti ACI e ogni altra spesa connessa sono a carico del compratore.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 14 - Clausola risolutiva espressa</h3>
+                            <p>Ai sensi e per gli effetti dell'art. 1456 del Codice Civile, il contratto si risolve automaticamente di diritto, senza necessità di messa in mora o diffida, nei seguenti casi: a) mancato pagamento del saldo del prezzo nei termini stabiliti; b) mancato ritiro del veicolo nei termini previsti; c) inadempimento di qualsiasi altra obbligazione contrattuale sostanziale; d) falsità delle dichiarazioni rese dal compratore; e) sopravvenuta insolvenza o stato di crisi del compratore. In caso di risoluzione, il venditore ha diritto al risarcimento integrale dei danni subiti, all'incameramento del deposito cauzionale a titolo di penale e al rimborso delle spese legali sostenute, riservandosi ogni ulteriore azione per il maggior danno.</p>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 15 - Normativa applicabile e disposizioni finali</h3>
+                            <p>Il presente contratto è regolato dalla legge italiana. Per i rapporti con i consumatori si applicano imperativamente le disposizioni del Codice del Consumo (D.Lgs. 206/2005) e della normativa europea di riferimento. Per i rapporti commerciali tra imprenditori si applicano le disposizioni del Codice Civile e della normativa speciale. Ogni controversia relativa all'interpretazione, esecuzione o risoluzione del presente contratto sarà devoluta alla competenza esclusiva dell'Autorità Giudiziaria del Tribunale di Asti. Il contratto produce i suoi effetti dalla data di sottoscrizione e vincola le parti e i loro successori ed aventi causa a qualsiasi titolo.</p>
+                        </div>
+
+                        <div style="margin-top: 10px; padding: 6px; border: 1px solid #333; font-size: 0.5rem;">
+                            <p><strong>APPROVAZIONE SPECIFICA (art. 1341-1342 c.c.):</strong> Il compratore dichiara di aver letto, compreso e di approvare espressamente i seguenti articoli delle condizioni generali di vendita: Art. 2 (regolamento generale), Art. 4 (consegna e ritiro), Art. 5 (garanzia di conformità), Art. 8 (foro competente), Art. 12 (limitazione di responsabilità), Art. 14 (clausola risolutiva espressa), Art. 15 (normativa applicabile).</p>
+                        </div>
+
+                        <div style="margin-top: 12px;">
+                            <div style="text-align: right; margin-bottom: 8px; font-size: 0.6rem;">
+                                <strong>${contratto.luogo}, ${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</strong>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                                <div class="signature-box">
+                                    <div class="signature-line"></div>
+                                    <strong style="font-size: 0.6rem;">Firma acquirente</strong>
+                                </div>
+                                <div class="signature-box">
+                                    <div class="signature-line"></div>
+                                    <strong style="font-size: 0.6rem;">Firma venditore</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 8px; font-size: 0.55rem;">
+                            <h3 style="font-size: 0.6rem; margin-bottom: 4px;">Art. 16 - Trattamento dei dati personali (GDPR 2016/679)</h3>
+                            <p>Ai sensi del Regolamento UE 2016/679 (GDPR), il Titolare del trattamento PERICAR di Giacomo Perissinotto, con sede in Corso Casale 99, 14100 Asti, P.IVA 01671440053, informa che i dati personali raccolti saranno trattati per le seguenti finalità:</p>
+                            <p><strong>a) Finalità contrattuali:</strong> esecuzione del contratto di vendita, gestione del rapporto commerciale, adempimento di obblighi precontrattuali e contrattuali (base giuridica: art. 6, par. 1, lett. b) GDPR);</p>
+                            <p><strong>b) Finalità legali:</strong> adempimento di obblighi di legge in materia fiscale, contabile, civilistica e amministrativa (base giuridica: art. 6, par. 1, lett. c) GDPR);</p>
+                            <p><strong>c) Finalità di marketing:</strong> invio di comunicazioni commerciali, newsletter, offerte promozionali tramite email, SMS, telefono, posta (base giuridica: consenso dell'interessato ex art. 6, par. 1, lett. a) GDPR).</p>
+                            <p><strong>Modalità del trattamento:</strong> I dati saranno trattati con strumenti informatici e cartacei, con logiche strettamente correlate alle finalità e comunque in modo da garantire la sicurezza e la riservatezza dei dati stessi.</p>
+                            <p><strong>Conservazione:</strong> I dati saranno conservati per 10 anni dalla cessazione del rapporto contrattuale per finalità fiscali e contabili, salvo diversi termini previsti dalla legge.</p>
+                            <p><strong>Comunicazione e diffusione:</strong> I dati potranno essere comunicati a: consulenti fiscali e legali, istituti di credito per pratiche di finanziamento, enti pubblici per adempimenti di legge, fornitori di servizi informatici. I dati non saranno diffusi.</p>
+                            <p><strong>Diritti dell'interessato:</strong> L'interessato ha diritto di ottenere dal Titolare: l'accesso ai propri dati personali, la rettifica o la cancellazione degli stessi, la limitazione del trattamento, la portabilità dei dati, l'opposizione al trattamento. Per esercitare tali diritti: giacomo@pericar.it o Corso Casale 99, 14100 Asti. È possibile proporre reclamo al Garante per la Protezione dei Dati Personali.</p>
+                            <p><strong>Consenso al marketing:</strong> Il consenso per le finalità di marketing è facoltativo e può essere revocato in qualsiasi momento senza pregiudicare la liceità del trattamento basata sul consenso prestato prima della revoca.</p>
+                            
+                            <div style="display: flex; gap: 15px; margin: 8px 0; padding: 8px; border: 1px solid #ddd; background: #f9f9f9;">
+                                <label style="font-size: 0.5rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox"> <strong>ACCONSENTO</strong> al trattamento dei miei dati personali per finalità di marketing diretto</label>
+                                <label style="font-size: 0.5rem; display: flex; align-items: center; gap: 5px;"><input type="checkbox"> <strong>NON ACCONSENTO</strong> al trattamento dei miei dati personali per finalità di marketing diretto</label>
+                            </div>
+                            
+                            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                                    <div style="text-align: center;">
+                                        <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                        <strong style="font-size: 0.6rem;">Firma per presa visione<br/>dell'informativa privacy<br/>(Acquirente)</strong>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="border-bottom: 2px solid #333; margin-bottom: 8px; height: 40px;"></div>
+                                        <strong style="font-size: 0.6rem;">Firma del Titolare<br/>del trattamento<br/>(PERICAR)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            html += '</div>';
-            container.innerHTML = html;
+            document.getElementById('contrattoCompleto').innerHTML = html;
+            document.getElementById('modalContratto').style.display = 'block';
+        }
+
+        function chiudiModalContratto() {
+            document.getElementById('modalContratto').style.display = 'none';
+        }
+
+        function stampaContratto() {
+            const printWindow = window.open('', '_blank');
+            const contractContent = document.getElementById('contrattoCompleto').innerHTML;
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Contratto</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; font-size: 0.75rem; line-height: 1.2; margin: 15px; }
+                        .contract-preview { background: white; }
+                        .contract-header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                        .contract-section { margin-bottom: 10px; }
+                        .contract-section h3 { background: #f8f9fa; padding: 6px; margin-bottom: 8px; border-left: 4px solid #667eea; font-size: 0.85rem; }
+                        .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd; }
+                        .signature-box { text-align: center; padding: 10px 0; }
+                        .signature-line { border-bottom: 1px solid #333; margin-bottom: 8px; height: 30px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+                        td { padding: 6px; border-bottom: 1px solid #ddd; }
+                        img { height: 4.2cm; width: auto; display: block; margin: 0 auto 10px auto; }
+                        @page { margin: 1cm 1.5cm 1.5cm 1.5cm; size: A4; }
+                        @media print {
+                            body { font-size: 0.7rem; line-height: 1.1; }
+                            .contract-preview { margin: 0; padding: 0; }
+                            table { font-size: 0.65rem; }
+                            h2 { font-size: 0.9rem; }
+                            h3 { font-size: 0.55rem; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${contractContent}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        function modificaContratto(id) {
+            const contratto = contratti.find(c => c.id == id);
+            if (!contratto) return;
+            
+            // Popola i campi del form con i dati del contratto
+            document.getElementById('clienteContratto').value = contratto.clienteId;
+            document.getElementById('autoContratto').value = contratto.autoId;
+            document.getElementById('dataContratto').value = contratto.dataContratto;
+            document.getElementById('luogoContratto').value = contratto.luogo;
+            
+            // Dati permuta
+            document.getElementById('marcaPermuta').value = contratto.permuta.marca || '';
+            document.getElementById('modelloPermuta').value = contratto.permuta.modello || '';
+            document.getElementById('targaPermuta').value = contratto.permuta.targa || '';
+            document.getElementById('telaioPermuta').value = contratto.permuta.telaio || '';
+            document.getElementById('dataImmatricolazionePermuta').value = contratto.permuta.dataImmatricolazione || '';
+            document.getElementById('chilometriPermuta').value = contratto.permuta.chilometri || '';
+            document.getElementById('versionePermuta').value = contratto.permuta.versione || '';
+            document.getElementById('valutazionePermuta').value = contratto.permuta.valutazione || '';
+            
+            // Dettagli economici
+            document.getElementById('depositoCauzionale').value = contratto.depositoCauzionale || '';
+            document.getElementById('speseVoltura').value = contratto.speseVoltura || '';
+            document.getElementById('canaleVendita').value = contratto.canaleVendita || 'Autoscout';
+            
+            // Sconto e prezzo finale
+            document.getElementById('prezzoBaseAuto').value = contratto.auto.prezzoVendita;
+            document.getElementById('scontoApplicato').value = contratto.scontoApplicato || 0;
+            document.getElementById('prezzoFinaleAuto').value = contratto.prezzoFinaleAuto || contratto.auto.prezzoVendita;
+            
+            // Ripristina extra items
+            extraItems = [...(contratto.extraItems || [])];
+            aggiornaListaExtra();
+            
+            // Elimina il contratto esistente per permettere la modifica
+            eliminaContratto(id);
+            
+            // Passa al tab contratti
+            showTab('contratti');
+            document.querySelector('[onclick="showTab(\'contratti\')"]').click();
+            
+            alert('Contratto caricato per la modifica. Modifica i dati e clicca "Crea Contratto" per salvare.');
+        }
+
+        // SALVATAGGIO DATI
+        function salvaClienti() {
+            localStorage.setItem('clienti', JSON.stringify(clienti));
+        }
+
+        function salvaAuto() {
+            localStorage.setItem('auto', JSON.stringify(auto));
+        }
+
+        function salvaContratti() {
+            localStorage.setItem('contratti', JSON.stringify(contratti));
         }
 
         // GESTIONE SPESE AUTO
@@ -2154,21 +2776,23 @@
             if (!autoCorrente) return;
             
             // Inizializza array spese se non esiste
-            if (!autoCorrente.spese_aggiuntive) {
-                autoCorrente.spese_aggiuntive = [];
+            if (!autoCorrente.speseAggiuntive) {
+                autoCorrente.speseAggiuntive = [];
             }
             
-            const speseAggiuntiveTotali = (autoCorrente.spese_aggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-            const costoTotale = autoCorrente.prezzo_acquisto + speseAggiuntiveTotali;
-            const margine = autoCorrente.prezzo_vendita - costoTotale;
+            // I costi sono già unificati nel sistema di spese
+            
+            const speseAggiuntiveTotali = (autoCorrente.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoCorrente.prezzoAcquisto + speseAggiuntiveTotali;
+            const margine = autoCorrente.prezzoVendita - costoTotale;
             
             document.getElementById('infoAuto').innerHTML = `
                 <h3>${autoCorrente.marca} ${autoCorrente.modello} (${autoCorrente.targa})</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzo_acquisto.toLocaleString()}</div>
+                    <div><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</div>
                     <div><strong>Spese Totali:</strong> €${speseAggiuntiveTotali.toLocaleString()}</div>
                     <div><strong>Costo Totale:</strong> €${costoTotale.toLocaleString()}</div>
-                    <div><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzo_vendita.toLocaleString()}</div>
+                    <div><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</div>
                     <div style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;"><strong>Margine:</strong> €${margine.toLocaleString()}</div>
                 </div>
             `;
@@ -2180,16 +2804,16 @@
             document.getElementById('modalSpese').style.display = 'block';
         }
 
-        async function aggiungiSpesa() {
+        function aggiungiSpesa() {
             if (!autoCorrente) return;
             
             const data = document.getElementById('dataSpesa').value;
             const importo = parseFloat(document.getElementById('importoSpesa').value);
             const categoria = document.getElementById('categoriaSpesa').value;
-            const descrizione = document.getElementById('descrizioneSpesa').value.trim();
+            const descrizione = document.getElementById('descrizioneSpesa').value;
             
             if (!data || !importo || importo <= 0) {
-                mostrarNotifica('Data e importo sono obbligatori!', 'danger');
+                alert('Data e importo sono obbligatori!');
                 return;
             }
             
@@ -2199,24 +2823,19 @@
                 importo,
                 categoria,
                 descrizione,
-                isInitialCost: false
+                isInitialCost: categoria === 'Costo Iniziale'
             };
             
-            autoCorrente.spese_aggiuntive.push(spesa);
-            await salvaDatiSupabase();
+            autoCorrente.speseAggiuntive.push(spesa);
+            salvaAuto();
             aggiornaTabellaSpese();
             aggiornaTabelle();
             aggiornaStatistiche();
-            
-            // Aggiorna info auto nel modal
-            gestisciSpese(autoCorrente.id);
             
             // Pulisci form
             document.getElementById('importoSpesa').value = '';
             document.getElementById('descrizioneSpesa').value = '';
             document.getElementById('categoriaSpesa').value = 'Riparazione';
-            
-            mostrarNotifica('✅ Spesa aggiunta con successo!', 'success');
         }
 
         function aggiornaTabellaSpese() {
@@ -2225,11 +2844,8 @@
             const tbody = document.getElementById('tabellaSpese');
             tbody.innerHTML = '';
             
-            const spese = autoCorrente.spese_aggiuntive || [];
+            const spese = autoCorrente.speseAggiuntive || [];
             let totaleSpese = 0;
-            
-            // Ordina spese per data (più recenti prima)
-            spese.sort((a, b) => new Date(b.data) - new Date(a.data));
             
             spese.forEach(spesa => {
                 totaleSpese += spesa.importo;
@@ -2245,7 +2861,8 @@
                     <td style="font-weight: bold;">€${spesa.importo.toLocaleString()}</td>
                     <td>${spesa.descrizione || '-'}</td>
                     <td class="actions">
-                        ${!spesa.isInitialCost ? `<button class="btn btn-danger" onclick="eliminaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button>` : ''}
+                        <button class="btn btn-warning" onclick="modificaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">✏️</button>
+                        <button class="btn btn-danger" onclick="eliminaSpesa(${spesa.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button>
                     </td>
                 `;
             });
@@ -2263,19 +2880,49 @@
             }
         }
 
-        async function eliminaSpesa(spesaId) {
+        function modificaSpesa(spesaId) {
+            if (!autoCorrente) return;
+            
+            const spesa = autoCorrente.speseAggiuntive.find(s => s.id == spesaId);
+            if (!spesa) return;
+            
+            // Popola i campi con i dati della spesa
+            document.getElementById('dataSpesa').value = spesa.data;
+            document.getElementById('importoSpesa').value = spesa.importo;
+            document.getElementById('categoriaSpesa').value = spesa.isInitialCost ? 'Costo Iniziale' : spesa.categoria;
+            document.getElementById('descrizioneSpesa').value = spesa.descrizione || '';
+            
+            // Aggiungi categoria "Costo Iniziale" se non esiste
+            const selectCategoria = document.getElementById('categoriaSpesa');
+            let hasInitialCost = false;
+            for (let option of selectCategoria.options) {
+                if (option.value === 'Costo Iniziale') {
+                    hasInitialCost = true;
+                    break;
+                }
+            }
+            if (!hasInitialCost) {
+                const option = document.createElement('option');
+                option.value = 'Costo Iniziale';
+                option.textContent = 'Costo Iniziale';
+                selectCategoria.appendChild(option);
+            }
+            
+            // Elimina la spesa esistente
+            autoCorrente.speseAggiuntive = autoCorrente.speseAggiuntive.filter(s => s.id != spesaId);
+            aggiornaTabellaSpese();
+            
+            alert('Spesa caricata per la modifica. Modifica i dati e clicca "Aggiungi Spesa" per salvare.');
+        }
+
+        function eliminaSpesa(spesaId) {
             if (!autoCorrente || !confirm('Sei sicuro di voler eliminare questa spesa?')) return;
             
-            autoCorrente.spese_aggiuntive = autoCorrente.spese_aggiuntive.filter(s => s.id != spesaId);
-            await salvaDatiSupabase();
+            autoCorrente.speseAggiuntive = autoCorrente.speseAggiuntive.filter(s => s.id != spesaId);
+            salvaAuto();
             aggiornaTabellaSpese();
             aggiornaTabelle();
             aggiornaStatistiche();
-            
-            // Aggiorna info auto nel modal
-            gestisciSpese(autoCorrente.id);
-            
-            mostrarNotifica('✅ Spesa eliminata con successo!', 'success');
         }
 
         function chiudiModalSpese() {
@@ -2283,14 +2930,187 @@
             autoCorrente = null;
         }
 
+        // REPORT AUTO VENDUTA
+        function stampaReportAuto(autoId) {
+            const autoObj = auto.find(a => a.id == autoId);
+            if (!autoObj) return;
+            
+            const contratto = contratti.find(c => c.autoId == autoId);
+            const speseAggiuntive = autoObj.speseAggiuntive || [];
+            const speseAggiuntiveTotali = speseAggiuntive.reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0) + speseAggiuntiveTotali;
+            const margine = autoObj.prezzoVendita - costoTotale;
+            
+            const printWindow = window.open('', '_blank');
+            
+            let speseHtml = '';
+            if (speseAggiuntive.length > 0) {
+                speseHtml = `
+                    <h3>Spese Aggiuntive Sostenute</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Data</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Categoria</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Importo</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrizione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${speseAggiuntive.map(spesa => `
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${new Date(spesa.data).toLocaleDateString('it-IT')}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${spesa.categoria}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${spesa.importo.toLocaleString()}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${spesa.descrizione || '-'}</td>
+                                </tr>
+                            `).join('')}
+                            <tr style="background: #f8f9fa; font-weight: bold;">
+                                <td colspan="2" style="border: 1px solid #ddd; padding: 8px;">TOTALE SPESE AGGIUNTIVE</td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; color: #dc3545;">€${speseAggiuntiveTotali.toLocaleString()}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Report Auto - ${autoObj.marca} ${autoObj.modello}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+                        .info-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+                        .riepilogo { background: #f8f9fa; border: 2px solid #1e40af; padding: 20px; border-radius: 10px; margin-top: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background: #f8f9fa; }
+                        .margine-positivo { color: #28a745; font-weight: bold; }
+                        .margine-negativo { color: #dc3545; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>REPORT ECONOMICO AUTO VENDUTA</h1>
+                        <h2>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</h2>
+                        <p>Data Report: ${new Date().toLocaleDateString('it-IT')}</p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <h3>Dati Veicolo</h3>
+                            <p><strong>Marca:</strong> ${autoObj.marca}</p>
+                            <p><strong>Modello:</strong> ${autoObj.modello}</p>
+                            <p><strong>Versione:</strong> ${autoObj.versione || '-'}</p>
+                            <p><strong>Targa:</strong> ${autoObj.targa}</p>
+                            <p><strong>Telaio:</strong> ${autoObj.telaio || '-'}</p>
+                            <p><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</p>
+                            <p><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</p>
+                            <p><strong>Tipo:</strong> ${autoObj.tipo}</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h3>Dati Vendita</h3>
+                            <p><strong>Cliente:</strong> ${contratto ? contratto.cliente.nome : 'N/D'}</p>
+                            <p><strong>Data Vendita:</strong> ${contratto ? new Date(contratto.dataContratto).toLocaleDateString('it-IT') : 'N/D'}</p>
+                            <p><strong>Prezzo Vendita:</strong> €${autoObj.prezzoVendita.toLocaleString()}</p>
+                            ${contratto && contratto.permuta.valutazione > 0 ? `<p><strong>Permuta:</strong> ${contratto.permuta.marca} ${contratto.permuta.modello} - €${contratto.permuta.valutazione.toLocaleString()}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <h3>Costi Sostenuti</h3>
+                    <table style="margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Tipo Costo</th>
+                                <th style="text-align: right;">Importo</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Prezzo Acquisto</td>
+                                <td style="text-align: right;">€${autoObj.prezzoAcquisto.toLocaleString()}</td>
+                                <td>Costo iniziale del veicolo</td>
+                            </tr>
+                            ${(autoObj.costiAggiuntivi || 0) > 0 ? `
+                            <tr>
+                                <td>Costi Iniziali</td>
+                                <td style="text-align: right;">€${(autoObj.costiAggiuntivi || 0).toLocaleString()}</td>
+                                <td>${autoObj.descrizioneCosti || 'Costi sostenuti all\'acquisto'}</td>
+                            </tr>
+                            ` : ''}
+                        </tbody>
+                    </table>
+                    
+                    ${speseHtml}
+                    
+                    <div class="riepilogo">
+                        <h2>RIEPILOGO ECONOMICO</h2>
+                        <table>
+                            <tr>
+                                <td><strong>Prezzo Vendita</strong></td>
+                                <td style="text-align: right;"><strong>€${autoObj.prezzoVendita.toLocaleString()}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Costo Acquisto</td>
+                                <td style="text-align: right;">-€${autoObj.prezzoAcquisto.toLocaleString()}</td>
+                            </tr>
+                            ${(autoObj.costiAggiuntivi || 0) > 0 ? `
+                            <tr>
+                                <td>Costi Iniziali</td>
+                                <td style="text-align: right;">-€${(autoObj.costiAggiuntivi || 0).toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
+                            ${speseAggiuntiveTotali > 0 ? `
+                            <tr>
+                                <td>Spese Aggiuntive</td>
+                                <td style="text-align: right;">-€${speseAggiuntiveTotali.toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
+                            <tr style="border-top: 2px solid #333; font-size: 1.2rem;">
+                                <td><strong>MARGINE NETTO</strong></td>
+                                <td style="text-align: right;" class="${margine >= 0 ? 'margine-positivo' : 'margine-negativo'}">
+                                    <strong>${margine >= 0 ? '+' : ''}€${margine.toLocaleString()}</strong>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: ${margine >= 0 ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                            <p style="margin: 0; font-weight: bold; color: ${margine >= 0 ? '#155724' : '#721c24'};">
+                                ${margine >= 0 ? '✅ Vendita in UTILE' : '❌ Vendita in PERDITA'}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center; font-size: 0.9rem; color: #666;">
+                        <p>Report generato da PERICAR - Sistema Gestione Concessionaria</p>
+                        <p>Corso Casale 99, 14100 Asti (AT) - Tel: +39 339 6831296</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
         // DETTAGLIO MARGINE
         function mostraDettaglioMargine(autoId) {
             const autoObj = auto.find(a => a.id == autoId);
             if (!autoObj) return;
             
-            const speseAggiuntiveTotali = (autoObj.spese_aggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
-            const costoTotale = autoObj.prezzo_acquisto + speseAggiuntiveTotali;
-            const margine = autoObj.prezzo_vendita - costoTotale;
+            const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
+            const margine = autoObj.prezzoVendita - costoTotale;
             
             // Info auto
             document.getElementById('infoAutoMargine').innerHTML = `
@@ -2299,7 +3119,7 @@
                     <div><strong>Tipo:</strong> ${autoObj.tipo}</div>
                     <div><strong>Stato:</strong> ${autoObj.stato}</div>
                     <div><strong>Km:</strong> ${autoObj.chilometri.toLocaleString()}</div>
-                    <div><strong>Immatricolazione:</strong> ${autoObj.data_immatricolazione ? new Date(autoObj.data_immatricolazione).toLocaleDateString('it-IT') : 'N/D'}</div>
+                    <div><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : 'N/D'}</div>
                 </div>
             `;
             
@@ -2311,17 +3131,17 @@
             let row = tbody.insertRow();
             row.innerHTML = `
                 <td style="padding: 12px; font-weight: bold; background: #e8f5e8;">💰 PREZZO DI VENDITA</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${autoObj.prezzo_vendita.toLocaleString()}</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${autoObj.prezzoVendita.toLocaleString()}</td>
             `;
             
             // Prezzo acquisto
             row = tbody.insertRow();
             row.innerHTML = `
                 <td style="padding: 12px;">🏪 Prezzo di acquisto</td>
-                <td style="padding: 12px; text-align: right; color: #dc3545;">-€${autoObj.prezzo_acquisto.toLocaleString()}</td>
+                <td style="padding: 12px; text-align: right; color: #dc3545;">-€${autoObj.prezzoAcquisto.toLocaleString()}</td>
             `;
             
-            // Spese e costi
+            // Spese e costi (unificati)
             if (speseAggiuntiveTotali > 0) {
                 row = tbody.insertRow();
                 row.innerHTML = `
@@ -2329,8 +3149,8 @@
                     <td style="padding: 12px; text-align: right; color: #dc3545;">-€${speseAggiuntiveTotali.toLocaleString()}</td>
                 `;
                 
-                // Dettaglio spese
-                (autoObj.spese_aggiuntive || []).forEach(spesa => {
+                // Dettaglio spese (inclusi costi iniziali)
+                (autoObj.speseAggiuntive || []).forEach(spesa => {
                     const icona = spesa.isInitialCost ? '🔧' : '📋';
                     row = tbody.insertRow();
                     row.innerHTML = `
@@ -2356,7 +3176,7 @@
             `;
             
             // Percentuale margine
-            const percentualeMargine = autoObj.prezzo_vendita > 0 ? ((margine / autoObj.prezzo_vendita) * 100).toFixed(1) : 0;
+            const percentualeMargine = autoObj.prezzoVendita > 0 ? ((margine / autoObj.prezzoVendita) * 100).toFixed(1) : 0;
             row = tbody.insertRow();
             row.innerHTML = `
                 <td style="padding: 10px; font-style: italic; color: #666;">📈 Percentuale margine sul prezzo di vendita</td>
@@ -2370,18 +3190,71 @@
             document.getElementById('modalDettaglioMargine').style.display = 'none';
         }
 
-        // CONTRATTO
-        function mostraContratto(contratto) {
-            const totaleExtra = (contratto.extra_items || []).reduce((sum, item) => sum + item.prezzo, 0);
-            const prezzoBaseAuto = contratto.auto.prezzo_vendita;
-            const scontoApplicato = contratto.sconto_applicato || 0;
-            const prezzoFinaleAuto = contratto.prezzo_finale_auto || prezzoBaseAuto;
-            const totaleASaldo = prezzoFinaleAuto + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.deposito_cauzionale + contratto.spese_voltura;
+        // Chiudi modal cliccando fuori
+        window.onclick = function(event) {
+            const modalModifica = document.getElementById('modalModifica');
+            const modalContratto = document.getElementById('modalContratto');
+            const modalSpese = document.getElementById('modalSpese');
+            const modalRecupero = document.getElementById('modalRecuperoPassword');
+            const modalCambio = document.getElementById('modalCambioPassword');
+            const modalDettaglioMargine = document.getElementById('modalDettaglioMargine');
             
-            const html = `
-                <div class="contract-preview">
-                    <!-- Header con logo e info azienda -->
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 20px; align-items: start;">
-                        <div style="text-align: center;">
-                            <img src="https://gestionalevero.netlify.app/logopericar2.png" alt="PERICAR Logo" style="height: 80px; width
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e796df5623edd0',t:'MTc1NTA4MTU3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+            if (event.target == modalModifica) {
+                chiudiModal();
+            }
+            if (event.target == modalContratto) {
+                chiudiModalContratto();
+            }
+            if (event.target == modalSpese) {
+                chiudiModalSpese();
+            }
+            if (event.target == modalRecupero) {
+                chiudiModalRecupero();
+            }
+            if (event.target == modalCambio) {
+                chiudiModalCambio();
+            }
+            if (event.target == modalDettaglioMargine) {
+                chiudiModalDettaglioMargine();
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e89fe85030bc94',t:'MTc1NTA5MjQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // Configurazione Firebase (la tua)
+  const firebaseConfig = {
+    apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
+    authDomain: "gestionale-pericar.firebaseapp.com",
+    projectId: "gestionale-pericar",
+    storageBucket: "gestionale-pericar.firebasestorage.app",
+    messagingSenderId: "595124490704",
+    appId: "1:595124490704:web:af46e4f701262bcbf8e9d5"
+  };
+
+  // Inizializza Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Adapter Firestore che sostituisce localStorage
+  window.remoteStorage = {
+    async getItem(key) {
+      const snap = await getDocs(collection(db, key));
+      return JSON.stringify(snap.docs.map(d => d.data()));
+    },
+    async setItem(key, value) {
+      const arr = JSON.parse(value);
+      for (let i = 0; i < arr.length; i++) {
+        await setDoc(doc(db, key, String(arr[i].id || i)), arr[i]);
+      }
+    }
+  };
+
+  // Sovrascrive le funzioni di localStorage
+  localStorage.getItem = window.remoteStorage.getItem;
+  localStorage.setItem = window.remoteStorage.setItem;
+</script>
+</body>
+</html>
