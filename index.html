@@ -3224,7 +3224,6 @@ Nuova password richiesta: ${nuovaPassword}`);
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // Configurazione Firebase (la tua)
   const firebaseConfig = {
     apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
     authDomain: "gestionale-pericar.firebaseapp.com",
@@ -3234,27 +3233,51 @@ Nuova password richiesta: ${nuovaPassword}`);
     appId: "1:595124490704:web:af46e4f701262bcbf8e9d5"
   };
 
-  // Inizializza Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Adapter Firestore che sostituisce localStorage
-  window.remoteStorage = {
-    async getItem(key) {
+  // --- Precarica Firestore -> localStorage (sincrono per il tuo codice) ---
+  async function preload(key) {
+    try {
       const snap = await getDocs(collection(db, key));
-      return JSON.stringify(snap.docs.map(d => d.data()));
-    },
-    async setItem(key, value) {
-      const arr = JSON.parse(value);
-      for (let i = 0; i < arr.length; i++) {
-        await setDoc(doc(db, key, String(arr[i].id || i)), arr[i]);
+      const arr = snap.docs.map(d => d.data());
+      if (arr.length) {
+        localStorage.setItem(key, JSON.stringify(arr));
+      } else {
+        // Se non c'è nulla in Firestore, lascia quello locale (se esiste)
       }
+    } catch (e) {
+      console.warn("Preload Firestore fallito per", key, e);
+    }
+  }
+
+  // Precarica prima che il tuo DOMContentLoaded giri la UI
+  window.addEventListener('DOMContentLoaded', async () => {
+    await Promise.all([preload('clienti'), preload('auto'), preload('contratti')]);
+    // A questo punto il tuo codice leggerà da localStorage come sempre
+  });
+
+  // --- Write-through: locale + Firestore ---
+  const realSetItem = localStorage.setItem.bind(localStorage);
+
+  localStorage.setItem = function(key, value) {
+    // 1) salva comunque in locale (sync, non rompe nulla)
+    realSetItem(key, value);
+
+    // 2) prova a salvare su Firestore (async, ignora errori)
+    try {
+      const arr = JSON.parse(value);
+      if (Array.isArray(arr)) {
+        arr.forEach(async (obj, i) => {
+          const id = String(obj?.id ?? i);
+          await setDoc(doc(db, key, id), obj ?? {});
+        });
+      }
+    } catch (e) {
+      // Non è un array JSON? Ignora (es. sessione, stringhe varie)
     }
   };
-
-  // Sovrascrive le funzioni di localStorage
-  localStorage.getItem = window.remoteStorage.getItem;
-  localStorage.setItem = window.remoteStorage.setItem;
 </script>
 </body>
 </html>
+
