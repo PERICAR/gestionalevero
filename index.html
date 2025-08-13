@@ -3238,31 +3238,40 @@ Nuova password richiesta: ${nuovaPassword}`);
 
   const KEYS = ["clienti","auto","contratti"];
 
+  const SHAPES = {
+    clienti: {id:0,nome:"",dataNascita:"",luogoNascita:"",residenza:"",codiceFiscale:"",professione:"",telefono:"",email:""},
+    auto: {id:0,marca:"",modello:"",versione:"",targa:"",telaio:"",dataImmatricolazione:"",chilometri:0,prezzoAcquisto:0,prezzoVendita:0,tipo:"USATO",stato:"Disponibile",speseAggiuntive:[]},
+    contratti: {id:0,clienteId:"",autoId:"",dataContratto:"",luogo:"Asti",depositoCauzionale:0,speseVoltura:0,canaleVendita:"Autoscout",scontoApplicato:0,prezzoFinaleAuto:0,extraItems:[],permuta:null,cliente:null,auto:null}
+  };
+
+  function normalize(arr, shape){
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter(x => x && typeof x === "object")
+      .map(x => ({...shape, ...x}));
+  }
+
   async function fetchCollectionToLocal(key){
     const snap = await getDocs(collection(db, key));
     const arr = snap.docs.map(d => d.data());
-    localStorage.setItem(key, JSON.stringify(arr));
+    const norm = normalize(arr, SHAPES[key] || {});
+    localStorage.setItem(key, JSON.stringify(norm));
   }
 
-  // 1) all’avvio: svuota solo le chiavi del gestionale e ricarica da Firestore
   window.addEventListener("DOMContentLoaded", async () => {
     try {
       KEYS.forEach(k => localStorage.removeItem(k));
       await Promise.all(KEYS.map(fetchCollectionToLocal));
       localStorage.setItem("_lastSync", new Date().toISOString());
-      // opzionale: ricarica la UI se serve leggere subito i nuovi dati
-      // location.reload();
     } catch (e) {
       console.warn("Sync iniziale fallita:", e);
     }
   });
 
-  // 2) write-through: quando il gestionale salva, scrivi locale + Firestore
   const realSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value){
-    realSetItem(key, value); // non rompere la UI
+    realSetItem(key, value);
     if (!KEYS.includes(key)) return;
-
     try {
       const arr = JSON.parse(value);
       if (Array.isArray(arr)) {
@@ -3272,10 +3281,9 @@ Nuova password richiesta: ${nuovaPassword}`);
           catch (e) { console.warn("Save Firestore fallita:", key, id, e); }
         });
       }
-    } catch { /* non era JSON array: ignora */ }
+    } catch {}
   };
 
-  // 3) utilità manuale: forzare un refresh da Firestore quando vuoi
   window.forceCloudRefresh = async () => {
     await Promise.all(KEYS.map(fetchCollectionToLocal));
     localStorage.setItem("_lastSync", new Date().toISOString());
@@ -3285,5 +3293,6 @@ Nuova password richiesta: ${nuovaPassword}`);
 </script>
 </body>
 </html>
+
 
 
