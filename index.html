@@ -3236,48 +3236,54 @@ Nuova password richiesta: ${nuovaPassword}`);
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- Precarica Firestore -> localStorage (sincrono per il tuo codice) ---
-  async function preload(key) {
-    try {
-      const snap = await getDocs(collection(db, key));
-      const arr = snap.docs.map(d => d.data());
-      if (arr.length) {
-        localStorage.setItem(key, JSON.stringify(arr));
-      } else {
-        // Se non c'è nulla in Firestore, lascia quello locale (se esiste)
-      }
-    } catch (e) {
-      console.warn("Preload Firestore fallito per", key, e);
-    }
+  const KEYS = ["clienti","auto","contratti"];
+
+  async function fetchCollectionToLocal(key){
+    const snap = await getDocs(collection(db, key));
+    const arr = snap.docs.map(d => d.data());
+    localStorage.setItem(key, JSON.stringify(arr));
   }
 
-  // Precarica prima che il tuo DOMContentLoaded giri la UI
-  window.addEventListener('DOMContentLoaded', async () => {
-    await Promise.all([preload('clienti'), preload('auto'), preload('contratti')]);
-    // A questo punto il tuo codice leggerà da localStorage come sempre
+  // 1) all’avvio: svuota solo le chiavi del gestionale e ricarica da Firestore
+  window.addEventListener("DOMContentLoaded", async () => {
+    try {
+      KEYS.forEach(k => localStorage.removeItem(k));
+      await Promise.all(KEYS.map(fetchCollectionToLocal));
+      localStorage.setItem("_lastSync", new Date().toISOString());
+      // opzionale: ricarica la UI se serve leggere subito i nuovi dati
+      // location.reload();
+    } catch (e) {
+      console.warn("Sync iniziale fallita:", e);
+    }
   });
 
-  // --- Write-through: locale + Firestore ---
+  // 2) write-through: quando il gestionale salva, scrivi locale + Firestore
   const realSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value){
+    realSetItem(key, value); // non rompere la UI
+    if (!KEYS.includes(key)) return;
 
-  localStorage.setItem = function(key, value) {
-    // 1) salva comunque in locale (sync, non rompe nulla)
-    realSetItem(key, value);
-
-    // 2) prova a salvare su Firestore (async, ignora errori)
     try {
       const arr = JSON.parse(value);
       if (Array.isArray(arr)) {
         arr.forEach(async (obj, i) => {
           const id = String(obj?.id ?? i);
-          await setDoc(doc(db, key, id), obj ?? {});
+          try { await setDoc(doc(db, key, id), obj ?? {}); }
+          catch (e) { console.warn("Save Firestore fallita:", key, id, e); }
         });
       }
-    } catch (e) {
-      // Non è un array JSON? Ignora (es. sessione, stringhe varie)
-    }
+    } catch { /* non era JSON array: ignora */ }
+  };
+
+  // 3) utilità manuale: forzare un refresh da Firestore quando vuoi
+  window.forceCloudRefresh = async () => {
+    await Promise.all(KEYS.map(fetchCollectionToLocal));
+    localStorage.setItem("_lastSync", new Date().toISOString());
+    alert("Dati ricaricati dal cloud.");
+    location.reload();
   };
 </script>
 </body>
 </html>
+
 
