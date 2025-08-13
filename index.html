@@ -3222,77 +3222,61 @@ Nuova password richiesta: ${nuovaPassword}`);
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e89fe85030bc94',t:'MTc1NTA5MjQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+  // 🔹 Config Firestore — QUI ci metti il tuo firebaseConfig
   const firebaseConfig = {
-    apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
-    authDomain: "gestionale-pericar.firebaseapp.com",
-    projectId: "gestionale-pericar",
-    storageBucket: "gestionale-pericar.firebasestorage.app",
-    messagingSenderId: "595124490704",
-    appId: "1:595124490704:web:af46e4f701262bcbf8e9d5"
+    apiKey: "TUO_API_KEY",
+    authDomain: "TUO_AUTH_DOMAIN",
+    projectId: "TUO_PROJECT_ID",
+    storageBucket: "TUO_BUCKET",
+    messagingSenderId: "TUO_SENDER_ID",
+    appId: "TUO_APP_ID"
   };
-
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const KEYS = ["clienti","auto","contratti"];
-
-  const SHAPES = {
-    clienti: {id:0,nome:"",dataNascita:"",luogoNascita:"",residenza:"",codiceFiscale:"",professione:"",telefono:"",email:""},
-    auto: {id:0,marca:"",modello:"",versione:"",targa:"",telaio:"",dataImmatricolazione:"",chilometri:0,prezzoAcquisto:0,prezzoVendita:0,tipo:"USATO",stato:"Disponibile",speseAggiuntive:[]},
-    contratti: {id:0,clienteId:"",autoId:"",dataContratto:"",luogo:"Asti",depositoCauzionale:0,speseVoltura:0,canaleVendita:"Autoscout",scontoApplicato:0,prezzoFinaleAuto:0,extraItems:[],permuta:null,cliente:null,auto:null}
-  };
-
-  function normalize(arr, shape){
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .filter(x => x && typeof x === "object")
-      .map(x => ({...shape, ...x}));
-  }
-
-  async function fetchCollectionToLocal(key){
-    const snap = await getDocs(collection(db, key));
-    const arr = snap.docs.map(d => d.data());
-    const norm = normalize(arr, SHAPES[key] || {});
-    localStorage.setItem(key, JSON.stringify(norm));
-  }
-
-  window.addEventListener("DOMContentLoaded", async () => {
-    try {
-      KEYS.forEach(k => localStorage.removeItem(k));
-      await Promise.all(KEYS.map(fetchCollectionToLocal));
-      localStorage.setItem("_lastSync", new Date().toISOString());
-    } catch (e) {
-      console.warn("Sync iniziale fallita:", e);
-    }
-  });
+  // Raccolte gestite
+  const KEYS = ["clienti", "auto", "contratti"];
 
   const realSetItem = localStorage.setItem.bind(localStorage);
-  localStorage.setItem = function(key, value){
+  localStorage.setItem = function(key, value) {
     realSetItem(key, value);
     if (!KEYS.includes(key)) return;
-    try {
-      const arr = JSON.parse(value);
-      if (Array.isArray(arr)) {
-        arr.forEach(async (obj, i) => {
-          const id = String(obj?.id ?? i);
-          try { await setDoc(doc(db, key, id), obj ?? {}); }
-          catch (e) { console.warn("Save Firestore fallita:", key, id, e); }
-        });
-      }
-    } catch {}
-  };
 
-  window.forceCloudRefresh = async () => {
-    await Promise.all(KEYS.map(fetchCollectionToLocal));
-    localStorage.setItem("_lastSync", new Date().toISOString());
-    alert("Dati ricaricati dal cloud.");
-    location.reload();
+    (async () => {
+      try {
+        const arr = JSON.parse(value);
+        if (!Array.isArray(arr)) return;
+
+        // Salvataggio/aggiornamento
+        const wantedIds = new Set();
+        for (let i = 0; i < arr.length; i++) {
+          const obj = arr[i] ?? {};
+          const id = String(obj.id ?? i);
+          wantedIds.add(id);
+          await setDoc(doc(db, key, id), obj);
+        }
+
+        // Eliminazione di ciò che non è più presente
+        const snap = await getDocs(collection(db, key));
+        const deletes = [];
+        snap.forEach(d => {
+          if (!wantedIds.has(d.id)) {
+            deletes.push(deleteDoc(doc(db, key, d.id)));
+          }
+        });
+        await Promise.all(deletes);
+
+      } catch (e) {
+        console.warn("Sync Firestore fallita:", key, e);
+      }
+    })();
   };
 </script>
 </body>
 </html>
+
 
 
 
