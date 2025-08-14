@@ -3297,9 +3297,44 @@ Nuova password richiesta: ${nuovaPassword}`);
       } catch(e){ console.warn("Cloud sync error:", key, e); }
     })();
   };
+    // --- AGGIUNTA: aggiornamento in tempo reale + refresh su focus ---
+
+import { onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ascolta modifiche in tempo reale su una raccolta
+function watchCollection(key) {
+  const col = collection(db, key);
+  onSnapshot(col, (snap) => {
+    const arr = snap.docs.map(d => d.data());
+    const next = JSON.stringify(arr);
+    if (localStorage.getItem(key) !== next) {
+      localStorage.setItem(key, next);
+      location.reload();
+    }
+  });
+}
+
+// attiva il real-time su tutte le raccolte che già sincronizzi
+KEYS.forEach(watchCollection);
+
+// quando torni sulla scheda, forza refresh dal cloud
+window.addEventListener('focus', async () => {
+  if (window._lastFocus && Date.now() - window._lastFocus < 1500) return;
+  window._lastFocus = Date.now();
+  try {
+    const pulls = KEYS.map(async k => {
+      const s = await getDocs(collection(db, k));
+      const arr = s.docs.map(d => d.data());
+      localStorage.setItem(k, JSON.stringify(arr));
+    });
+    await Promise.all(pulls);
+    location.reload();
+  } catch {}
+});
 </script>
 </body>
 </html>
+
 
 
 
