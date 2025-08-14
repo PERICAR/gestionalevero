@@ -3238,8 +3238,33 @@ Nuova password richiesta: ${nuovaPassword}`);
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+    // --- PRELOAD DAL CLOUD AD OGNI AVVIO ---
+(async () => {
+  try {
+    // evita loop: ricarica solo una volta per apertura
+    if (localStorage.getItem("__preloaded") === "1") {
+      localStorage.removeItem("__preloaded");
+      return;
+    }
 
-  const KEYS = ["clienti","auto","contratti"];
+    const KEYS = ["clienti","auto","contratti"];
+    // svuota le chiavi esistenti
+    KEYS.forEach(k => localStorage.removeItem(k));
+
+    for (const k of KEYS) {
+      const s = await getDocs(collection(db, k));
+      const arr = s.docs.map(d => d.data());
+      localStorage.setItem(k, JSON.stringify(arr));
+    }
+
+    localStorage.setItem("__preloaded","1");
+    location.reload(); // ricarica e mostra i dati cloud
+  } catch (e) {
+    console.warn("Preload cloud fallito:", e);
+  }
+})();
+
+    const KEYS = ["clienti","auto","contratti"];
 
   // ---- util per evitare reload inutili ----
   let _initializing = true;
@@ -3336,6 +3361,7 @@ Nuova password richiesta: ${nuovaPassword}`);
 </script>
 </body>
 </html>
+
 
 
 
