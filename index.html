@@ -3331,9 +3331,32 @@ window.addEventListener('focus', async () => {
     location.reload();
   } catch {}
 });
+    // --- PRELOAD DAL CLOUD AD OGNI AVVIO (una sola ricarica) ---
+(async () => {
+  try {
+    // evita loop: ricarica solo una volta per apertura
+    if (localStorage.getItem("__preloaded") === "1") {
+      localStorage.removeItem("__preloaded");
+      return;
+    }
+
+    const KEYS = ["clienti","auto","contratti"]; // usa solo queste tre
+    for (const k of KEYS) {
+      const s = await getDocs(collection(db, k));
+      const arr = s.docs.map(d => d.data());
+      localStorage.setItem(k, JSON.stringify(arr));
+    }
+
+    localStorage.setItem("__preloaded","1");
+    location.reload(); // dopo il preload, ricarica e mostra i dati cloud
+  } catch (e) {
+    console.warn("Preload cloud fallito:", e);
+  }
+})();
 </script>
 </body>
 </html>
+
 
 
 
