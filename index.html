@@ -3222,9 +3222,9 @@ Nuova password richiesta: ${nuovaPassword}`);
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e89fe85030bc94',t:'MTc1NTA5MjQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // -- CONFIG FIREBASE (la tua) --
+  // -- CONFIG FIREBASE --
   const firebaseConfig = {
     apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
     authDomain: "gestionale-pericar.firebaseapp.com",
@@ -3238,38 +3238,22 @@ Nuova password richiesta: ${nuovaPassword}`);
   const db = getFirestore(app);
 
   const KEYS = ["clienti","auto","contratti"];
-  const VERSION = "v3";  // bumpa se fai altre modifiche
 
-  async function fetchCollectionToLocal(key){
-    const snap = await getDocs(collection(db, key));
-    const arr = snap.docs.map(d => d.data());
-    localStorage.setItem(key, JSON.stringify(Array.isArray(arr) ? arr : []));
-  }
-
-  async function initialSync(){
+  // --- PRELOAD ALL'AVVIO ---
+  (async () => {
     try {
-      // svuota solo le chiavi del gestionale
-      KEYS.forEach(k => localStorage.removeItem(k));
-      await Promise.all(KEYS.map(fetchCollectionToLocal));
-      localStorage.setItem("_lastSync", new Date().toISOString());
-      localStorage.setItem("_syncedOnce","1");
-      // ricarica una volta per far leggere i dati appena messi
-      location.reload();
-    } catch(e){ console.warn("Initial sync failed", e); }
-  }
+      for (const k of KEYS) {
+        const s = await getDocs(collection(db, k));
+        const arr = s.docs.map(d => d.data());
+        localStorage.setItem(k, JSON.stringify(arr));
+      }
+      console.log("Preload Firestore OK");
+    } catch (e) {
+      console.warn("Preload Firestore KO:", e);
+    }
+  })();
 
-  // forza resync se è una nuova versione o primo avvio
-  const needVersionBump = localStorage.getItem("_appVersion") !== VERSION;
-  const firstRun = !localStorage.getItem("_syncedOnce");
-  if (needVersionBump) {
-    KEYS.forEach(k => localStorage.removeItem(k));
-    localStorage.setItem("_appVersion", VERSION);
-  }
-  if (needVersionBump || firstRun) {
-    initialSync();
-  }
-
-  // write-through + DELETE in Firestore
+  // --- WRITE-THROUGH + DELETE ---
   const realSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value){
     realSetItem(key, value);
@@ -3292,70 +3276,31 @@ Nuova password richiesta: ${nuovaPassword}`);
         // delete dei doc non più presenti
         const snap = await getDocs(collection(db, key));
         const deletes = [];
-        snap.forEach(d => { if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id))); });
+        snap.forEach(d => {
+          if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id)));
+        });
         await Promise.all(deletes);
       } catch(e){ console.warn("Cloud sync error:", key, e); }
     })();
   };
-    // --- AGGIUNTA: aggiornamento in tempo reale + refresh su focus ---
 
-import { onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// ascolta modifiche in tempo reale su una raccolta
-function watchCollection(key) {
-  const col = collection(db, key);
-  onSnapshot(col, (snap) => {
-    const arr = snap.docs.map(d => d.data());
-    const next = JSON.stringify(arr);
-    if (localStorage.getItem(key) !== next) {
-      localStorage.setItem(key, next);
-      location.reload();
-    }
-  });
-}
-
-// attiva il real-time su tutte le raccolte che già sincronizzi
-KEYS.forEach(watchCollection);
-
-// quando torni sulla scheda, forza refresh dal cloud
-window.addEventListener('focus', async () => {
-  if (window._lastFocus && Date.now() - window._lastFocus < 1500) return;
-  window._lastFocus = Date.now();
-  try {
-    const pulls = KEYS.map(async k => {
-      const s = await getDocs(collection(db, k));
-      const arr = s.docs.map(d => d.data());
-      localStorage.setItem(k, JSON.stringify(arr));
+  // --- REAL-TIME UPDATE ---
+  function watchCollection(key) {
+    const col = collection(db, key);
+    onSnapshot(col, (snap) => {
+      const arr = snap.docs.map(d => d.data());
+      const next = JSON.stringify(arr);
+      if (localStorage.getItem(key) !== next) {
+        localStorage.setItem(key, next);
+        location.reload();
+      }
     });
-    await Promise.all(pulls);
-    location.reload();
-  } catch {}
-});
-    // --- PRELOAD DAL CLOUD AD OGNI AVVIO (una sola ricarica) ---
-(async () => {
-  try {
-    // evita loop: ricarica solo una volta per apertura
-    if (localStorage.getItem("__preloaded") === "1") {
-      localStorage.removeItem("__preloaded");
-      return;
-    }
-
-    const KEYS = ["clienti","auto","contratti"]; // usa solo queste tre
-    for (const k of KEYS) {
-      const s = await getDocs(collection(db, k));
-      const arr = s.docs.map(d => d.data());
-      localStorage.setItem(k, JSON.stringify(arr));
-    }
-
-    localStorage.setItem("__preloaded","1");
-    location.reload(); // dopo il preload, ricarica e mostra i dati cloud
-  } catch (e) {
-    console.warn("Preload cloud fallito:", e);
   }
-})();
+  KEYS.forEach(watchCollection);
 </script>
 </body>
 </html>
+
 
 
 
