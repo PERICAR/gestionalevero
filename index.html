@@ -3222,9 +3222,11 @@ Nuova password richiesta: ${nuovaPassword}`);
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e89fe85030bc94',t:'MTc1NTA5MjQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // -- CONFIG FIREBASE --
+  // --- CONFIG FIREBASE (tua) ---
   const firebaseConfig = {
     apiKey: "ATzaSyChkblSfVXKrIr2XtydTEFE7JsN2PE5Rk0",
     authDomain: "gestionale-pericar.firebaseapp.com",
@@ -3239,21 +3241,42 @@ Nuova password richiesta: ${nuovaPassword}`);
 
   const KEYS = ["clienti","auto","contratti"];
 
-  // --- PRELOAD ALL'AVVIO ---
+  // ---- util per evitare reload inutili ----
+  let _initializing = true;
+  let _writing = false;
+  let _lastReload = 0;
+
+  const stable = (arr) => {
+    if (!Array.isArray(arr)) return "[]";
+    // ordina per id per avere JSON stabile
+    const a = [...arr].sort((x,y) => String(x?.id ?? "").localeCompare(String(y?.id ?? "")));
+    return JSON.stringify(a);
+  };
+
+  const maybeReload = () => {
+    const now = Date.now();
+    if (document.visibilityState !== "visible") return;     // niente reload se scheda non visibile
+    if (now - _lastReload < 3000) return;                   // max 1 reload ogni 3s
+    _lastReload = now;
+    location.reload();
+  };
+
+  // --- PRELOAD ALL'AVVIO (legge dal cloud, nessun reload) ---
   (async () => {
     try {
       for (const k of KEYS) {
         const s = await getDocs(collection(db, k));
         const arr = s.docs.map(d => d.data());
-        localStorage.setItem(k, JSON.stringify(arr));
+        localStorage.setItem(k, stable(arr));
       }
-      console.log("Preload Firestore OK");
     } catch (e) {
       console.warn("Preload Firestore KO:", e);
+    } finally {
+      _initializing = false;
     }
   })();
 
-  // --- WRITE-THROUGH + DELETE ---
+  // --- WRITE-THROUGH + DELETE (scrive/cancella su Firestore) ---
   const realSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value){
     realSetItem(key, value);
@@ -3264,6 +3287,8 @@ Nuova password richiesta: ${nuovaPassword}`);
         const arr = JSON.parse(value);
         if (!Array.isArray(arr)) return;
 
+        _writing = true;
+
         // upsert
         const wantedIds = new Set();
         for (let i = 0; i < arr.length; i++) {
@@ -3273,26 +3298,37 @@ Nuova password richiesta: ${nuovaPassword}`);
           await setDoc(doc(db, key, id), obj);
         }
 
-        // delete dei doc non più presenti
+        // delete quelli non più presenti
         const snap = await getDocs(collection(db, key));
         const deletes = [];
         snap.forEach(d => {
           if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id)));
         });
         await Promise.all(deletes);
-      } catch(e){ console.warn("Cloud sync error:", key, e); }
+      } catch(e){
+        console.warn("Cloud sync error:", key, e);
+      } finally {
+        // piccola pausa prima di riattivare gli snapshot
+        setTimeout(() => { _writing = false; }, 300);
+      }
     })();
   };
 
-  // --- REAL-TIME UPDATE ---
+  // --- REAL-TIME: aggiorna localStorage, ricarica solo se serve ---
   function watchCollection(key) {
     const col = collection(db, key);
     onSnapshot(col, (snap) => {
+      if (_initializing || _writing) return; // evita loop durante preload/scrittura
+
       const arr = snap.docs.map(d => d.data());
-      const next = JSON.stringify(arr);
-      if (localStorage.getItem(key) !== next) {
+      const next = stable(arr);
+      const curr = localStorage.getItem(key);
+
+      if (curr !== next) {
         localStorage.setItem(key, next);
-        location.reload();
+        // niente reload immediato al login: aspetta che la pagina sia pronta
+        // e ricarica al massimo ogni 3s
+        maybeReload();
       }
     });
   }
@@ -3300,6 +3336,7 @@ Nuova password richiesta: ${nuovaPassword}`);
 </script>
 </body>
 </html>
+
 
 
 
