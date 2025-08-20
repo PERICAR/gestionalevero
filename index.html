@@ -2205,9 +2205,16 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('totaleAuto').textContent = autoInStock;
             document.getElementById('totaleContratti').textContent = 21 + contratti.length;
             
-            const fatturatoContratti = contratti.reduce((sum, contratto) => sum + contratto.auto.prezzoVendita, 0);
-            const fatturatoTotale = 132020 + fatturatoContratti;
-            document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString()}`;
+const fatturatoContratti = contratti.reduce((sum, c) => {
+  const prezzoFinale = Number(c?.prezzoFinaleAuto) || Number(c?.auto?.prezzoVendita) || 0;
+  const extra = Array.isArray(c?.extraItems) ? c.extraItems.reduce((s, x) => s + (Number(x.prezzo) || 0), 0) : 0;
+  const voltura = Number(c?.speseVoltura) || 0;
+  return sum + prezzoFinale + extra + voltura;
+}, 0);
+
+const fatturatoTotale = 132020 + fatturatoContratti;
+document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString()}`;
+
             
             // Calcola valore stock presente
             const valoreStock = auto.filter(a => a.stato !== 'Venduta').reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
@@ -3361,6 +3368,7 @@ Nuova password richiesta: ${nuovaPassword}`);
 </script>
 </body>
 </html>
+
 
 
 
