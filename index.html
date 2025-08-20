@@ -2199,96 +2199,126 @@ Nuova password richiesta: ${nuovaPassword}`);
             }
         });
 
-        // STATISTICHE
-        function aggiornaStatistiche() {
-            const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
-            document.getElementById('totaleAuto').textContent = autoInStock;
-            document.getElementById('totaleContratti').textContent = 21 + contratti.length;
-            
-const fatturatoContratti = contratti.reduce((sum, c) => {
-  const prezzoFinale = Number(c?.prezzoFinaleAuto) || Number(c?.auto?.prezzoVendita) || 0;
-  const extra = Array.isArray(c?.extraItems) ? c.extraItems.reduce((s, x) => s + (Number(x.prezzo) || 0), 0) : 0;
-  const voltura = Number(c?.speseVoltura) || 0;
-  return sum + prezzoFinale + extra + voltura;
-}, 0);
+       // STATISTICHE
+function aggiornaStatistiche() {
+  const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
+  document.getElementById('totaleAuto').textContent = autoInStock;
 
-const fatturatoTotale = 132020 + fatturatoContratti;
-document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString()}`;
+  // --------- PERIODO & BASELINE ---------
+  const oggi = new Date();
+  const anno = oggi.getFullYear();
+  const start = (anno === 2025) ? new Date('2025-03-01') : new Date(`${anno}-01-01`);
+  const baselineFatturato = (anno === 2025) ? 132020 : 0; // mantiene i 132.020 solo nel 2025
+  const storicoContratti = (anno === 2025) ? 21 : 0;      // mantiene i 21 solo nel 2025
 
-            
-            // Calcola valore stock presente
-            const valoreStock = auto.filter(a => a.stato !== 'Venduta').reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
-            document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString()}`;
-            
-            // Calcola media vendite mensili
-            const dataInizio = new Date('2025-03-01'); // Marzo 2025
-            const dataOggi = new Date();
-            const mesiTrascorsi = ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1;
-            
-            // Vendite storiche: 21 vendite da marzo a oggi
-            const venditeStoriche = 21; // 21 vendite da marzo a oggi
-            const venditeNuove = contratti.length;
-            
-            const totaleVendite = venditeStoriche + venditeNuove;
-            const mediaVendite = totaleVendite / mesiTrascorsi;
-            document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
-            
-            // Aggiorna statistiche canali
-            aggiornaStatisticheCanali();
-        }
-        
-        function aggiornaStatisticheCanali() {
-            // Dati di partenza
-            const canaliPartenza = {
-                'Conoscenze': 23,
-                'Autoscout': 45,
-                'Cip': 9,
-                'Ingresso spontaneo': 18,
-                'Subito': 5
-            };
-            
-            // Conta vendite per canale dai nuovi contratti
-            const canaliNuovi = {};
-            contratti.forEach(contratto => {
-                const canale = contratto.canaleVendita || 'Autoscout';
-                canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
-            });
-            
-            // Calcola totale vendite
-            const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
-            const totaleVenditeNuove = Object.values(canaliNuovi).reduce((sum, val) => sum + val, 0);
-            const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
-            
-            // Calcola percentuali finali
-            const statisticheFinali = {};
-            Object.keys(canaliPartenza).forEach(canale => {
-                const venditePartenza = canaliPartenza[canale];
-                const venditeNuove = canaliNuovi[canale] || 0;
-                const totaleCanale = venditePartenza + venditeNuove;
-                statisticheFinali[canale] = ((totaleCanale / totaleVendite) * 100).toFixed(1);
-            });
-            
-            // Mostra statistiche
-            const container = document.getElementById('statisticheCanali');
-            container.innerHTML = '';
-            
-            Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
-                const colore = {
-                    'Autoscout': '#1e40af',
-                    'Subito': '#dc2626',
-                    'Conoscenze': '#059669',
-                    'Ingresso spontaneo': '#d97706',
-                    'Cip': '#7c3aed'
-                }[canale] || '#6b7280';
-                
-                container.innerHTML += `
-                    <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
-                        <p style="margin: 0; font-size: 0.9rem;">${canale}</p>
-                    </div>
-                `;
-            });
-        }
+  // --------- PARSER NUMERI ROBUSTO (per "350,00", "1.200,50", numeri, ecc.) ---------
+  const num = v => {
+    if (typeof v === 'number') return isFinite(v) ? v : 0;
+    if (typeof v === 'string') {
+      const s = v.replace(/\./g, '').replace(',', '.').trim();
+      const n = parseFloat(s);
+      return isFinite(n) ? n : 0;
+    }
+    return 0;
+  };
+
+  // --------- CONTRATTI NEL PERIODO ---------
+  const contrattiPeriodo = contratti.filter(c => {
+    const d = c?.dataContratto ? new Date(c.dataContratto) : null;
+    return d && d >= start;
+  });
+
+  // --------- FATTURATO (Prezzo finale + Extra + Voltura) + baseline 2025 ---------
+  const fatturatoContratti = contrattiPeriodo.reduce((sum, c) => {
+    const prezzoFinale = num(c?.prezzoFinaleAuto) || num(c?.auto?.prezzoVendita);
+    const extra = Array.isArray(c?.extraItems) ? c.extraItems.reduce((s, x) => s + num(x.prezzo), 0) : 0;
+    const voltura = num(c?.speseVoltura);
+    return sum + prezzoFinale + extra + voltura;
+  }, 0);
+  const fatturatoTotale = baselineFatturato + fatturatoContratti;
+  document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString('it-IT')}`;
+
+  // --------- TOTALE CONTRATTI (offset 21 solo 2025) ---------
+  document.getElementById('totaleContratti').textContent = storicoContratti + contrattiPeriodo.length;
+
+  // --------- VALORE STOCK PRESENTE (come ora) ---------
+  const valoreStock = auto
+    .filter(a => a.stato !== 'Venduta')
+    .reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
+  document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString('it-IT')}`;
+
+  // --------- MEDIA VENDITE (mese corrente incluso) ---------
+  const dataInizio = start;
+  const dataOggi = new Date();
+  const mesiTrascorsi = Math.max(
+    1,
+    ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1
+  );
+  const totaleVendite = storicoContratti + contrattiPeriodo.length;
+  const mediaVendite = totaleVendite / mesiTrascorsi;
+  document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
+
+  // --------- Canali ---------
+  aggiornaStatisticheCanali();
+}
+
+          function aggiornaStatisticheCanali() {
+  // Baseline canali: solo nel 2025 mantieni i numeri storici; dal 2026 azzera
+  const annoCanali = new Date().getFullYear();
+  const canaliPartenza = (annoCanali === 2025) ? {
+    'Conoscenze': 23,
+    'Autoscout': 45,
+    'Cip': 9,
+    'Ingresso spontaneo': 18,
+    'Subito': 5
+  } : { 'Conoscenze': 0, 'Autoscout': 0, 'Cip': 0, 'Ingresso spontaneo': 0, 'Subito': 0 };
+
+  // Stesso criterio periodo dei contratti/statistiche
+  const startCanali = (annoCanali === 2025) ? new Date('2025-03-01') : new Date(`${annoCanali}-01-01`);
+
+  // Conta vendite per canale solo nel periodo
+  const canaliNuovi = {};
+  contratti.forEach(contratto => {
+    const d = contratto?.dataContratto ? new Date(contratto.dataContratto) : null;
+    if (!d || d < startCanali) return;
+    const canale = contratto.canaleVendita || 'Autoscout';
+    canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
+  });
+
+  // Calcola totale vendite
+  const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
+  const totaleVenditeNuove = Object.values(canaliNuovi).reduce((sum, val) => sum + val, 0);
+  const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
+
+  // Percentuali finali
+  const statisticheFinali = {};
+  Object.keys(canaliPartenza).forEach(canale => {
+    const venditePartenza = canaliPartenza[canale];
+    const venditeNuove = canaliNuovi[canale] || 0;
+    const totaleCanale = venditePartenza + venditeNuove;
+    statisticheFinali[canale] = totaleVendite > 0 ? ((totaleCanale / totaleVendite) * 100).toFixed(1) : '0.0';
+  });
+
+  // Render
+  const container = document.getElementById('statisticheCanali');
+  container.innerHTML = '';
+  Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
+    const colore = {
+      'Autoscout': '#1e40af',
+      'Subito': '#dc2626',
+      'Conoscenze': '#059669',
+      'Ingresso spontaneo': '#d97706',
+      'Cip': '#7c3aed'
+    }[canale] || '#6b7280';
+
+    container.innerHTML += `
+      <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
+        <p style="margin: 0; font-size: 0.9rem;">${canale}</p>
+      </div>
+    `;
+  });
+}
 
         // CONTRATTO
         function mostraContratto(contratto) {
@@ -3368,14 +3398,3 @@ document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.t
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
