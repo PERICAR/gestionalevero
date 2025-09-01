@@ -2265,13 +2265,14 @@ function aggiornaStatistiche() {
           function aggiornaStatisticheCanali() {
   // Baseline canali: solo nel 2025 mantieni i numeri storici; dal 2026 azzera
   const annoCanali = new Date().getFullYear();
-  const canaliPartenza = (annoCanali === 2025) ? {
-    'Conoscenze': 23,
-    'Autoscout': 45,
-    'Cip': 9,
-    'Ingresso spontaneo': 18,
-    'Subito': 5
-  } : { 'Conoscenze': 0, 'Autoscout': 0, 'Cip': 0, 'Ingresso spontaneo': 0, 'Subito': 0 };
+const canaliPartenza = (annoCanali === 2025) ? {
+  'Conoscenze': 5,
+  'Autoscout': 9,
+  'Cip': 2,
+  'Ingresso spontaneo': 4,
+  'Subito': 1
+} : { 'Conoscenze': 0, 'Autoscout': 0, 'Cip': 0, 'Ingresso spontaneo': 0, 'Subito': 0 };
+
 
   // Stesso criterio periodo dei contratti/statistiche
   const startCanali = (annoCanali === 2025) ? new Date('2025-03-01') : new Date(`${annoCanali}-01-01`);
@@ -3399,4 +3400,5 @@ function aggiornaStatistiche() {
 </script>
 </body>
 </html>
+
 
