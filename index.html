@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Gestione Concessionaria PERICAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -40,9 +43,9 @@ body {
   padding: 24px;
 }
 
-/* CONTAINER & HEADER */
+/* CONTAINER */
 .container {
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
   background: var(--card);
   border-radius: var(--radius-lg);
@@ -50,59 +53,76 @@ body {
   overflow: hidden;
 }
 
-.header {
-  position: relative;
-  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
-  border-bottom: 1px solid var(--line);
-  padding: 24px 28px 20px;
-  text-align: center;
-  color: var(--ink);
-}
-.header::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 4px;
-  background: var(--brand);
-}
-.header h1 { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
-.header p { color: var(--muted); margin-top: 6px; font-size: .95rem; }
-.header img { object-fit: contain; }
-
-/* NAV TABS */
-.nav-tabs {
+/* APP SHELL (sidebar + area principale) */
+.app-shell {
   display: flex;
-  background: #fff;
-  border-bottom: 1px solid var(--line);
+  min-height: 760px;
 }
+
+/* SIDEBAR */
+.sidebar {
+  width: 264px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #161B26 0%, #10141C 100%);
+  color: #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 18px;
+}
+.sidebar-brand { text-align: center; padding-bottom: 22px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sidebar-brand img { height: 56px; width: auto; object-fit: contain; margin-bottom: 8px; }
+.sidebar-brand .brand-sub { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; font-weight: 700; }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .nav-tab {
-  flex: 1;
-  padding: 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
   background: none;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--muted);
-  transition: all .2s ease;
-  position: relative;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #9CA3AF;
+  transition: background .15s ease, color .15s ease;
 }
-.nav-tab:hover:not(.active) { color: #374151; background: #f6f7f9; }
-.nav-tab.active { color: #111827; background: #fff; }
-.nav-tab.active::after {
-  content: "";
-  position: absolute;
-  left: 24px; right: 24px; bottom: -1px;
-  height: 3px;
-  background: var(--brand);
-  border-radius: 3px 3px 0 0;
+.nav-tab .nav-icon { font-size: 17px; line-height: 1; }
+.nav-tab:hover:not(.active) { color: #F3F4F6; background: rgba(255,255,255,.06); }
+.nav-tab.active { color: #fff; background: var(--brand); box-shadow: 0 6px 16px rgba(227,6,19,.35); }
+
+.sidebar-footer { padding-top: 18px; margin-top: 18px; border-top: 1px solid rgba(255,255,255,.08); display: flex; flex-direction: column; gap: 12px; }
+.sidebar-user { font-size: 13.5px; color: #D1D5DB; display: flex; align-items: center; gap: 8px; padding: 0 4px; }
+.sidebar-footer .btn-danger { width: 100%; }
+
+/* MAIN AREA */
+.main-area { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 28px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
 }
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.topbar-title small { display: block; font-weight: 500; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.main-content { flex: 1; overflow-y: auto; }
 
 /* TAB CONTENT */
-.tab-content { display: none; padding: 26px; }
+.tab-content { display: none; padding: 26px 28px; animation: tab-fade-in .25s ease; }
 .tab-content.active { display: block; }
+@keyframes tab-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-h2 { font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+h2 { font-size: 23px; font-weight: 800; margin-bottom: 20px; letter-spacing: -.01em; padding-left: 14px; border-left: 5px solid var(--brand); }
 h3 { font-size: 16px; font-weight: 700; margin: 0 0 10px; color: #111827; }
 h4 { font-size: 14px; font-weight: 800; margin: 18px 0 10px; color: #111827; }
 
@@ -193,15 +213,22 @@ input[type="text"]#searchContratti {
   color: #fff;
   padding: 14px 12px;
   text-align: left;
-  font-weight: 800;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .data-table td {
   padding: 14px 12px;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
+  font-size: 14px;
 }
-.data-table tr:hover { background: #fafafa; }
+.data-table tbody tr:nth-child(even) { background: #fbfbfc; }
+.data-table tr:hover { background: #FEF2F2; }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* STATS */
@@ -218,9 +245,17 @@ input[type="text"]#searchContratti {
   border-radius: 16px;
   text-align: center;
   box-shadow: 0 12px 28px rgba(227,6,19,.22);
+  transition: transform .2s ease;
 }
-.stat-card h3 { font-size: 28px; margin-bottom: 6px; color: #fff; }
-.stat-card p { opacity: .95; font-size: 14px; }
+.stat-card:hover { transform: translateY(-3px); }
+.stat-card .stat-icon { font-size: 22px; display: block; margin-bottom: 8px; opacity: .9; }
+.stat-card h3 { font-size: 30px; margin-bottom: 6px; color: #fff; font-weight: 800; letter-spacing: -.02em; }
+.stat-card p { opacity: .95; font-size: 13.5px; font-weight: 600; }
+.stats-grid .stat-card:nth-child(2) { background: linear-gradient(135deg, #111827 0%, #1f2937 100%); box-shadow: 0 12px 28px rgba(17,24,39,.22); }
+.stats-grid .stat-card:nth-child(3) { background: linear-gradient(135deg, var(--success) 0%, var(--success-700) 100%); box-shadow: 0 12px 28px rgba(16,185,129,.22); }
+.stats-grid .stat-card:nth-child(4) { background: linear-gradient(135deg, var(--info) 0%, #1e40af 100%); box-shadow: 0 12px 28px rgba(37,99,235,.22); }
+.stats-grid .stat-card:nth-child(5) { background: linear-gradient(135deg, var(--warning) 0%, var(--warning-700) 100%); color: #111827; box-shadow: 0 12px 28px rgba(245,158,11,.22); }
+.stats-grid .stat-card:nth-child(5) h3 { color: #111827; }
 
 /* ALERTS */
 .alert { padding: 14px; border-radius: 12px; font-weight: 700; border: 1px solid transparent; }
@@ -308,14 +343,23 @@ input[type="text"]#searchContratti {
   padding: 24px;
 }
 .login-container {
+  position: relative;
   background: #fff;
   border-radius: 20px;
-  padding: 36px 28px;
+  padding: 40px 32px 32px;
   box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 460px;
   text-align: center;
   border: 1px solid var(--line);
+  overflow: hidden;
+}
+.login-container::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--brand) 0%, var(--brand-600) 100%);
 }
 .login-header h1 { color: #111827; margin-bottom: 6px; font-size: 24px; font-weight: 900; }
 .login-header p { color: var(--muted); margin-bottom: 18px; font-size: 1rem; }
@@ -401,10 +445,127 @@ select#filtroStato {
   border: 1px solid rgba(255,255,255,.25);
   box-shadow: 0 8px 18px rgba(0,0,0,.12);
 }
+
+/* TABELLE RESPONSIVE */
+.table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll .data-table { min-width: 720px; }
+
+/* STATO VUOTO TABELLE */
+.empty-state td {
+  text-align: center;
+  padding: 40px 20px !important;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* INTESTAZIONI TABELLA ORDINABILI */
+.data-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.data-table th.sortable:hover { background: #1f2937; }
+.data-table th.sortable .sort-arrow { opacity: .5; margin-left: 4px; font-size: 11px; }
+.data-table th.sortable.sort-active .sort-arrow { opacity: 1; }
+
+/* BADGE STATO (usati anche per Preventivi) */
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: .8rem; color: #fff; font-weight: 700; }
+
+/* TOAST NOTIFICHE */
+#toastContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 40px));
+}
+.toast {
+  background: #fff;
+  border-left: 5px solid var(--info);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 14px 16px;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ink);
+  animation: toast-in .2s ease-out;
+}
+.toast.toast-success { border-left-color: var(--success); }
+.toast.toast-danger { border-left-color: var(--danger); }
+.toast.toast-warning { border-left-color: var(--warning); }
+.toast.toast-hide { animation: toast-out .2s ease-in forwards; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
+
+/* RICERCA GLOBALE */
+.global-search-wrap { position: relative; width: 100%; max-width: 360px; }
+#globalSearchInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: .9rem;
+}
+#globalSearchInput:focus { outline: none; border-color: var(--brand); box-shadow: var(--focus); }
+#globalSearchResults {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 500;
+  text-align: left;
+}
+#globalSearchResults.show { display: block; }
+.gsr-group-title {
+  padding: 8px 14px;
+  font-size: .75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #f9fafb;
+}
+.gsr-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: .85rem;
+  border-top: 1px solid var(--line);
+}
+.gsr-item:hover { background: #fef2f2; }
+.gsr-item small { display: block; color: var(--muted); font-weight: 400; }
+.gsr-empty { padding: 14px; color: var(--muted); font-size: .85rem; text-align: center; }
+
+/* RESPONSIVE APP SHELL */
+@media (max-width: 860px) {
+  body { padding: 0; }
+  .container { border-radius: 0; }
+  .app-shell { flex-direction: column; min-height: 100vh; }
+  .sidebar { width: auto; flex-direction: row; align-items: center; padding: 12px 14px; gap: 14px; }
+  .sidebar-brand { padding: 0; margin: 0; border-bottom: none; }
+  .sidebar-brand img { height: 32px; margin-bottom: 0; }
+  .sidebar-brand .brand-sub { display: none; }
+  .sidebar-nav { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; flex: 1; }
+  .nav-tab { flex: 0 0 auto; padding: 10px 12px; }
+  .nav-tab span:not(.nav-icon) { display: none; }
+  .sidebar-footer { flex-direction: row; align-items: center; padding: 0; margin: 0; border-top: none; }
+  .sidebar-user { display: none; }
+  .sidebar-footer .btn-danger { width: auto; white-space: nowrap; }
+  .topbar { padding: 14px 16px; }
+  .topbar-title { display: none; }
+  .tab-content { padding: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+  .global-search-wrap { max-width: 100%; }
+}
 </style>
     
 </head>
 <body>
+    <div id="toastContainer"></div>
     <div class="container">
         <!-- SCHERMATA LOGIN -->
         <div id="loginScreen" class="login-screen">
@@ -439,22 +600,37 @@ select#filtroStato {
         </div>
 
         <!-- SISTEMA PRINCIPALE (nascosto inizialmente) -->
-        <div id="mainSystem" style="display: none;">
-            <div class="header">
-                <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 80px; width: auto; margin-bottom: 15px;">
-                <p>Sistema di Gestione Concessionaria - Corso Casale 99, Asti</p>
-                <div style="position: absolute; top: 20px; right: 20px;">
-                    <span style="color: #666; margin-right: 15px;">👤 <span id="utenteLoggato"></span></span>
-                    <button class="btn btn-danger" onclick="effettuaLogout()" style="padding: 8px 15px; font-size: 0.9rem;">🚪 Esci</button>
+        <div id="mainSystem" class="app-shell" style="display: none;">
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo">
+                    <div class="brand-sub">Gestione Concessionaria</div>
                 </div>
-            </div>
 
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('clienti')">👥 Clienti</button>
-            <button class="nav-tab" onclick="showTab('auto')">🚙 Auto in Stock</button>
-            <button class="nav-tab" onclick="showTab('contratti')">📋 Contratti</button>
-            <button class="nav-tab" onclick="showTab('statistiche')">📊 Statistiche</button>
-        </div>
+                <nav class="sidebar-nav">
+                    <button class="nav-tab active" onclick="showTab('clienti')"><span class="nav-icon">👥</span><span>Clienti</span></button>
+                    <button class="nav-tab" onclick="showTab('auto')"><span class="nav-icon">🚙</span><span>Auto in Stock</span></button>
+                    <button class="nav-tab" onclick="showTab('preventivi')"><span class="nav-icon">📝</span><span>Preventivi</span></button>
+                    <button class="nav-tab" onclick="showTab('contratti')"><span class="nav-icon">📋</span><span>Contratti</span></button>
+                    <button class="nav-tab" onclick="showTab('statistiche')"><span class="nav-icon">📊</span><span>Statistiche</span></button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="sidebar-user">👤 <span id="utenteLoggato"></span></div>
+                    <button class="btn btn-danger" onclick="effettuaLogout()">🚪 Esci</button>
+                </div>
+            </aside>
+
+            <div class="main-area">
+                <div class="topbar">
+                    <div class="topbar-title">Sistema di Gestione Concessionaria<small>Corso Casale 99, Asti</small></div>
+                    <div class="global-search-wrap">
+                        <input type="text" id="globalSearchInput" placeholder="🔎 Cerca ovunque: clienti, auto, contratti, preventivi..." autocomplete="off" oninput="eseguiRicercaGlobale()" onfocus="eseguiRicercaGlobale()">
+                        <div id="globalSearchResults"></div>
+                    </div>
+                </div>
+
+                <div class="main-content">
 
         <!-- TAB CLIENTI -->
         <div id="clienti" class="tab-content active">
@@ -517,18 +693,20 @@ select#filtroStato {
             </div>
 
             <!-- TABELLA CLIENTI -->
+            <div class="table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>Telefono</th>
-                        <th>Email</th>
-                        <th>Codice Fiscale</th>
+                        <th class="sortable" onclick="ordinaTabella('clienti','nome',this)">Nome<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('clienti','telefono',this)">Telefono<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('clienti','email',this)">Email<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('clienti','codiceFiscale',this)">Codice Fiscale<span class="sort-arrow">⇅</span></th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
                 <tbody id="tabellaClienti"></tbody>
             </table>
+            </div>
         </div>
 
         <!-- TAB AUTO -->
@@ -643,22 +821,137 @@ select#filtroStato {
             </div>
 
             <!-- TABELLA AUTO -->
+            <div class="table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Marca/Modello</th>
-                        <th>Targa</th>
-                        <th>Immatricolazione</th>
-                        <th>Km</th>
-                        <th>Tipo</th>
-                        <th>Stato</th>
-                        <th>Prezzo Vendita</th>
+                        <th class="sortable" onclick="ordinaTabella('auto','marca',this)">Marca/Modello<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','targa',this)">Targa<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','dataImmatricolazione',this)">Immatricolazione<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','chilometri',this)">Km<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','tipo',this)">Tipo<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','stato',this)">Stato<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('auto','prezzoVendita',this)">Prezzo Vendita<span class="sort-arrow">⇅</span></th>
                         <th>Margine</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
                 <tbody id="tabellaAuto"></tbody>
             </table>
+            </div>
+        </div>
+
+        <!-- TAB PREVENTIVI -->
+        <div id="preventivi" class="tab-content">
+            <h2>Gestione Preventivi</h2>
+
+            <!-- FORM CREAZIONE PREVENTIVO (nascosto inizialmente) -->
+            <div id="formAggiungiPreventivo" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #1e40af;">📝 Crea Nuovo Preventivo</h3>
+                    <button class="btn btn-danger" onclick="chiudiFormPreventivo()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
+                </div>
+
+                <div class="alert" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E3A8A; margin-bottom: 20px;">
+                    💡 Un preventivo <strong>non</strong> segna l'auto come venduta: puoi crearne quanti ne vuoi per lo stesso veicolo. Quando il cliente accetta, usa "✅ Converti in Contratto".
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select id="clientePreventivo">
+                            <option value="">Seleziona Cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Auto</label>
+                        <select id="autoPreventivo">
+                            <option value="">Seleziona Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Preventivo</label>
+                        <input type="date" id="dataPreventivo">
+                    </div>
+                    <div class="form-group">
+                        <label>Validità (giorni)</label>
+                        <input type="number" id="validitaPreventivo" placeholder="15" value="15">
+                    </div>
+                </div>
+
+                <h4>Sconto e Prezzo Finale</h4>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label>Prezzo Base Auto (€)</label>
+                            <input type="number" id="prezzoBasePreventivo" readonly style="background: #e9ecef; font-weight: bold;">
+                        </div>
+                        <div class="form-group">
+                            <label>Sconto Applicato (€)</label>
+                            <input type="number" id="scontoPreventivo" placeholder="0" onchange="calcolaPrezzoFinalePreventivo()">
+                        </div>
+                        <div class="form-group">
+                            <label>Prezzo Finale Auto (€)</label>
+                            <input type="number" id="prezzoFinalePreventivo" onchange="calcolaScontoPreventivo()" style="font-weight: bold; color: #1e40af;">
+                        </div>
+                    </div>
+                </div>
+
+                <h4>Servizi/Accessori Aggiuntivi</h4>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                        <div class="form-group">
+                            <label>Descrizione</label>
+                            <input type="text" id="descrizioneExtraPreventivo" placeholder="Es: Assicurazione Kasko, Navigatore, Cerchi in lega...">
+                        </div>
+                        <div class="form-group">
+                            <label>Prezzo (€)</label>
+                            <input type="number" id="prezzoExtraPreventivo" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-success" onclick="aggiungiExtraPreventivo()" style="margin-top: 0;">➕ Aggiungi</button>
+                        </div>
+                    </div>
+
+                    <div id="listaExtraPreventivo" style="margin-top: 15px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea id="notePreventivo" placeholder="Note interne sul preventivo..."></textarea>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-success" onclick="creaPreventivo()" style="padding: 15px 30px; font-size: 1.1rem;">📝 Salva Preventivo</button>
+                </div>
+            </div>
+
+            <!-- PULSANTE CREA PREVENTIVO E RICERCA -->
+            <div style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+                <button class="btn btn-success" onclick="mostraFormPreventivo()" style="padding: 12px 25px; font-size: 1rem;">➕ Crea Preventivo</button>
+
+                <div style="flex: 1; max-width: 400px;">
+                    <input type="text" id="searchPreventivi" placeholder="🔍 Cerca preventivi per cliente, auto..." style="width: 100%; padding: 12px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" onkeyup="filtraPreventivi()">
+                </div>
+            </div>
+
+            <!-- TABELLA PREVENTIVI -->
+            <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="ordinaTabella('preventivi','dataPreventivo',this)">Data<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('preventivi','cliente.nome',this)">Cliente<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('preventivi','auto.marca',this)">Auto<span class="sort-arrow">⇅</span></th>
+                        <th>Prezzo</th>
+                        <th>Stato</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaPreventivi"></tbody>
+            </table>
+            </div>
         </div>
 
         <!-- TAB CONTRATTI -->
@@ -809,12 +1102,13 @@ select#filtroStato {
             </div>
 
             <!-- TABELLA CONTRATTI -->
+            <div class="table-scroll">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Cliente</th>
-                        <th>Auto</th>
+                        <th class="sortable" onclick="ordinaTabella('contratti','dataContratto',this)">Data<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('contratti','cliente.nome',this)">Cliente<span class="sort-arrow">⇅</span></th>
+                        <th class="sortable" onclick="ordinaTabella('contratti','auto.marca',this)">Auto<span class="sort-arrow">⇅</span></th>
                         <th>Prezzo</th>
                         <th>Permuta</th>
                         <th>Azioni</th>
@@ -822,6 +1116,7 @@ select#filtroStato {
                 </thead>
                 <tbody id="tabellaContratti"></tbody>
             </table>
+            </div>
         </div>
 
         <!-- TAB STATISTICHE -->
@@ -830,22 +1125,27 @@ select#filtroStato {
             
             <div class="stats-grid">
                 <div class="stat-card">
+                    <span class="stat-icon">🚗</span>
                     <h3 id="totaleAuto">0</h3>
                     <p>Auto in Stock</p>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-icon">📄</span>
                     <h3 id="totaleContratti">21</h3>
                     <p>Contratti Firmati</p>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-icon">💶</span>
                     <h3 id="fatturatoTotale">€132.020</h3>
                     <p>Fatturato Totale</p>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-icon">🏷️</span>
                     <h3 id="valoreStock">€0</h3>
                     <p>Valore Stock Presente</p>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-icon">📈</span>
                     <h3 id="mediaVendite">4.0</h3>
                     <p>Media Auto/Mese</p>
                 </div>
@@ -858,6 +1158,9 @@ select#filtroStato {
 
 
         </div>
+
+                </div>
+            </div>
         </div>
     </div>
 
@@ -885,6 +1188,18 @@ select#filtroStato {
                 <button class="btn btn-danger" onclick="chiudiModalContratto()">❌ Chiudi</button>
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVENTIVO -->
+    <div id="modalPreventivo" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" onclick="chiudiModalPreventivo()">&times;</span>
+            <div id="preventivoCompleto"></div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-primary" onclick="stampaPreventivo()">🖨️ Stampa Preventivo</button>
+                <button class="btn btn-danger" onclick="chiudiModalPreventivo()">❌ Chiudi</button>
+            </div>
         </div>
     </div>
 
@@ -1093,12 +1408,77 @@ select#filtroStato {
         let clienti = JSON.parse(localStorage.getItem('clienti')) || [];
         let auto = JSON.parse(localStorage.getItem('auto')) || [];
         let contratti = JSON.parse(localStorage.getItem('contratti')) || [];
+        let preventivi = JSON.parse(localStorage.getItem('preventivi')) || [];
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
         let extraItems = []; // Array per servizi/accessori aggiuntivi
+        let extraItemsPreventivo = []; // Array per servizi/accessori aggiuntivi del preventivo
         let costiAutoItems = []; // Array per costi aggiuntivi auto
         let utenteCorrente = null;
+        let preventivoInModifica = null; // id del preventivo in fase di modifica (null se nuovo)
+        let sortState = {}; // stato ordinamento corrente per tabella {clienti:{campo,dir}, ...}
+
+        // NOTIFICHE TOAST (sostituiscono gli alert() informativi)
+        function toast(messaggio, tipo) {
+            const container = document.getElementById('toastContainer');
+            if (!container) { alert(messaggio); return; }
+
+            const el = document.createElement('div');
+            el.className = `toast toast-${tipo || 'info'}`;
+            el.textContent = messaggio;
+            container.appendChild(el);
+
+            setTimeout(() => {
+                el.classList.add('toast-hide');
+                setTimeout(() => el.remove(), 200);
+            }, 4000);
+        }
+
+        // ORDINAMENTO GENERICO TABELLE
+        function leggiCampo(oggetto, percorso) {
+            return percorso.split('.').reduce((val, chiave) => (val == null ? val : val[chiave]), oggetto);
+        }
+
+        function ordinaTabella(nomeArray, campo, thElement) {
+            const mappaArray = { clienti, auto, contratti, preventivi };
+            const arr = mappaArray[nomeArray];
+            if (!arr) return;
+
+            const statoAttuale = sortState[nomeArray];
+            const direzione = (statoAttuale && statoAttuale.campo === campo && statoAttuale.dir === 'asc') ? 'desc' : 'asc';
+            sortState[nomeArray] = { campo, dir: direzione };
+
+            arr.sort((a, b) => {
+                let valA = leggiCampo(a, campo);
+                let valB = leggiCampo(b, campo);
+
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+                if (!isNaN(numA) && !isNaN(numB) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                    return direzione === 'asc' ? numA - numB : numB - numA;
+                }
+
+                valA = (valA ?? '').toString().toLowerCase();
+                valB = (valB ?? '').toString().toLowerCase();
+                if (valA < valB) return direzione === 'asc' ? -1 : 1;
+                if (valA > valB) return direzione === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            if (thElement) {
+                thElement.closest('tr').querySelectorAll('th.sortable').forEach(th => {
+                    th.classList.remove('sort-active');
+                    const arrow = th.querySelector('.sort-arrow');
+                    if (arrow) arrow.textContent = '⇅';
+                });
+                thElement.classList.add('sort-active');
+                const arrow = thElement.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = direzione === 'asc' ? '▲' : '▼';
+            }
+
+            aggiornaTabelle();
+        }
 
         // Sistema di autenticazione
         const utenti = {
@@ -1142,7 +1522,7 @@ select#filtroStato {
 
         function mostraSistema() {
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainSystem').style.display = 'block';
+            document.getElementById('mainSystem').style.display = 'flex';
             document.getElementById('utenteLoggato').textContent = utenteCorrente;
             
             // Inizializza il sistema
@@ -1152,9 +1532,11 @@ select#filtroStato {
             aggiornaSelectAuto();
             aggiornaListaExtra();
             aggiornaListaCostiAuto();
-            
+            aggiornaListaExtraPreventivo();
+
             // Imposta data odierna
             document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dataPreventivo').value = new Date().toISOString().split('T')[0];
         }
 
         function effettuaLogin() {
@@ -1242,12 +1624,12 @@ select#filtroStato {
             const motivo = document.getElementById('motivoRecupero').value.trim();
             
             if (!username) {
-                alert('Inserisci l\'username da recuperare');
+                toast('Inserisci l\'username da recuperare', 'danger');
                 return;
             }
-            
+
             if (!motivo) {
-                alert('Inserisci il motivo della richiesta');
+                toast('Inserisci il motivo della richiesta', 'danger');
                 return;
             }
             
@@ -1270,7 +1652,7 @@ Sistema di Gestione PERICAR
             // Apri client email
             window.location.href = mailtoLink;
             
-            alert('Richiesta inviata! Controlla la tua email per aprire il client di posta e inviare la richiesta a giacomo@pericar.it');
+            toast('Richiesta inviata! Controlla la tua email per aprire il client di posta e inviare la richiesta a giacomo@pericar.it', 'success');
             chiudiModalRecupero();
         }
 
@@ -1294,22 +1676,22 @@ Sistema di Gestione PERICAR
             const confermaPassword = document.getElementById('confermaNuovaPassword').value;
             
             if (!username || !passwordAttuale || !nuovaPassword || !confermaPassword) {
-                alert('Compila tutti i campi');
+                toast('Compila tutti i campi', 'danger');
                 return;
             }
-            
+
             if (!utenti[username] || utenti[username] !== passwordAttuale) {
-                alert('Username o password attuale non corretti');
+                toast('Username o password attuale non corretti', 'danger');
                 return;
             }
-            
+
             if (nuovaPassword.length < 6) {
-                alert('La nuova password deve essere di almeno 6 caratteri');
+                toast('La nuova password deve essere di almeno 6 caratteri', 'danger');
                 return;
             }
-            
+
             if (nuovaPassword !== confermaPassword) {
-                alert('Le password non coincidono');
+                toast('Le password non coincidono', 'danger');
                 return;
             }
             
@@ -1336,7 +1718,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             // Mostra tab selezionato
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            event.currentTarget.classList.add('active');
         }
 
         // GESTIONE CLIENTI
@@ -1351,7 +1733,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const email = document.getElementById('emailCliente').value;
 
             if (!nome || !telefono) {
-                alert('Nome e telefono sono obbligatori!');
+                toast('Nome e telefono sono obbligatori!', 'danger');
                 return;
             }
 
@@ -1375,7 +1757,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             pulisciFormCliente();
             chiudiFormCliente();
             
-            alert('✅ Cliente aggiunto con successo!');
+            toast('✅ Cliente aggiunto con successo!', 'success');
         }
 
         function pulisciFormCliente() {
@@ -1437,7 +1819,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const stato = document.getElementById('statoAuto').value;
 
             if (!marca || !modello || !targa) {
-                alert('Marca, modello e targa sono obbligatori!');
+                toast('Marca, modello e targa sono obbligatori!', 'danger');
                 return;
             }
 
@@ -1475,7 +1857,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             pulisciFormAuto();
             chiudiFormAuto();
             
-            alert('✅ Auto aggiunta con successo!');
+            toast('✅ Auto aggiunta con successo!', 'success');
         }
 
         function pulisciFormAuto() {
@@ -1504,7 +1886,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const luogo = document.getElementById('luogoContratto').value;
 
             if (!clienteId || !autoId || !dataContratto) {
-                alert('Cliente, auto e data sono obbligatori!');
+                toast('Cliente, auto e data sono obbligatori!', 'danger');
                 return;
             }
 
@@ -1590,9 +1972,9 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             // Mostra messaggio se permuta aggiunta
             if (permutaAutoId) {
-                alert('✅ Contratto creato! La permuta è stata automaticamente aggiunta allo stock delle auto disponibili.');
+                toast('✅ Contratto creato! La permuta è stata automaticamente aggiunta allo stock delle auto disponibili.', 'success');
             } else {
-                alert('✅ Contratto creato con successo!');
+                toast('✅ Contratto creato con successo!', 'success');
             }
             
             // Mostra contratto
@@ -1623,13 +2005,394 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaListaExtra();
         }
 
+        // GESTIONE FORM PREVENTIVI
+        function mostraFormPreventivo() {
+            document.getElementById('formAggiungiPreventivo').style.display = 'block';
+            document.getElementById('formAggiungiPreventivo').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function chiudiFormPreventivo() {
+            document.getElementById('formAggiungiPreventivo').style.display = 'none';
+            pulisciFormPreventivo();
+        }
+
+        function pulisciFormPreventivo() {
+            document.getElementById('clientePreventivo').value = '';
+            document.getElementById('autoPreventivo').value = '';
+            document.getElementById('validitaPreventivo').value = '15';
+            document.getElementById('scontoPreventivo').value = '';
+            document.getElementById('prezzoFinalePreventivo').value = '';
+            document.getElementById('prezzoBasePreventivo').value = '';
+            document.getElementById('descrizioneExtraPreventivo').value = '';
+            document.getElementById('prezzoExtraPreventivo').value = '';
+            document.getElementById('notePreventivo').value = '';
+            extraItemsPreventivo = [];
+            aggiornaListaExtraPreventivo();
+            preventivoInModifica = null;
+        }
+
+        // GESTIONE EXTRA PREVENTIVO
+        function aggiungiExtraPreventivo() {
+            const descrizione = document.getElementById('descrizioneExtraPreventivo').value.trim();
+            const prezzo = parseFloat(document.getElementById('prezzoExtraPreventivo').value) || 0;
+
+            if (!descrizione || prezzo <= 0) {
+                toast('Descrizione e prezzo sono obbligatori!', 'danger');
+                return;
+            }
+
+            extraItemsPreventivo.push({ id: Date.now(), descrizione, prezzo });
+            aggiornaListaExtraPreventivo();
+
+            document.getElementById('descrizioneExtraPreventivo').value = '';
+            document.getElementById('prezzoExtraPreventivo').value = '';
+        }
+
+        function rimuoviExtraPreventivo(id) {
+            extraItemsPreventivo = extraItemsPreventivo.filter(item => item.id !== id);
+            aggiornaListaExtraPreventivo();
+        }
+
+        function aggiornaListaExtraPreventivo() {
+            const container = document.getElementById('listaExtraPreventivo');
+            if (!container) return;
+
+            if (extraItemsPreventivo.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Nessun servizio/accessorio aggiunto</p>';
+                return;
+            }
+
+            let html = '<div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">';
+            html += '<div style="background: #e9ecef; padding: 8px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;">';
+            html += '<div>Descrizione</div><div style="text-align: right;">Prezzo</div><div style="width: 60px;"></div>';
+            html += '</div>';
+
+            extraItemsPreventivo.forEach(item => {
+                html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
+                    <div>${item.descrizione}</div>
+                    <div style="text-align: right; font-weight: bold;">€${item.prezzo.toLocaleString()}</div>
+                    <div><button class="btn btn-danger" onclick="rimuoviExtraPreventivo(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
+                </div>`;
+            });
+
+            const totale = extraItemsPreventivo.reduce((sum, item) => sum + item.prezzo, 0);
+            html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
+                <div>TOTALE EXTRA</div>
+                <div style="text-align: right; color: #1e40af;">€${totale.toLocaleString()}</div>
+                <div></div>
+            </div>`;
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // CALCOLO SCONTO PREVENTIVO
+        function calcolaPrezzoFinalePreventivo() {
+            const prezzoBase = parseFloat(document.getElementById('prezzoBasePreventivo').value) || 0;
+            const sconto = parseFloat(document.getElementById('scontoPreventivo').value) || 0;
+            const prezzoFinale = prezzoBase - sconto;
+            document.getElementById('prezzoFinalePreventivo').value = prezzoFinale > 0 ? prezzoFinale : 0;
+        }
+
+        function calcolaScontoPreventivo() {
+            const prezzoBase = parseFloat(document.getElementById('prezzoBasePreventivo').value) || 0;
+            const prezzoFinale = parseFloat(document.getElementById('prezzoFinalePreventivo').value) || 0;
+            const sconto = prezzoBase - prezzoFinale;
+            document.getElementById('scontoPreventivo').value = sconto > 0 ? sconto : 0;
+        }
+
+        // GESTIONE PREVENTIVI
+        function creaPreventivo() {
+            const clienteId = document.getElementById('clientePreventivo').value;
+            const autoId = document.getElementById('autoPreventivo').value;
+            const dataPreventivo = document.getElementById('dataPreventivo').value;
+            const validita = parseInt(document.getElementById('validitaPreventivo').value) || 15;
+            const note = document.getElementById('notePreventivo').value;
+
+            if (!clienteId || !autoId || !dataPreventivo) {
+                toast('Cliente, auto e data sono obbligatori!', 'danger');
+                return;
+            }
+
+            const cliente = clienti.find(c => c.id == clienteId);
+            const autoSelezionata = auto.find(a => a.id == autoId);
+
+            const preventivo = {
+                id: preventivoInModifica || Date.now(),
+                clienteId,
+                autoId,
+                dataPreventivo,
+                validitaGiorni: validita,
+                scontoApplicato: parseFloat(document.getElementById('scontoPreventivo').value) || 0,
+                prezzoFinaleAuto: parseFloat(document.getElementById('prezzoFinalePreventivo').value) || autoSelezionata.prezzoVendita,
+                extraItems: [...extraItemsPreventivo],
+                note,
+                stato: 'In Attesa',
+                cliente,
+                auto: autoSelezionata
+            };
+
+            if (preventivoInModifica) {
+                preventivi = preventivi.filter(p => p.id != preventivoInModifica);
+            }
+
+            preventivi.push(preventivo);
+            salvaPreventivi();
+            aggiornaTabelle();
+            pulisciFormPreventivo();
+            chiudiFormPreventivo();
+
+            toast('✅ Preventivo salvato con successo!', 'success');
+        }
+
+        function aggiornaTabellaPreventivi() {
+            const tbody = document.getElementById('tabellaPreventivi');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (preventivi.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="6">Nessun preventivo ancora. Creane uno con "➕ Crea Preventivo".</td>';
+                return;
+            }
+
+            preventivi.forEach(preventivo => {
+                const totaleExtra = (preventivo.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+                const prezzoBase = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : 0);
+                const prezzoTotale = prezzoBase + totaleExtra;
+
+                const statoColor = {
+                    'In Attesa': '#F59E0B',
+                    'Convertito': '#10B981',
+                    'Scaduto': '#6B7280',
+                    'Rifiutato': '#EF4444'
+                }[preventivo.stato] || '#6B7280';
+
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(preventivo.dataPreventivo).toLocaleDateString('it-IT')}</td>
+                    <td>${preventivo.cliente ? preventivo.cliente.nome : 'N/D'}</td>
+                    <td>${preventivo.auto ? preventivo.auto.marca + ' ' + preventivo.auto.modello : 'N/D'}</td>
+                    <td>€${prezzoTotale.toLocaleString()}</td>
+                    <td><span class="badge" style="background:${statoColor};">${preventivo.stato}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-primary" onclick="mostraPreventivo(${preventivo.id})">📝 Visualizza</button>
+                        ${preventivo.stato !== 'Convertito' ? `<button class="btn btn-success" onclick="convertiInContratto(${preventivo.id})">✅ Converti</button>` : ''}
+                        ${preventivo.stato !== 'Convertito' ? `<button class="btn btn-warning" onclick="modificaPreventivo(${preventivo.id})">✏️ Modifica</button>` : ''}
+                        <button class="btn btn-danger" onclick="eliminaPreventivo(${preventivo.id})">🗑️ Elimina</button>
+                    </td>
+                `;
+            });
+        }
+
+        function filtraPreventivi() {
+            const searchTerm = document.getElementById('searchPreventivi').value.toLowerCase();
+            const rows = document.querySelectorAll('#tabellaPreventivi tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function mostraPreventivo(id) {
+            const preventivo = preventivi.find(p => p.id == id);
+            if (!preventivo || !preventivo.auto || !preventivo.cliente) return;
+
+            const totaleExtra = (preventivo.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
+            const prezzoBaseAuto = preventivo.auto.prezzoVendita;
+            const scontoApplicato = preventivo.scontoApplicato || 0;
+            const prezzoFinaleAuto = preventivo.prezzoFinaleAuto || prezzoBaseAuto;
+            const prezzoTotale = prezzoFinaleAuto + totaleExtra;
+
+            const dataScadenza = new Date(preventivo.dataPreventivo);
+            dataScadenza.setDate(dataScadenza.getDate() + (preventivo.validitaGiorni || 15));
+
+            const html = `
+                <div class="contract-preview">
+                    <div style="text-align:center; margin-bottom: 16px;">
+                        <img src="https://gestionalevero.netlify.app/logopericar2.png" alt="PERICAR Logo" style="height: 2.6cm; width: auto; margin-bottom: 6px;">
+                        <div style="background: #E30613; color: white; padding: 6px; margin: 0 -24px; font-size: 0.9rem; font-weight: bold;">PREVENTIVO</div>
+                    </div>
+
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ddd; margin-bottom: 14px;">
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Cliente:</td>
+                            <td style="padding:6px; border:1px solid #eee;" colspan="3">${preventivo.cliente.nome}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Data:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${new Date(preventivo.dataPreventivo).toLocaleDateString('it-IT')}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Valido fino al:</td>
+                            <td style="padding:6px; border:1px solid #eee; color:#E30613; font-weight:bold;">${dataScadenza.toLocaleDateString('it-IT')}</td>
+                        </tr>
+                    </table>
+
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ddd; margin-bottom: 14px;">
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Veicolo:</td>
+                            <td style="padding:6px; border:1px solid #eee;" colspan="3">${preventivo.auto.marca} ${preventivo.auto.modello} ${preventivo.auto.versione || ''} - Targa ${preventivo.auto.targa}</td>
+                        </tr>
+                    </table>
+
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">
+                        <tr style="border-bottom:1px solid #ddd;">
+                            <td style="padding:8px; font-weight:bold;">PREZZO VEICOLO</td>
+                            <td style="padding:8px; text-align:right; font-weight:bold;">€${prezzoBaseAuto.toLocaleString()}</td>
+                        </tr>
+                        ${scontoApplicato > 0 ? `
+                        <tr style="border-bottom:1px solid #ddd;">
+                            <td style="padding:8px; color:#dc3545;">Sconto applicato</td>
+                            <td style="padding:8px; text-align:right; color:#dc3545;">-€${scontoApplicato.toLocaleString()}</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #ddd; background:#f0f8ff;">
+                            <td style="padding:8px; font-weight:bold;">PREZZO SCONTATO</td>
+                            <td style="padding:8px; text-align:right; font-weight:bold;">€${prezzoFinaleAuto.toLocaleString()}</td>
+                        </tr>` : ''}
+                        ${(preventivo.extraItems || []).map(item => `
+                        <tr style="border-bottom:1px solid #ddd;">
+                            <td style="padding:8px;">${item.descrizione}</td>
+                            <td style="padding:8px; text-align:right;">€${item.prezzo.toLocaleString()}</td>
+                        </tr>`).join('')}
+                        <tr style="border-top:2px solid #E30613; background:#f8f9fa;">
+                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE PREVENTIVATO</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color:#E30613;">€${prezzoTotale.toLocaleString()}</td>
+                        </tr>
+                    </table>
+
+                    ${preventivo.note ? `<div style="margin-top:12px; padding:10px; background:#f8f9fa; border-radius:6px; font-size:0.75rem;"><strong>Note:</strong> ${preventivo.note}</div>` : ''}
+
+                    <p style="margin-top:14px; font-size:0.65rem; color:#666;">Documento privo di valore contrattuale. Prezzi e disponibilità salvo conferma al momento dell'ordine.</p>
+                </div>
+            `;
+
+            document.getElementById('preventivoCompleto').innerHTML = html;
+            document.getElementById('modalPreventivo').style.display = 'block';
+        }
+
+        function chiudiModalPreventivo() {
+            document.getElementById('modalPreventivo').style.display = 'none';
+        }
+
+        function stampaPreventivo() {
+            const printWindow = window.open('', '_blank');
+            const content = document.getElementById('preventivoCompleto').innerHTML;
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Preventivo</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; font-size: 0.85rem; margin: 20px; }
+                        img { display:block; margin: 0 auto; }
+                        table { width: 100%; }
+                        @page { margin: 1.5cm; size: A4; }
+                    </style>
+                </head>
+                <body>${content}</body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        function modificaPreventivo(id) {
+            const preventivo = preventivi.find(p => p.id == id);
+            if (!preventivo) return;
+
+            mostraFormPreventivo();
+
+            document.getElementById('clientePreventivo').value = preventivo.clienteId;
+            document.getElementById('autoPreventivo').value = preventivo.autoId;
+            document.getElementById('dataPreventivo').value = preventivo.dataPreventivo;
+            document.getElementById('validitaPreventivo').value = preventivo.validitaGiorni || 15;
+            document.getElementById('prezzoBasePreventivo').value = preventivo.auto ? preventivo.auto.prezzoVendita : '';
+            document.getElementById('scontoPreventivo').value = preventivo.scontoApplicato || 0;
+            document.getElementById('prezzoFinalePreventivo').value = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : '');
+            document.getElementById('notePreventivo').value = preventivo.note || '';
+
+            extraItemsPreventivo = [...(preventivo.extraItems || [])];
+            aggiornaListaExtraPreventivo();
+
+            preventivoInModifica = preventivo.id;
+
+            showTab('preventivi');
+            document.querySelector('[onclick="showTab(\'preventivi\')"]').click();
+
+            toast('Preventivo caricato per la modifica. Modifica i dati e clicca "Salva Preventivo".', 'warning');
+        }
+
+        function eliminaPreventivo(id) {
+            if (confirm('Sei sicuro di voler eliminare questo preventivo?')) {
+                preventivi = preventivi.filter(p => p.id != id);
+                salvaPreventivi();
+                aggiornaTabelle();
+            }
+        }
+
+        function convertiInContratto(id) {
+            const preventivo = preventivi.find(p => p.id == id);
+            if (!preventivo) return;
+
+            const autoAttuale = auto.find(a => a.id == preventivo.autoId);
+            if (!autoAttuale) {
+                toast('L\'auto di questo preventivo non è più presente in stock.', 'danger');
+                return;
+            }
+            if (autoAttuale.stato === 'Venduta') {
+                toast('Questa auto risulta già venduta. Impossibile convertire il preventivo.', 'danger');
+                return;
+            }
+
+            if (!confirm('Confermi la conversione del preventivo in contratto? L\'auto verrà segnata come venduta.')) return;
+
+            const contratto = {
+                id: Date.now(),
+                clienteId: preventivo.clienteId,
+                autoId: preventivo.autoId,
+                dataContratto: new Date().toISOString().split('T')[0],
+                luogo: 'Asti',
+                permuta: { marca: '', modello: '', targa: '', telaio: '', dataImmatricolazione: '', chilometri: 0, versione: '', valutazione: 0 },
+                permutaAutoId: null,
+                depositoCauzionale: 0,
+                speseVoltura: 0,
+                canaleVendita: 'Autoscout',
+                scontoApplicato: preventivo.scontoApplicato || 0,
+                prezzoFinaleAuto: preventivo.prezzoFinaleAuto || autoAttuale.prezzoVendita,
+                extraItems: [...(preventivo.extraItems || [])],
+                cliente: preventivo.cliente,
+                auto: autoAttuale
+            };
+
+            contratti.push(contratto);
+            autoAttuale.stato = 'Venduta';
+            preventivo.stato = 'Convertito';
+
+            salvaContratti();
+            salvaAuto();
+            salvaPreventivi();
+            aggiornaTabelle();
+            aggiornaStatistiche();
+            aggiornaSelectAuto();
+
+            toast('✅ Preventivo convertito in contratto! Completa eventuali dettagli (permuta, deposito, canale) modificando il contratto.', 'success');
+            mostraContratto(contratto);
+        }
+
         // GESTIONE COSTI AUTO
         function aggiungiCostoAuto() {
             const descrizione = document.getElementById('descrizioneCostoAuto').value.trim();
             const importo = parseFloat(document.getElementById('importoCostoAuto').value) || 0;
             
             if (!descrizione || importo <= 0) {
-                alert('Descrizione e importo sono obbligatori!');
+                toast('Descrizione e importo sono obbligatori!', 'danger');
                 return;
             }
             
@@ -1690,7 +2453,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const prezzo = parseFloat(document.getElementById('prezzoExtra').value) || 0;
             
             if (!descrizione || prezzo <= 0) {
-                alert('Descrizione e prezzo sono obbligatori!');
+                toast('Descrizione e prezzo sono obbligatori!', 'danger');
                 return;
             }
             
@@ -1970,12 +2733,20 @@ Nuova password richiesta: ${nuovaPassword}`);
             aggiornaTabelliaClienti();
             aggiornaTabellaAuto();
             aggiornaTabellaContratti();
+            aggiornaTabellaPreventivi();
         }
 
         function aggiornaTabelliaClienti() {
             const tbody = document.getElementById('tabellaClienti');
             tbody.innerHTML = '';
-            
+
+            if (clienti.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="5">Nessun cliente ancora. Aggiungine uno con "➕ Aggiungi Cliente".</td>';
+                return;
+            }
+
             clienti.forEach(cliente => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
@@ -2006,7 +2777,14 @@ Nuova password richiesta: ${nuovaPassword}`);
             } else {
                 autoFiltrate = auto;
             }
-            
+
+            if (autoFiltrate.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="9">Nessuna auto da mostrare per questo filtro.</td>';
+                return;
+            }
+
             autoFiltrate.forEach(autoObj => {
                 const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
                 const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
@@ -2041,7 +2819,14 @@ Nuova password richiesta: ${nuovaPassword}`);
         function aggiornaTabellaContratti() {
             const tbody = document.getElementById('tabellaContratti');
             tbody.innerHTML = '';
-            
+
+            if (contratti.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="6">Nessun contratto ancora. Creane uno con "📋 Crea Contratto".</td>';
+                return;
+            }
+
             contratti.forEach(contratto => {
                 const row = tbody.insertRow();
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
@@ -2068,26 +2853,36 @@ Nuova password richiesta: ${nuovaPassword}`);
 
         // AGGIORNAMENTO SELECT
         function aggiornaSelectClienti() {
-            const select = document.getElementById('clienteContratto');
-            select.innerHTML = '<option value="">Seleziona Cliente</option>';
-            
-            clienti.forEach(cliente => {
-                const option = document.createElement('option');
-                option.value = cliente.id;
-                option.textContent = cliente.nome;
-                select.appendChild(option);
+            ['clienteContratto', 'clientePreventivo'].forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                const valorePrecedente = select.value;
+                select.innerHTML = '<option value="">Seleziona Cliente</option>';
+
+                clienti.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.id;
+                    option.textContent = cliente.nome;
+                    select.appendChild(option);
+                });
+                if (valorePrecedente) select.value = valorePrecedente;
             });
         }
 
         function aggiornaSelectAuto() {
-            const select = document.getElementById('autoContratto');
-            select.innerHTML = '<option value="">Seleziona Auto</option>';
-            
-            auto.filter(a => a.stato === 'Disponibile').forEach(autoObj => {
-                const option = document.createElement('option');
-                option.value = autoObj.id;
-                option.textContent = `${autoObj.marca} ${autoObj.modello} (${autoObj.targa}) - €${autoObj.prezzoVendita.toLocaleString()}`;
-                select.appendChild(option);
+            ['autoContratto', 'autoPreventivo'].forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                const valorePrecedente = select.value;
+                select.innerHTML = '<option value="">Seleziona Auto</option>';
+
+                auto.filter(a => a.stato === 'Disponibile').forEach(autoObj => {
+                    const option = document.createElement('option');
+                    option.value = autoObj.id;
+                    option.textContent = `${autoObj.marca} ${autoObj.modello} (${autoObj.targa}) - €${autoObj.prezzoVendita.toLocaleString()}`;
+                    select.appendChild(option);
+                });
+                if (valorePrecedente) select.value = valorePrecedente;
             });
         }
 
@@ -2125,6 +2920,25 @@ Nuova password richiesta: ${nuovaPassword}`);
                         document.getElementById('prezzoBaseAuto').value = '';
                         document.getElementById('prezzoFinaleAuto').value = '';
                         document.getElementById('scontoApplicato').value = '';
+                    }
+                });
+            }
+
+            const autoSelectPreventivo = document.getElementById('autoPreventivo');
+            if (autoSelectPreventivo) {
+                autoSelectPreventivo.addEventListener('change', function() {
+                    const autoId = this.value;
+                    if (autoId) {
+                        const autoSelezionata = auto.find(a => a.id == autoId);
+                        if (autoSelezionata) {
+                            document.getElementById('prezzoBasePreventivo').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('prezzoFinalePreventivo').value = autoSelezionata.prezzoVendita;
+                            document.getElementById('scontoPreventivo').value = 0;
+                        }
+                    } else {
+                        document.getElementById('prezzoBasePreventivo').value = '';
+                        document.getElementById('prezzoFinalePreventivo').value = '';
+                        document.getElementById('scontoPreventivo').value = '';
                     }
                 });
             }
@@ -2724,7 +3538,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
             showTab('contratti');
             document.querySelector('[onclick="showTab(\'contratti\')"]').click();
             
-            alert('Contratto caricato per la modifica. Modifica i dati e clicca "Crea Contratto" per salvare.');
+            toast('Contratto caricato per la modifica. Modifica i dati e clicca "Crea Contratto" per salvare.', 'warning');
         }
 
         // SALVATAGGIO DATI
@@ -2738,6 +3552,10 @@ const canaliPartenza = (annoCanali === 2025) ? {
 
         function salvaContratti() {
             localStorage.setItem('contratti', JSON.stringify(contratti));
+        }
+
+        function salvaPreventivi() {
+            localStorage.setItem('preventivi', JSON.stringify(preventivi));
         }
 
         // GESTIONE SPESE AUTO
@@ -2783,7 +3601,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
             const descrizione = document.getElementById('descrizioneSpesa').value;
             
             if (!data || !importo || importo <= 0) {
-                alert('Data e importo sono obbligatori!');
+                toast('Data e importo sono obbligatori!', 'danger');
                 return;
             }
             
@@ -2882,7 +3700,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
             autoCorrente.speseAggiuntive = autoCorrente.speseAggiuntive.filter(s => s.id != spesaId);
             aggiornaTabellaSpese();
             
-            alert('Spesa caricata per la modifica. Modifica i dati e clicca "Aggiungi Spesa" per salvare.');
+            toast('Spesa caricata per la modifica. Modifica i dati e clicca "Aggiungi Spesa".', 'warning');
         }
 
         function eliminaSpesa(spesaId) {
@@ -3188,6 +4006,138 @@ const canaliPartenza = (annoCanali === 2025) ? {
                 chiudiModalDettaglioMargine();
             }
         }
+
+        // RICERCA GLOBALE
+        function eseguiRicercaGlobale() {
+            const input = document.getElementById('globalSearchInput');
+            const panel = document.getElementById('globalSearchResults');
+            if (!input || !panel) return;
+
+            const termine = input.value.trim().toLowerCase();
+
+            if (termine.length < 2) {
+                panel.classList.remove('show');
+                panel.innerHTML = '';
+                return;
+            }
+
+            const risultatiClienti = clienti.filter(c =>
+                (c.nome || '').toLowerCase().includes(termine) ||
+                (c.telefono || '').toLowerCase().includes(termine) ||
+                (c.email || '').toLowerCase().includes(termine) ||
+                (c.codiceFiscale || '').toLowerCase().includes(termine)
+            ).slice(0, 5);
+
+            const risultatiAuto = auto.filter(a =>
+                (a.marca || '').toLowerCase().includes(termine) ||
+                (a.modello || '').toLowerCase().includes(termine) ||
+                (a.targa || '').toLowerCase().includes(termine) ||
+                (a.telaio || '').toLowerCase().includes(termine)
+            ).slice(0, 5);
+
+            const risultatiContratti = contratti.filter(c =>
+                ((c.cliente && c.cliente.nome) || '').toLowerCase().includes(termine) ||
+                ((c.auto && c.auto.marca) || '').toLowerCase().includes(termine) ||
+                ((c.auto && c.auto.modello) || '').toLowerCase().includes(termine) ||
+                ((c.auto && c.auto.targa) || '').toLowerCase().includes(termine)
+            ).slice(0, 5);
+
+            const risultatiPreventivi = preventivi.filter(p =>
+                ((p.cliente && p.cliente.nome) || '').toLowerCase().includes(termine) ||
+                ((p.auto && p.auto.marca) || '').toLowerCase().includes(termine) ||
+                ((p.auto && p.auto.modello) || '').toLowerCase().includes(termine)
+            ).slice(0, 5);
+
+            const totale = risultatiClienti.length + risultatiAuto.length + risultatiContratti.length + risultatiPreventivi.length;
+
+            if (totale === 0) {
+                panel.innerHTML = `<div class="gsr-empty">Nessun risultato per "${input.value}"</div>`;
+                panel.classList.add('show');
+                return;
+            }
+
+            let html = '';
+
+            if (risultatiClienti.length) {
+                html += '<div class="gsr-group-title">👥 Clienti</div>';
+                risultatiClienti.forEach(c => {
+                    html += `<div class="gsr-item" onclick="vaiARisultatoRicerca('clienti', ${c.id})">${c.nome}<small>${c.telefono || ''}${c.email ? ' · ' + c.email : ''}</small></div>`;
+                });
+            }
+
+            if (risultatiAuto.length) {
+                html += '<div class="gsr-group-title">🚙 Auto</div>';
+                risultatiAuto.forEach(a => {
+                    html += `<div class="gsr-item" onclick="vaiARisultatoRicerca('auto', ${a.id})">${a.marca} ${a.modello}<small>Targa ${a.targa} · ${a.stato}</small></div>`;
+                });
+            }
+
+            if (risultatiContratti.length) {
+                html += '<div class="gsr-group-title">📋 Contratti</div>';
+                risultatiContratti.forEach(c => {
+                    html += `<div class="gsr-item" onclick="vaiARisultatoRicerca('contratti', ${c.id})">${c.cliente ? c.cliente.nome : 'N/D'} — ${c.auto ? c.auto.marca + ' ' + c.auto.modello : 'N/D'}<small>${new Date(c.dataContratto).toLocaleDateString('it-IT')}</small></div>`;
+                });
+            }
+
+            if (risultatiPreventivi.length) {
+                html += '<div class="gsr-group-title">📝 Preventivi</div>';
+                risultatiPreventivi.forEach(p => {
+                    html += `<div class="gsr-item" onclick="vaiARisultatoRicerca('preventivi', ${p.id})">${p.cliente ? p.cliente.nome : 'N/D'} — ${p.auto ? p.auto.marca + ' ' + p.auto.modello : 'N/D'}<small>${p.stato}</small></div>`;
+                });
+            }
+
+            panel.innerHTML = html;
+            panel.classList.add('show');
+        }
+
+        function vaiARisultatoRicerca(tipo, id) {
+            document.getElementById('globalSearchResults').classList.remove('show');
+            document.getElementById('globalSearchInput').value = '';
+
+            const tabButton = document.querySelector(`.nav-tab[onclick="showTab('${tipo}')"]`);
+            if (tabButton) tabButton.click();
+
+            let tbodyId = '';
+            let indice = -1;
+
+            if (tipo === 'clienti') {
+                tbodyId = 'tabellaClienti';
+                indice = clienti.findIndex(c => c.id == id);
+            } else if (tipo === 'auto') {
+                const filtro = document.getElementById('filtroStato');
+                if (filtro) { filtro.value = 'tutte'; aggiornaTabellaAuto(); }
+                tbodyId = 'tabellaAuto';
+                indice = auto.findIndex(a => a.id == id);
+            } else if (tipo === 'contratti') {
+                tbodyId = 'tabellaContratti';
+                indice = contratti.findIndex(c => c.id == id);
+            } else if (tipo === 'preventivi') {
+                tbodyId = 'tabellaPreventivi';
+                indice = preventivi.findIndex(p => p.id == id);
+            }
+
+            setTimeout(() => evidenziaRigaRicerca(tbodyId, indice), 60);
+        }
+
+        function evidenziaRigaRicerca(tbodyId, indice) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody || indice < 0 || !tbody.rows[indice]) return;
+
+            const riga = tbody.rows[indice];
+            riga.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            riga.style.transition = 'background-color 0.4s';
+            riga.style.backgroundColor = '#FEF3C7';
+            setTimeout(() => { riga.style.backgroundColor = ''; }, 2200);
+        }
+
+        // Chiudi risultati ricerca globale cliccando fuori
+        document.addEventListener('click', function(event) {
+            const wrap = document.querySelector('.global-search-wrap');
+            const panel = document.getElementById('globalSearchResults');
+            if (wrap && panel && !wrap.contains(event.target)) {
+                panel.classList.remove('show');
+            }
+        });
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e89fe85030bc94',t:'MTc1NTA5MjQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script type="module">
@@ -3217,7 +4167,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
       return;
     }
 
-    const KEYS = ["clienti","auto","contratti"];
+    const KEYS = ["clienti","auto","contratti","preventivi"];
     // svuota le chiavi esistenti
     KEYS.forEach(k => localStorage.removeItem(k));
 
@@ -3234,7 +4184,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
   }
 })();
 
-    const KEYS = ["clienti","auto","contratti"];
+    const KEYS = ["clienti","auto","contratti","preventivi"];
 
   // ---- util per evitare reload inutili ----
   let _initializing = true;
@@ -3331,5 +4281,3 @@ const canaliPartenza = (annoCanali === 2025) ? {
 </script>
 </body>
 </html>
-
-
