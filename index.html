@@ -789,6 +789,18 @@ select#filtroStato {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Alimentazione</label>
+                        <select id="alimentazioneAuto">
+                            <option value="Benzina">Benzina</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="GPL">GPL</option>
+                            <option value="Metano">Metano</option>
+                            <option value="Ibrido">Ibrido</option>
+                            <option value="Ibrido Plug-in">Ibrido Plug-in</option>
+                            <option value="Elettrico">Elettrico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Stato</label>
                         <select id="statoAuto">
                             <option value="Disponibile">Disponibile</option>
@@ -1816,6 +1828,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const prezzoAcquisto = parseFloat(document.getElementById('prezzoAcquisto').value) || 0;
             const prezzoVendita = parseFloat(document.getElementById('prezzoVendita').value) || 0;
             const tipo = document.getElementById('tipoAuto').value;
+            const alimentazione = document.getElementById('alimentazioneAuto').value;
             const stato = document.getElementById('statoAuto').value;
 
             if (!marca || !modello || !targa) {
@@ -1845,6 +1858,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                 prezzoAcquisto,
                 prezzoVendita,
                 tipo,
+                alimentazione,
                 stato,
                 speseAggiuntive: speseIniziali // Tutti i costi come spese unificate
             };
@@ -1873,6 +1887,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('descrizioneCostoAuto').value = '';
             document.getElementById('importoCostoAuto').value = '';
             document.getElementById('tipoAuto').value = 'USATO';
+            document.getElementById('alimentazioneAuto').value = 'Benzina';
             document.getElementById('statoAuto').value = 'Disponibile';
             costiAutoItems = [];
             aggiornaListaCostiAuto();
@@ -2232,7 +2247,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                     <table style="width:100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ddd; margin-bottom: 14px;">
                         <tr>
                             <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Veicolo:</td>
-                            <td style="padding:6px; border:1px solid #eee;" colspan="3">${preventivo.auto.marca} ${preventivo.auto.modello} ${preventivo.auto.versione || ''} - Targa ${preventivo.auto.targa}</td>
+                            <td style="padding:6px; border:1px solid #eee;" colspan="3">${preventivo.auto.marca} ${preventivo.auto.modello} ${preventivo.auto.versione || ''} - Targa ${preventivo.auto.targa}${preventivo.auto.alimentazione ? ' - ' + preventivo.auto.alimentazione : ''}</td>
                         </tr>
                     </table>
 
@@ -2538,6 +2553,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                     {nome: 'prezzoAcquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
                     {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
                     {nome: 'tipo', label: 'Tipo', tipo: 'select', opzioni: ['NUOVO', 'KM0', 'USATO']},
+                    {nome: 'alimentazione', label: 'Alimentazione', tipo: 'select', opzioni: ['Benzina', 'Diesel', 'GPL', 'Metano', 'Ibrido', 'Ibrido Plug-in', 'Elettrico']},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
             }
@@ -3167,6 +3183,10 @@ const canaliPartenza = (annoCanali === 2025) ? {
                                 <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.chilometri.toLocaleString()}</td>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Prezzo:</td>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold; color: #E30613;">€${contratto.auto.prezzoVendita.toLocaleString()}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Alimentazione:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;" colspan="3">${contratto.auto.alimentazione || '___________'}</td>
                             </tr>
                         </table>
                     </div>
@@ -3799,6 +3819,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
                             <p><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</p>
                             <p><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</p>
                             <p><strong>Tipo:</strong> ${autoObj.tipo}</p>
+                            <p><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</p>
                         </div>
                         
                         <div class="info-box">
