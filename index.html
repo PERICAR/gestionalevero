@@ -929,6 +929,9 @@ select#filtroStato {
                     <div id="listaExtraPreventivo" style="margin-top: 15px;"></div>
                 </div>
 
+                <h4>📊 Riepilogo (si aggiorna in automatico)</h4>
+                <div id="riepilogoPreventivoLive" style="margin-bottom: 20px;"></div>
+
                 <div class="form-group">
                     <label>Note</label>
                     <textarea id="notePreventivo" placeholder="Note interne sul preventivo..."></textarea>
@@ -1032,7 +1035,7 @@ select#filtroStato {
                     </div>
                     <div class="form-group">
                         <label>Valutazione Permuta (€)</label>
-                        <input type="number" id="valutazionePermuta" placeholder="8000">
+                        <input type="number" id="valutazionePermuta" placeholder="8000" onchange="aggiornaRiepilogoContratto()">
                     </div>
                 </div>
 
@@ -1040,11 +1043,11 @@ select#filtroStato {
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Deposito Cauzionale (€)</label>
-                        <input type="number" id="depositoCauzionale" placeholder="1000">
+                        <input type="number" id="depositoCauzionale" placeholder="1000" onchange="aggiornaRiepilogoContratto()">
                     </div>
                     <div class="form-group">
                         <label>Spese Voltura/Minivoltura (€)</label>
-                        <input type="number" id="speseVoltura" placeholder="350">
+                        <input type="number" id="speseVoltura" placeholder="350" onchange="aggiornaRiepilogoContratto()">
                     </div>
                     <div class="form-group">
                         <label>Canale di Vendita (interno)</label>
@@ -1098,6 +1101,9 @@ select#filtroStato {
                     
                     <div id="listaExtra" style="margin-top: 15px;"></div>
                 </div>
+
+                <h4>📊 Riepilogo (si aggiorna in automatico)</h4>
+                <div id="riepilogoContrattoLive" style="margin-bottom: 20px;"></div>
 
                 <div style="text-align: center; margin-top: 25px;">
                     <button class="btn btn-success" onclick="creaContratto()" style="padding: 15px 30px; font-size: 1.1rem;">📋 Crea Contratto</button>
@@ -2046,13 +2052,118 @@ Nuova password richiesta: ${nuovaPassword}`);
             preventivoInModifica = null;
         }
 
+        // RIEPILOGO ECONOMICO LIVE (contratto e preventivo)
+        function rigaRiepilogo(label, valore, opzioni) {
+            opzioni = opzioni || {};
+            const segno = valore < 0 ? '-' : (opzioni.forzaPiu ? '+' : '');
+            const valoreAbs = Math.abs(valore);
+            const colore = opzioni.colore || (valore < 0 ? '#dc3545' : 'inherit');
+            const peso = opzioni.grassetto ? 'font-weight:bold;' : '';
+            const sfondo = opzioni.sfondo ? `background:${opzioni.sfondo};` : '';
+            return `<tr style="border-bottom:1px solid #eee; ${sfondo}">
+                <td style="padding:8px; ${peso}">${label}</td>
+                <td style="padding:8px; text-align:right; ${peso} color:${colore};">${segno}€${valoreAbs.toLocaleString()}</td>
+            </tr>`;
+        }
+
+        function aggiornaRiepilogoContratto() {
+            const container = document.getElementById('riepilogoContrattoLive');
+            if (!container) return;
+
+            const prezzoBase = parseFloat(document.getElementById('prezzoBaseAuto').value) || 0;
+            const sconto = parseFloat(document.getElementById('scontoApplicato').value) || 0;
+            const prezzoFinale = parseFloat(document.getElementById('prezzoFinaleAuto').value) || 0;
+            const totaleExtra = extraItems.reduce((s, i) => s + i.prezzo, 0);
+            const valutazionePermuta = parseFloat(document.getElementById('valutazionePermuta').value) || 0;
+            const deposito = parseFloat(document.getElementById('depositoCauzionale').value) || 0;
+            const voltura = parseFloat(document.getElementById('speseVoltura').value) || 0;
+
+            if (!prezzoBase && !prezzoFinale) {
+                container.innerHTML = '<p style="color:#666; font-style:italic; margin:0;">Seleziona un\'auto per vedere il riepilogo</p>';
+                return;
+            }
+
+            const totaleASaldo = prezzoFinale + totaleExtra - valutazionePermuta - deposito + voltura;
+
+            let righe = rigaRiepilogo('PREZZO LISTINO VEICOLO', prezzoBase, { grassetto: true });
+            if (sconto > 0) {
+                righe += rigaRiepilogo('Sconto applicato', -sconto);
+                righe += rigaRiepilogo('PREZZO SCONTATO VEICOLO', prezzoFinale, { grassetto: true, sfondo: '#f0f8ff', colore: '#111827' });
+            }
+            extraItems.forEach(item => {
+                righe += rigaRiepilogo(item.descrizione, item.prezzo, { colore: '#111827' });
+            });
+            if (totaleExtra > 0) {
+                righe += rigaRiepilogo('SUBTOTALE', prezzoFinale + totaleExtra, { grassetto: true, sfondo: '#f0f8ff', colore: '#111827' });
+            }
+            if (valutazionePermuta > 0) {
+                righe += rigaRiepilogo('Valore ritiro permuta', -valutazionePermuta, { colore: '#28a745' });
+            }
+            if (deposito > 0) {
+                righe += rigaRiepilogo('Deposito cauzionale', -deposito, { colore: '#28a745' });
+            }
+            if (voltura > 0) {
+                righe += rigaRiepilogo('Spese voltura', voltura, { colore: '#111827', forzaPiu: true });
+            }
+
+            container.innerHTML = `
+                <div style="border: 2px solid var(--brand); border-radius: 10px; padding: 4px 14px; background: #fff;">
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                        ${righe}
+                        <tr style="border-top: 2px solid var(--brand); background:#f8f9fa;">
+                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE A SALDO</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color: var(--brand);">€${totaleASaldo.toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        function aggiornaRiepilogoPreventivo() {
+            const container = document.getElementById('riepilogoPreventivoLive');
+            if (!container) return;
+
+            const prezzoBase = parseFloat(document.getElementById('prezzoBasePreventivo').value) || 0;
+            const sconto = parseFloat(document.getElementById('scontoPreventivo').value) || 0;
+            const prezzoFinale = parseFloat(document.getElementById('prezzoFinalePreventivo').value) || 0;
+            const totaleExtra = extraItemsPreventivo.reduce((s, i) => s + i.prezzo, 0);
+
+            if (!prezzoBase && !prezzoFinale) {
+                container.innerHTML = '<p style="color:#666; font-style:italic; margin:0;">Seleziona un\'auto per vedere il riepilogo</p>';
+                return;
+            }
+
+            const totale = prezzoFinale + totaleExtra;
+
+            let righe = rigaRiepilogo('PREZZO LISTINO VEICOLO', prezzoBase, { grassetto: true });
+            if (sconto > 0) {
+                righe += rigaRiepilogo('Sconto applicato', -sconto);
+                righe += rigaRiepilogo('PREZZO SCONTATO VEICOLO', prezzoFinale, { grassetto: true, sfondo: '#f0f8ff', colore: '#111827' });
+            }
+            extraItemsPreventivo.forEach(item => {
+                righe += rigaRiepilogo(item.descrizione, item.prezzo, { colore: '#111827' });
+            });
+
+            container.innerHTML = `
+                <div style="border: 2px solid var(--brand); border-radius: 10px; padding: 4px 14px; background: #fff;">
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                        ${righe}
+                        <tr style="border-top: 2px solid var(--brand); background:#f8f9fa;">
+                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE PREVENTIVATO</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color: var(--brand);">€${totale.toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
         // GESTIONE EXTRA PREVENTIVO
         function aggiungiExtraPreventivo() {
             const descrizione = document.getElementById('descrizioneExtraPreventivo').value.trim();
             const prezzo = parseFloat(document.getElementById('prezzoExtraPreventivo').value) || 0;
 
-            if (!descrizione || prezzo <= 0) {
-                toast('Descrizione e prezzo sono obbligatori!', 'danger');
+            if (!descrizione || prezzo === 0) {
+                toast('Descrizione e prezzo sono obbligatori! Usa un valore negativo (es. -2000) per sottrarre dal totale (permute, sconti extra, ecc).', 'danger');
                 return;
             }
 
@@ -2074,6 +2185,7 @@ Nuova password richiesta: ${nuovaPassword}`);
 
             if (extraItemsPreventivo.length === 0) {
                 container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Nessun servizio/accessorio aggiunto</p>';
+                aggiornaRiepilogoPreventivo();
                 return;
             }
 
@@ -2085,7 +2197,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             extraItemsPreventivo.forEach(item => {
                 html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
                     <div>${item.descrizione}</div>
-                    <div style="text-align: right; font-weight: bold;">€${item.prezzo.toLocaleString()}</div>
+                    <div style="text-align: right; font-weight: bold; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</div>
                     <div><button class="btn btn-danger" onclick="rimuoviExtraPreventivo(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
                 </div>`;
             });
@@ -2093,12 +2205,13 @@ Nuova password richiesta: ${nuovaPassword}`);
             const totale = extraItemsPreventivo.reduce((sum, item) => sum + item.prezzo, 0);
             html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
                 <div>TOTALE EXTRA</div>
-                <div style="text-align: right; color: #1e40af;">€${totale.toLocaleString()}</div>
+                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : '#1e40af'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
                 <div></div>
             </div>`;
 
             html += '</div>';
             container.innerHTML = html;
+            aggiornaRiepilogoPreventivo();
         }
 
         // CALCOLO SCONTO PREVENTIVO
@@ -2107,6 +2220,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const sconto = parseFloat(document.getElementById('scontoPreventivo').value) || 0;
             const prezzoFinale = prezzoBase - sconto;
             document.getElementById('prezzoFinalePreventivo').value = prezzoFinale > 0 ? prezzoFinale : 0;
+            aggiornaRiepilogoPreventivo();
         }
 
         function calcolaScontoPreventivo() {
@@ -2114,6 +2228,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const prezzoFinale = parseFloat(document.getElementById('prezzoFinalePreventivo').value) || 0;
             const sconto = prezzoBase - prezzoFinale;
             document.getElementById('scontoPreventivo').value = sconto > 0 ? sconto : 0;
+            aggiornaRiepilogoPreventivo();
         }
 
         // GESTIONE PREVENTIVI
@@ -2288,7 +2403,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                         ${(preventivo.extraItems || []).map(item => `
                         <tr style="border-bottom:1px solid #ddd;">
                             <td style="padding:8px;">${item.descrizione}</td>
-                            <td style="padding:8px; text-align:right;">€${item.prezzo.toLocaleString()}</td>
+                            <td style="padding:8px; text-align:right; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</td>
                         </tr>`).join('')}
                         <tr style="border-top:2px solid #E30613; background:#f8f9fa;">
                             <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE PREVENTIVATO</td>
@@ -2486,9 +2601,9 @@ Nuova password richiesta: ${nuovaPassword}`);
         function aggiungiExtra() {
             const descrizione = document.getElementById('descrizioneExtra').value.trim();
             const prezzo = parseFloat(document.getElementById('prezzoExtra').value) || 0;
-            
-            if (!descrizione || prezzo <= 0) {
-                toast('Descrizione e prezzo sono obbligatori!', 'danger');
+
+            if (!descrizione || prezzo === 0) {
+                toast('Descrizione e prezzo sono obbligatori! Usa un valore negativo (es. -2000) per sottrarre dal totale (permute, sconti extra, ecc).', 'danger');
                 return;
             }
             
@@ -2516,31 +2631,33 @@ Nuova password richiesta: ${nuovaPassword}`);
             
             if (extraItems.length === 0) {
                 container.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">Nessun servizio/accessorio aggiunto</p>';
+                aggiornaRiepilogoContratto();
                 return;
             }
-            
+
             let html = '<div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">';
             html += '<div style="background: #e9ecef; padding: 8px; font-weight: bold; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;">';
             html += '<div>Descrizione</div><div style="text-align: right;">Prezzo</div><div style="width: 60px;"></div>';
             html += '</div>';
-            
+
             extraItems.forEach(item => {
                 html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
                     <div>${item.descrizione}</div>
-                    <div style="text-align: right; font-weight: bold;">€${item.prezzo.toLocaleString()}</div>
+                    <div style="text-align: right; font-weight: bold; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</div>
                     <div><button class="btn btn-danger" onclick="rimuoviExtra(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
                 </div>`;
             });
-            
+
             const totale = extraItems.reduce((sum, item) => sum + item.prezzo, 0);
             html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
                 <div>TOTALE EXTRA</div>
-                <div style="text-align: right; color: #1e40af;">€${totale.toLocaleString()}</div>
+                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : '#1e40af'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
                 <div></div>
             </div>`;
             
             html += '</div>';
             container.innerHTML = html;
+            aggiornaRiepilogoContratto();
         }
 
         // MODIFICA GENERALE
@@ -2874,7 +2991,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                     <td>${new Date(contratto.dataContratto).toLocaleDateString('it-IT')}</td>
                     <td>${contratto.cliente.nome}</td>
                     <td>${contratto.auto.marca} ${contratto.auto.modello}</td>
-                    <td>€${prezzoTotale.toLocaleString()}${(contratto.scontoApplicato || 0) > 0 ? `<br><small style="color: #dc3545;">(-€${contratto.scontoApplicato.toLocaleString()} sconto)</small>` : ''}${totaleExtra > 0 ? `<br><small style="color: #666;">(+€${totaleExtra.toLocaleString()} extra)</small>` : ''}</td>
+                    <td>€${prezzoTotale.toLocaleString()}${(contratto.scontoApplicato || 0) > 0 ? `<br><small style="color: #dc3545;">(-€${contratto.scontoApplicato.toLocaleString()} sconto)</small>` : ''}${totaleExtra !== 0 ? `<br><small style="color: ${totaleExtra < 0 ? '#dc3545' : '#666'};">(${totaleExtra < 0 ? '-' : '+'}€${Math.abs(totaleExtra).toLocaleString()} extra)</small>` : ''}</td>
                     <td>${permutaText}</td>
                     <td class="actions">
                         <button class="btn btn-primary" onclick="mostraContratto(${JSON.stringify(contratto).replace(/"/g, '&quot;')})">📋 Visualizza</button>
@@ -2927,16 +3044,18 @@ Nuova password richiesta: ${nuovaPassword}`);
             const prezzoBase = parseFloat(document.getElementById('prezzoBaseAuto').value) || 0;
             const sconto = parseFloat(document.getElementById('scontoApplicato').value) || 0;
             const prezzoFinale = prezzoBase - sconto;
-            
+
             document.getElementById('prezzoFinaleAuto').value = prezzoFinale > 0 ? prezzoFinale : 0;
+            aggiornaRiepilogoContratto();
         }
 
         function calcolaSconto() {
             const prezzoBase = parseFloat(document.getElementById('prezzoBaseAuto').value) || 0;
             const prezzoFinale = parseFloat(document.getElementById('prezzoFinaleAuto').value) || 0;
             const sconto = prezzoBase - prezzoFinale;
-            
+
             document.getElementById('scontoApplicato').value = sconto > 0 ? sconto : 0;
+            aggiornaRiepilogoContratto();
         }
 
         // Event listener per aggiornare i prezzi quando si seleziona un'auto
@@ -2957,6 +3076,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                         document.getElementById('prezzoFinaleAuto').value = '';
                         document.getElementById('scontoApplicato').value = '';
                     }
+                    aggiornaRiepilogoContratto();
                 });
             }
 
@@ -2976,6 +3096,7 @@ Nuova password richiesta: ${nuovaPassword}`);
                         document.getElementById('prezzoFinalePreventivo').value = '';
                         document.getElementById('scontoPreventivo').value = '';
                     }
+                    aggiornaRiepilogoPreventivo();
                 });
             }
         });
@@ -3277,7 +3398,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
                                     ${(contratto.extraItems || []).map(item => `
                                     <tr style="border-bottom: 1px solid #ddd;">
                                         <td style="padding: 6px;">${item.descrizione}</td>
-                                        <td style="padding: 6px; text-align: right;">€${item.prezzo.toLocaleString()}</td>
+                                        <td style="padding: 6px; text-align: right; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</td>
                                     </tr>
                                     `).join('')}
                                     ${totaleExtra > 0 ? `
