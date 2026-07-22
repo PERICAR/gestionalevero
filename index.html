@@ -887,7 +887,7 @@ select#filtroStato {
                     </div>
                     <div class="form-group">
                         <label>Validità (giorni)</label>
-                        <input type="number" id="validitaPreventivo" placeholder="15" value="15">
+                        <input type="number" id="validitaPreventivo" placeholder="7" value="7">
                     </div>
                 </div>
 
@@ -2034,7 +2034,7 @@ Nuova password richiesta: ${nuovaPassword}`);
         function pulisciFormPreventivo() {
             document.getElementById('clientePreventivo').value = '';
             document.getElementById('autoPreventivo').value = '';
-            document.getElementById('validitaPreventivo').value = '15';
+            document.getElementById('validitaPreventivo').value = '7';
             document.getElementById('scontoPreventivo').value = '';
             document.getElementById('prezzoFinalePreventivo').value = '';
             document.getElementById('prezzoBasePreventivo').value = '';
@@ -2121,7 +2121,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const clienteId = document.getElementById('clientePreventivo').value;
             const autoId = document.getElementById('autoPreventivo').value;
             const dataPreventivo = document.getElementById('dataPreventivo').value;
-            const validita = parseInt(document.getElementById('validitaPreventivo').value) || 15;
+            const validita = parseInt(document.getElementById('validitaPreventivo').value) || 7;
             const note = document.getElementById('notePreventivo').value;
 
             if (!clienteId || !autoId || !dataPreventivo) {
@@ -2222,7 +2222,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             const prezzoTotale = prezzoFinaleAuto + totaleExtra;
 
             const dataScadenza = new Date(preventivo.dataPreventivo);
-            dataScadenza.setDate(dataScadenza.getDate() + (preventivo.validitaGiorni || 15));
+            dataScadenza.setDate(dataScadenza.getDate() + (preventivo.validitaGiorni || 7));
 
             const html = `
                 <div class="contract-preview">
@@ -2246,8 +2246,28 @@ Nuova password richiesta: ${nuovaPassword}`);
 
                     <table style="width:100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ddd; margin-bottom: 14px;">
                         <tr>
-                            <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Veicolo:</td>
-                            <td style="padding:6px; border:1px solid #eee;" colspan="3">${preventivo.auto.marca} ${preventivo.auto.modello} ${preventivo.auto.versione || ''} - Targa ${preventivo.auto.targa}${preventivo.auto.alimentazione ? ' - ' + preventivo.auto.alimentazione : ''}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Marca:</td>
+                            <td style="padding:6px; border:1px solid #eee; width:25%;">${preventivo.auto.marca}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold; width:25%;">Modello:</td>
+                            <td style="padding:6px; border:1px solid #eee; width:25%;">${preventivo.auto.modello}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Versione:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.versione || '___________'}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Targa:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.targa}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Telaio:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.telaio || '___________'}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Immatricolazione:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.dataImmatricolazione ? new Date(preventivo.auto.dataImmatricolazione).toLocaleDateString('it-IT') : '___________'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Chilometri:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.chilometri.toLocaleString()}</td>
+                            <td style="padding:6px; border:1px solid #eee; font-weight:bold;">Alimentazione:</td>
+                            <td style="padding:6px; border:1px solid #eee;">${preventivo.auto.alimentazione || '___________'}</td>
                         </tr>
                     </table>
 
@@ -2327,7 +2347,7 @@ Nuova password richiesta: ${nuovaPassword}`);
             document.getElementById('clientePreventivo').value = preventivo.clienteId;
             document.getElementById('autoPreventivo').value = preventivo.autoId;
             document.getElementById('dataPreventivo').value = preventivo.dataPreventivo;
-            document.getElementById('validitaPreventivo').value = preventivo.validitaGiorni || 15;
+            document.getElementById('validitaPreventivo').value = preventivo.validitaGiorni || 7;
             document.getElementById('prezzoBasePreventivo').value = preventivo.auto ? preventivo.auto.prezzoVendita : '';
             document.getElementById('scontoPreventivo').value = preventivo.scontoApplicato || 0;
             document.getElementById('prezzoFinalePreventivo').value = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : '');
