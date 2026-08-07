@@ -578,8 +578,8 @@ select#filtroStato {
                 
                 <div class="login-form">
                     <div class="form-group">
-                        <label>👤 Username</label>
-                        <input type="text" id="loginUsername" placeholder="Inserisci username" autocomplete="username">
+                        <label>📧 Email</label>
+                        <input type="email" id="loginEmail" placeholder="nome@pericar.it" autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label>🔒 Password</label>
@@ -1327,30 +1327,20 @@ select#filtroStato {
         <div class="modal-content" style="max-width: 500px;">
             <span class="close" onclick="chiudiModalRecupero()">&times;</span>
             <h2>🔑 Recupero Password</h2>
-            
-            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0; color: #856404;">
-                    <strong>⚠️ Attenzione:</strong> Per motivi di sicurezza, il recupero password richiede la conferma dell'account master.
+
+            <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #1E3A8A;">
+                    Inserisci la tua email: riceverai da Firebase un link per reimpostare la password.
                 </p>
             </div>
-            
+
             <div class="form-group">
-                <label>👤 Username da recuperare</label>
-                <input type="text" id="usernameRecupero" placeholder="Inserisci username">
+                <label>📧 Email</label>
+                <input type="email" id="emailRecuperoInput" placeholder="nome@pericar.it">
             </div>
-            
-            <div class="form-group">
-                <label>📧 Email di conferma</label>
-                <input type="email" id="emailRecupero" placeholder="giacomo@pericar.it" readonly value="giacomo@pericar.it" style="background: #f8f9fa;">
-            </div>
-            
-            <div class="form-group">
-                <label>📝 Motivo della richiesta</label>
-                <textarea id="motivoRecupero" placeholder="Descrivi brevemente il motivo della richiesta di recupero password..." style="min-height: 80px;"></textarea>
-            </div>
-            
+
             <div style="margin-top: 20px; text-align: right;">
-                <button class="btn btn-primary" onclick="inviaRichiestaRecupero()">📧 Invia Richiesta</button>
+                <button class="btn btn-primary" onclick="inviaRichiestaRecupero()">📧 Invia Email di Ripristino</button>
                 <button class="btn btn-danger" onclick="chiudiModalRecupero()">❌ Annulla</button>
             </div>
         </div>
@@ -1361,11 +1351,6 @@ select#filtroStato {
         <div class="modal-content" style="max-width: 500px;">
             <span class="close" onclick="chiudiModalCambio()">&times;</span>
             <h2>🔧 Cambio Password</h2>
-            
-            <div class="form-group">
-                <label>👤 Username</label>
-                <input type="text" id="usernameCambio" placeholder="Inserisci username">
-            </div>
             
             <div class="form-group">
                 <label>🔒 Password attuale</label>
@@ -1498,31 +1483,12 @@ select#filtroStato {
             aggiornaTabelle();
         }
 
-        // Sistema di autenticazione
-        const utenti = {
-            'admin': 'pericar2024',
-            'giacomo': 'giacomo123',
-            'staff': 'staff2024'
-        };
-
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
-            // Controlla se l'utente è già loggato
-            const sessioneAttiva = localStorage.getItem('sessionePericar');
-            if (sessioneAttiva) {
-                const sessione = JSON.parse(sessioneAttiva);
-                const ora = new Date().getTime();
-                // Sessione valida per 8 ore (28800000 ms)
-                if (ora - sessione.timestamp < 28800000) {
-                    utenteCorrente = sessione.username;
-                    mostraSistema();
-                    return;
-                }
-            }
-            
-            // Mostra schermata di login
+            // La schermata mostrata (login o sistema) viene decisa da Firebase Auth,
+            // vedi onAuthStateChanged nello script Firebase in fondo alla pagina.
             mostraLogin();
-            
+
             // Event listener per Enter nei campi login
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
@@ -1535,14 +1501,14 @@ select#filtroStato {
         function mostraLogin() {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainSystem').style.display = 'none';
-            document.getElementById('loginUsername').focus();
+            document.getElementById('loginEmail').focus();
         }
 
         function mostraSistema() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainSystem').style.display = 'flex';
             document.getElementById('utenteLoggato').textContent = utenteCorrente;
-            
+
             // Inizializza il sistema
             aggiornaTabelle();
             aggiornaStatistiche();
@@ -1557,61 +1523,14 @@ select#filtroStato {
             document.getElementById('dataPreventivo').value = new Date().toISOString().split('T')[0];
         }
 
-        function effettuaLogin() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!username || !password) {
-                mostraErroreLogin('Inserisci username e password');
-                return;
-            }
-            
-            if (utenti[username] && utenti[username] === password) {
-                utenteCorrente = username;
-                
-                // Salva sessione
-                const sessione = {
-                    username: username,
-                    timestamp: new Date().getTime()
-                };
-                localStorage.setItem('sessionePericar', JSON.stringify(sessione));
-                
-                mostraSuccessoLogin('Accesso effettuato con successo!');
-                setTimeout(() => {
-                    mostraSistema();
-                }, 1000);
-            } else {
-                mostraErroreLogin('Username o password non corretti');
-                
-                // Log del tentativo di accesso non autorizzato
-                console.warn(`Tentativo di accesso fallito per: ${username} - ${new Date().toLocaleString()}`);
-            }
-            
-            // Pulisci campi
-            document.getElementById('loginPassword').value = '';
-        }
-
-        function effettuaLogout() {
-            if (confirm('Sei sicuro di voler uscire dal sistema?')) {
-                localStorage.removeItem('sessionePericar');
-                utenteCorrente = null;
-                
-                // Pulisci campi login
-                document.getElementById('loginUsername').value = '';
-                document.getElementById('loginPassword').value = '';
-                
-                mostraLogin();
-            }
-        }
-
         function mostraErroreLogin(messaggio) {
             const errorDiv = document.getElementById('loginError');
             const successDiv = document.getElementById('loginSuccess');
-            
+
             successDiv.style.display = 'none';
             errorDiv.textContent = messaggio;
             errorDiv.style.display = 'block';
-            
+
             setTimeout(() => {
                 errorDiv.style.display = 'none';
             }, 5000);
@@ -1620,7 +1539,7 @@ select#filtroStato {
         function mostraSuccessoLogin(messaggio) {
             const errorDiv = document.getElementById('loginError');
             const successDiv = document.getElementById('loginSuccess');
-            
+
             errorDiv.style.display = 'none';
             successDiv.textContent = messaggio;
             successDiv.style.display = 'block';
@@ -1633,45 +1552,7 @@ select#filtroStato {
 
         function chiudiModalRecupero() {
             document.getElementById('modalRecuperoPassword').style.display = 'none';
-            document.getElementById('usernameRecupero').value = '';
-            document.getElementById('motivoRecupero').value = '';
-        }
-
-        function inviaRichiestaRecupero() {
-            const username = document.getElementById('usernameRecupero').value.trim();
-            const motivo = document.getElementById('motivoRecupero').value.trim();
-            
-            if (!username) {
-                toast('Inserisci l\'username da recuperare', 'danger');
-                return;
-            }
-
-            if (!motivo) {
-                toast('Inserisci il motivo della richiesta', 'danger');
-                return;
-            }
-            
-            // Simula invio email (in un sistema reale invierebbe email a giacomo@pericar.it)
-            const emailBody = `
-RICHIESTA RECUPERO PASSWORD - SISTEMA PERICAR
-
-Username da recuperare: ${username}
-Data richiesta: ${new Date().toLocaleString('it-IT')}
-Motivo: ${motivo}
-
-Per autorizzare il recupero, rispondere a questa email con la nuova password temporanea.
-
-Sistema di Gestione PERICAR
-            `.trim();
-            
-            // Crea link mailto
-            const mailtoLink = `mailto:giacomo@pericar.it?subject=RECUPERO PASSWORD SISTEMA PERICAR - ${username}&body=${encodeURIComponent(emailBody)}`;
-            
-            // Apri client email
-            window.location.href = mailtoLink;
-            
-            toast('Richiesta inviata! Controlla la tua email per aprire il client di posta e inviare la richiesta a giacomo@pericar.it', 'success');
-            chiudiModalRecupero();
+            document.getElementById('emailRecuperoInput').value = '';
         }
 
         // CAMBIO PASSWORD
@@ -1681,48 +1562,13 @@ Sistema di Gestione PERICAR
 
         function chiudiModalCambio() {
             document.getElementById('modalCambioPassword').style.display = 'none';
-            document.getElementById('usernameCambio').value = '';
             document.getElementById('passwordAttuale').value = '';
             document.getElementById('nuovaPassword').value = '';
             document.getElementById('confermaNuovaPassword').value = '';
         }
 
-        function cambiaPassword() {
-            const username = document.getElementById('usernameCambio').value.trim();
-            const passwordAttuale = document.getElementById('passwordAttuale').value;
-            const nuovaPassword = document.getElementById('nuovaPassword').value;
-            const confermaPassword = document.getElementById('confermaNuovaPassword').value;
-            
-            if (!username || !passwordAttuale || !nuovaPassword || !confermaPassword) {
-                toast('Compila tutti i campi', 'danger');
-                return;
-            }
-
-            if (!utenti[username] || utenti[username] !== passwordAttuale) {
-                toast('Username o password attuale non corretti', 'danger');
-                return;
-            }
-
-            if (nuovaPassword.length < 6) {
-                toast('La nuova password deve essere di almeno 6 caratteri', 'danger');
-                return;
-            }
-
-            if (nuovaPassword !== confermaPassword) {
-                toast('Le password non coincidono', 'danger');
-                return;
-            }
-            
-            // Nota: In un sistema reale, le password sarebbero salvate in un database sicuro
-            // Qui mostriamo solo un messaggio informativo
-            alert(`⚠️ ATTENZIONE: Per motivi di sicurezza, il cambio password deve essere effettuato dall'amministratore di sistema.
-
-Contatta giacomo@pericar.it per richiedere il cambio password per l'utente: ${username}
-
-Nuova password richiesta: ${nuovaPassword}`);
-            
-            chiudiModalCambio();
-        }
+        // NOTA: effettuaLogin(), effettuaLogout(), inviaRichiestaRecupero() e cambiaPassword()
+        // sono definite nello script Firebase in fondo alla pagina, perché usano Firebase Authentication.
 
         // Gestione tab
         function showTab(tabName) {
@@ -4307,6 +4153,10 @@ const canaliPartenza = (annoCanali === 2025) ? {
   import {
     getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    sendPasswordResetEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   // --- CONFIG FIREBASE (tua) ---
   const firebaseConfig = {
@@ -4320,38 +4170,16 @@ const canaliPartenza = (annoCanali === 2025) ? {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-    // --- PRELOAD DAL CLOUD AD OGNI AVVIO ---
-(async () => {
-  try {
-    // evita loop: ricarica solo una volta per apertura
-    if (localStorage.getItem("__preloaded") === "1") {
-      localStorage.removeItem("__preloaded");
-      return;
-    }
+  const auth = getAuth(app);
 
-    const KEYS = ["clienti","auto","contratti","preventivi"];
-    // svuota le chiavi esistenti
-    KEYS.forEach(k => localStorage.removeItem(k));
-
-    for (const k of KEYS) {
-      const s = await getDocs(collection(db, k));
-      const arr = s.docs.map(d => d.data());
-      localStorage.setItem(k, JSON.stringify(arr));
-    }
-
-    localStorage.setItem("__preloaded","1");
-    location.reload(); // ricarica e mostra i dati cloud
-  } catch (e) {
-    console.warn("Preload cloud fallito:", e);
-  }
-})();
-
-    const KEYS = ["clienti","auto","contratti","preventivi"];
+  const KEYS = ["clienti","auto","contratti","preventivi"];
+  const SESSIONE_MAX_MS = 8 * 60 * 60 * 1000; // 8 ore, come prima
 
   // ---- util per evitare reload inutili ----
   let _initializing = true;
   let _writing = false;
   let _lastReload = 0;
+  let _sincronizzazioneAttiva = false;
 
   const stable = (arr) => {
     if (!Array.isArray(arr)) return "[]";
@@ -4368,8 +4196,16 @@ const canaliPartenza = (annoCanali === 2025) ? {
     location.reload();
   };
 
-  // --- PRELOAD ALL'AVVIO (legge dal cloud, nessun reload) ---
-  (async () => {
+  function pulisciDatiLocali() {
+    KEYS.forEach(k => localStorage.removeItem(k));
+  }
+
+  // --- SINCRONIZZAZIONE CLOUD: si attiva solo dopo il login (mai a schermata di login visibile) ---
+  async function avviaSincronizzazioneCloud() {
+    if (_sincronizzazioneAttiva) return;
+    _sincronizzazioneAttiva = true;
+
+    // --- PRELOAD ALL'AVVIO (legge dal cloud, nessun reload) ---
     try {
       for (const k of KEYS) {
         const s = await getDocs(collection(db, k));
@@ -4381,65 +4217,175 @@ const canaliPartenza = (annoCanali === 2025) ? {
     } finally {
       _initializing = false;
     }
-  })();
 
-  // --- WRITE-THROUGH + DELETE (scrive/cancella su Firestore) ---
-  const realSetItem = localStorage.setItem.bind(localStorage);
-  localStorage.setItem = function(key, value){
-    realSetItem(key, value);
-    if (!KEYS.includes(key)) return;
+    // --- WRITE-THROUGH + DELETE (scrive/cancella su Firestore) ---
+    const realSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = function(key, value){
+      realSetItem(key, value);
+      if (!KEYS.includes(key)) return;
 
-    (async () => {
-      try {
-        const arr = JSON.parse(value);
-        if (!Array.isArray(arr)) return;
+      (async () => {
+        try {
+          const arr = JSON.parse(value);
+          if (!Array.isArray(arr)) return;
 
-        _writing = true;
+          _writing = true;
 
-        // upsert
-        const wantedIds = new Set();
-        for (let i = 0; i < arr.length; i++) {
-          const obj = arr[i] ?? {};
-          const id = String(obj.id ?? i);
-          wantedIds.add(id);
-          await setDoc(doc(db, key, id), obj);
+          // upsert
+          const wantedIds = new Set();
+          for (let i = 0; i < arr.length; i++) {
+            const obj = arr[i] ?? {};
+            const id = String(obj.id ?? i);
+            wantedIds.add(id);
+            await setDoc(doc(db, key, id), obj);
+          }
+
+          // delete quelli non più presenti
+          const snap = await getDocs(collection(db, key));
+          const deletes = [];
+          snap.forEach(d => {
+            if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id)));
+          });
+          await Promise.all(deletes);
+        } catch(e){
+          console.warn("Cloud sync error:", key, e);
+        } finally {
+          // piccola pausa prima di riattivare gli snapshot
+          setTimeout(() => { _writing = false; }, 300);
         }
+      })();
+    };
 
-        // delete quelli non più presenti
-        const snap = await getDocs(collection(db, key));
-        const deletes = [];
-        snap.forEach(d => {
-          if (!wantedIds.has(d.id)) deletes.push(deleteDoc(doc(db, key, d.id)));
-        });
-        await Promise.all(deletes);
-      } catch(e){
-        console.warn("Cloud sync error:", key, e);
-      } finally {
-        // piccola pausa prima di riattivare gli snapshot
-        setTimeout(() => { _writing = false; }, 300);
-      }
-    })();
+    // --- REAL-TIME: aggiorna localStorage, ricarica solo se serve ---
+    function watchCollection(key) {
+      const col = collection(db, key);
+      onSnapshot(col, (snap) => {
+        if (_initializing || _writing) return; // evita loop durante preload/scrittura
+
+        const arr = snap.docs.map(d => d.data());
+        const next = stable(arr);
+        const curr = localStorage.getItem(key);
+
+        if (curr !== next) {
+          localStorage.setItem(key, next);
+          // niente reload immediato al login: aspetta che la pagina sia pronta
+          // e ricarica al massimo ogni 3s
+          maybeReload();
+        }
+      });
+    }
+    KEYS.forEach(watchCollection);
+
+    aggiornaTabelle();
+    aggiornaStatistiche();
+  }
+
+  // --- AUTENTICAZIONE (Firebase Auth vera) ---
+  window.effettuaLogin = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      mostraErroreLogin('Inserisci email e password');
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      mostraSuccessoLogin('Accesso effettuato con successo!');
+    } catch (e) {
+      console.warn('Login fallito:', e.code);
+      mostraErroreLogin('Email o password non corretti');
+    }
+
+    document.getElementById('loginPassword').value = '';
   };
 
-  // --- REAL-TIME: aggiorna localStorage, ricarica solo se serve ---
-  function watchCollection(key) {
-    const col = collection(db, key);
-    onSnapshot(col, (snap) => {
-      if (_initializing || _writing) return; // evita loop durante preload/scrittura
+  window.effettuaLogout = function() {
+    if (confirm('Sei sicuro di voler uscire dal sistema?')) {
+      signOut(auth);
+    }
+  };
 
-      const arr = snap.docs.map(d => d.data());
-      const next = stable(arr);
-      const curr = localStorage.getItem(key);
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const loginTime = localStorage.getItem('pericarLoginTime');
+      const ora = Date.now();
 
-      if (curr !== next) {
-        localStorage.setItem(key, next);
-        // niente reload immediato al login: aspetta che la pagina sia pronta
-        // e ricarica al massimo ogni 3s
-        maybeReload();
+      if (loginTime && (ora - parseInt(loginTime, 10)) > SESSIONE_MAX_MS) {
+        await signOut(auth);
+        return;
       }
-    });
-  }
-  KEYS.forEach(watchCollection);
+      if (!loginTime) {
+        localStorage.setItem('pericarLoginTime', String(ora));
+      }
+
+      utenteCorrente = user.email;
+      mostraSistema();
+      avviaSincronizzazioneCloud();
+    } else {
+      localStorage.removeItem('pericarLoginTime');
+      pulisciDatiLocali();
+      utenteCorrente = null;
+      mostraLogin();
+    }
+  });
+
+  window.inviaRichiestaRecupero = async function() {
+    const email = document.getElementById('emailRecuperoInput').value.trim();
+
+    if (!email) {
+      toast('Inserisci la tua email', 'danger');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast('Email di ripristino inviata! Controlla la posta.', 'success');
+      chiudiModalRecupero();
+    } catch (e) {
+      console.warn('Reset password fallito:', e.code);
+      toast('Non è stato possibile inviare l\'email. Controlla l\'indirizzo.', 'danger');
+    }
+  };
+
+  window.cambiaPassword = async function() {
+    const passwordAttuale = document.getElementById('passwordAttuale').value;
+    const nuovaPassword = document.getElementById('nuovaPassword').value;
+    const confermaPassword = document.getElementById('confermaNuovaPassword').value;
+
+    if (!passwordAttuale || !nuovaPassword || !confermaPassword) {
+      toast('Compila tutti i campi', 'danger');
+      return;
+    }
+
+    if (nuovaPassword.length < 6) {
+      toast('La nuova password deve essere di almeno 6 caratteri', 'danger');
+      return;
+    }
+
+    if (nuovaPassword !== confermaPassword) {
+      toast('Le password non coincidono', 'danger');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      toast('Devi essere loggato per cambiare password', 'danger');
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, passwordAttuale);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, nuovaPassword);
+      toast('✅ Password cambiata con successo!', 'success');
+      chiudiModalCambio();
+    } catch (e) {
+      console.warn('Cambio password fallito:', e.code);
+      toast('Password attuale non corretta.', 'danger');
+    }
+  };
 </script>
 </body>
 </html>
