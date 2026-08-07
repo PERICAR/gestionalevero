@@ -2811,7 +2811,13 @@ select#filtroStato {
                 return;
             }
 
-            clienti.forEach(cliente => {
+            // Senza un ordinamento manuale scelto dall'utente, mostra i più recenti aggiunti per primi
+            // (non c'è una "data di inserimento" salvata, ma l'id è un timestamp quindi funziona da proxy)
+            const clientiDaMostrare = sortState.clienti
+                ? clienti
+                : [...clienti].sort((a, b) => (b.id || 0) - (a.id || 0));
+
+            clientiDaMostrare.forEach(cliente => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${cliente.nome}</td>
@@ -2847,6 +2853,12 @@ select#filtroStato {
                 row.className = 'empty-state';
                 row.innerHTML = '<td colspan="9">Nessuna auto da mostrare per questo filtro.</td>';
                 return;
+            }
+
+            // Senza un ordinamento manuale scelto dall'utente, mostra le più recenti aggiunte per prime
+            // (l'id è un timestamp quindi funziona da proxy della data di inserimento)
+            if (!sortState.auto) {
+                autoFiltrate = [...autoFiltrate].sort((a, b) => (b.id || 0) - (a.id || 0));
             }
 
             autoFiltrate.forEach(autoObj => {
