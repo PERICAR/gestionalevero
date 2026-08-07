@@ -788,6 +788,10 @@ select#filtroStato {
                         <input type="date" id="dataImmatricolazione">
                     </div>
                     <div class="form-group">
+                        <label>Data Acquisto (quando l'hai pagata tu)</label>
+                        <input type="date" id="dataAcquisto">
+                    </div>
+                    <div class="form-group">
                         <label>Chilometri</label>
                         <input type="number" id="chilometri" placeholder="50000">
                     </div>
@@ -1829,6 +1833,7 @@ select#filtroStato {
             // Imposta data odierna
             document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
             document.getElementById('dataPreventivo').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dataAcquisto').value = new Date().toISOString().split('T')[0];
 
             aggiornaBilancio();
         }
@@ -1990,6 +1995,7 @@ select#filtroStato {
             const targa = document.getElementById('targa').value;
             const telaio = document.getElementById('telaio').value;
             const dataImmatricolazione = document.getElementById('dataImmatricolazione').value;
+            const dataAcquisto = document.getElementById('dataAcquisto').value;
             const chilometri = document.getElementById('chilometri').value;
             const prezzoAcquisto = parseFloat(document.getElementById('prezzoAcquisto').value) || 0;
             const prezzoVendita = parseFloat(document.getElementById('prezzoVendita').value) || 0;
@@ -2020,6 +2026,7 @@ select#filtroStato {
                 targa,
                 telaio,
                 dataImmatricolazione,
+                dataAcquisto,
                 chilometri: parseInt(chilometri) || 0,
                 prezzoAcquisto,
                 prezzoVendita,
@@ -2047,6 +2054,7 @@ select#filtroStato {
             document.getElementById('targa').value = '';
             document.getElementById('telaio').value = '';
             document.getElementById('dataImmatricolazione').value = '';
+            document.getElementById('dataAcquisto').value = new Date().toISOString().split('T')[0];
             document.getElementById('chilometri').value = '';
             document.getElementById('prezzoAcquisto').value = '';
             document.getElementById('prezzoVendita').value = '';
@@ -2851,6 +2859,7 @@ select#filtroStato {
                     {nome: 'targa', label: 'Targa', tipo: 'text'},
                     {nome: 'telaio', label: 'Telaio', tipo: 'text'},
                     {nome: 'dataImmatricolazione', label: 'Data Immatricolazione', tipo: 'date'},
+                    {nome: 'dataAcquisto', label: 'Data Acquisto (quando l\'hai pagata tu)', tipo: 'date'},
                     {nome: 'chilometri', label: 'Chilometri', tipo: 'number'},
                     {nome: 'prezzoAcquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
                     {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
@@ -3293,7 +3302,12 @@ select#filtroStato {
             contratti.forEach(c => { if (c.dataContratto) anniConDati.add(new Date(c.dataContratto).getFullYear()); });
             entrateManuali.forEach(e => { if (e.data) anniConDati.add(new Date(e.data).getFullYear()); });
             speseGenerali.forEach(s => { if (s.data) anniConDati.add(new Date(s.data).getFullYear()); });
-            auto.forEach(a => (a.speseAggiuntive || []).forEach(s => { if (s.data) anniConDati.add(new Date(s.data).getFullYear()); }));
+            auto.forEach(a => {
+                // stessa stima di data usata in calcolaBilancioMese per il prezzo di acquisto
+                const dataAcquistoStimata = a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
+                if (dataAcquistoStimata) anniConDati.add(new Date(dataAcquistoStimata).getFullYear());
+                (a.speseAggiuntive || []).forEach(s => { if (s.data) anniConDati.add(new Date(s.data).getFullYear()); });
+            });
 
             const annoCorrente = new Date().getFullYear();
             anniConDati.add(annoCorrente);
@@ -3332,10 +3346,18 @@ select#filtroStato {
             const fatturatoManuale = entrateManuali.filter(e => nelMese(e.data)).reduce((sum, e) => sum + e.importo, 0);
             const fatturatoTotale = fatturatoAuto + fatturatoManuale;
 
-            // Quanto pagato le macchine: tutte le spese auto (incluso il prezzo di acquisto, già tracciato
-            // come "Costo Iniziale") con data in questo mese, indipendentemente dal fatto che l'auto sia già venduta
+            // Quanto pagato le macchine: il prezzo di acquisto (campo a sé sull'auto, non dentro le
+            // spese — esattamente come nel calcolo del margine mostrato nella tabella Auto) più tutte
+            // le spese aggiuntive registrate, con data in questo mese, indipendentemente dal fatto che
+            // l'auto sia già stata venduta o meno
             let costoAuto = 0;
             auto.forEach(a => {
+                // usa la vera Data Acquisto se compilata; per le auto inserite prima che questo campo
+                // esistesse, ripiega sulla data di inserimento nel gestionale (l'id è un timestamp) —
+                // MAI sull'immatricolazione, che è quando l'auto è stata targata la prima volta, non
+                // quando l'abbiamo pagata noi
+                const dataAcquistoStimata = a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
+                if (nelMese(dataAcquistoStimata)) costoAuto += a.prezzoAcquisto || 0;
                 (a.speseAggiuntive || []).forEach(s => {
                     if (nelMese(s.data)) costoAuto += s.importo;
                 });
@@ -5073,6 +5095,19 @@ const canaliPartenza = (annoCanali === 2025) ? {
     KEYS.forEach(watchCollection);
 
     ricaricaDatiDaLocalStorage();
+
+    // Prima sincronizzazione in assoluto: se le spese fisse ricorrenti non esistono ancora su
+    // Firestore (collezione nuova, mai creata prima), le creiamo noi con valori di partenza
+    // sensati — l'utente può poi modificarle o cancellarle liberamente dall'interfaccia
+    if (speseFisseRicorrenti.length === 0 && !localStorage.getItem('__speseFisseSeedFatto')) {
+      speseFisseRicorrenti = [
+        { id: Date.now(), nome: 'Affitto', importo: 400, cadenza: 'mensile' },
+        { id: Date.now() + 1, nome: 'INPS', importo: 1000, cadenza: 'trimestrale' }
+      ];
+      salvaSpeseFisseRicorrenti();
+      localStorage.setItem('__speseFisseSeedFatto', '1');
+    }
+
     aggiornaTabelle();
     aggiornaStatistiche();
   }
