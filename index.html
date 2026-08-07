@@ -568,7 +568,7 @@ select#filtroStato {
     <div id="toastContainer"></div>
     <div class="container">
         <!-- SCHERMATA LOGIN -->
-        <div id="loginScreen" class="login-screen">
+        <div id="loginScreen" class="login-screen" style="display: none;">
             <div class="login-container">
                 <div class="login-header">
                     <img src="https://gestionalevero.netlify.app/logopericar.png" alt="PERICAR Logo" style="height: 100px; width: auto; margin-bottom: 20px;">
@@ -1485,9 +1485,10 @@ select#filtroStato {
 
         // Inizializzazione
         document.addEventListener('DOMContentLoaded', function() {
-            // La schermata mostrata (login o sistema) viene decisa da Firebase Auth,
-            // vedi onAuthStateChanged nello script Firebase in fondo alla pagina.
-            mostraLogin();
+            // Nessuna schermata viene mostrata subito: resta tutto nascosto finché
+            // Firebase Auth non stabilisce se c'è già una sessione valida (vedi
+            // onAuthStateChanged nello script Firebase in fondo alla pagina), così
+            // non si vede il lampeggio tra login e gestionale ad ogni reload.
 
             // Event listener per Enter nei campi login
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
@@ -4178,7 +4179,6 @@ const canaliPartenza = (annoCanali === 2025) ? {
   // ---- util per evitare reload inutili ----
   let _initializing = true;
   let _writing = false;
-  let _lastReload = 0;
   let _sincronizzazioneAttiva = false;
 
   const stable = (arr) => {
@@ -4191,8 +4191,11 @@ const canaliPartenza = (annoCanali === 2025) ? {
   const maybeReload = () => {
     const now = Date.now();
     if (document.visibilityState !== "visible") return;     // niente reload se scheda non visibile
-    if (now - _lastReload < 3000) return;                   // max 1 reload ogni 3s
-    _lastReload = now;
+    // il timestamp è salvato in localStorage (non in memoria) perché deve sopravvivere al reload stesso,
+    // altrimenti il limite "1 reload ogni 3s" si azzera ad ogni ricarica e non blocca nulla
+    const ultimoReload = parseInt(localStorage.getItem('pericarLastReload') || '0', 10);
+    if (now - ultimoReload < 3000) return;                  // max 1 reload ogni 3s
+    localStorage.setItem('pericarLastReload', String(now));
     location.reload();
   };
 
