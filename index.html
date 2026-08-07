@@ -1188,20 +1188,25 @@ select#filtroStato {
             </div>
 
             <div style="margin-bottom: 20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                <label style="font-weight:700;">Periodo:</label>
+                <label style="font-weight:700;">Anno:</label>
                 <select id="bilancioAnno" onchange="aggiornaBilancio()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-icon">💶</span>
-                    <h3 id="bilancioRicaviTotali">€0</h3>
-                    <p>Ricavi Totali</p>
+                    <h3 id="bilancioFatturatoTotale">€0</h3>
+                    <p>Fatturato Totale</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🚗</span>
+                    <h3 id="bilancioCostoAuto">€0</h3>
+                    <p>Quanto Pagato le Auto</p>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">💸</span>
-                    <h3 id="bilancioCostiTotali">€0</h3>
-                    <p>Costi Totali</p>
+                    <h3 id="bilancioSpeseFisseGenerali">€0</h3>
+                    <p>Spese Fisse + Generali</p>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">📈</span>
@@ -1214,26 +1219,73 @@ select#filtroStato {
                     <p>Margine Netto</p>
                 </div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-icon">🧾</span>
-                    <h3 id="bilancioIrpef">€0</h3>
-                    <p>Stima IRPEF (forfettario)</p>
+            <p id="bilancioIrpefNota" style="text-align:center; color: var(--muted); font-size: 13px; margin-bottom: 25px;"></p>
+
+            <!-- ANDAMENTO MENSILE -->
+            <h4>📅 Andamento Mensile</h4>
+            <div class="table-scroll">
+            <table class="data-table" style="margin-bottom: 30px;">
+                <thead>
+                    <tr>
+                        <th>Mese</th>
+                        <th>Fatturato</th>
+                        <th>Margine Lordo</th>
+                        <th>Margine Netto</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaBilancioMensile"></tbody>
+            </table>
+            </div>
+
+            <!-- SPESE FISSE RICORRENTI -->
+            <h4>🔁 Spese Fisse Ricorrenti</h4>
+            <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">Affitto, autoscout, bollette, INPS, ecc. — entrano da sole nel calcolo del margine ogni mese/trimestre/anno, senza doverle registrare a mano ogni volta.</p>
+            <div id="formAggiungiSpesaFissa" style="display: none; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">➕ Nuova Spesa Fissa</h3>
+                    <button class="btn btn-danger" onclick="chiudiFormSpesaFissa()">❌ Chiudi</button>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon">🏛️</span>
-                    <h3 id="bilancioInps">€0</h3>
-                    <p>INPS Stimato</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="nomeSpesaFissa" placeholder="Es: Autoscout, Bolletta magazzino...">
+                    </div>
+                    <div class="form-group">
+                        <label>Importo (€)</label>
+                        <input type="number" id="importoSpesaFissa" placeholder="681">
+                    </div>
+                    <div class="form-group">
+                        <label>Cadenza</label>
+                        <select id="cadenzaSpesaFissa">
+                            <option value="mensile">Mensile</option>
+                            <option value="trimestrale">Trimestrale</option>
+                            <option value="annuale">Annuale</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon">✅</span>
-                    <h3 id="bilancioUtileNetto">€0</h3>
-                    <p>Utile Netto Stimato</p>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-success" onclick="aggiungiSpesaFissa()">💾 Salva Spesa Fissa</button>
                 </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-success" onclick="mostraFormSpesaFissa()">➕ Aggiungi Spesa Fissa</button>
+            </div>
+            <div class="table-scroll">
+            <table class="data-table" style="margin-bottom: 30px;">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Importo</th>
+                        <th>Cadenza</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabellaSpeseFisseRicorrenti"></tbody>
+            </table>
             </div>
 
             <!-- ENTRATE MANUALI -->
-            <h4 style="margin-top: 30px;">💶 Entrate</h4>
+            <h4>💶 Entrate</h4>
             <div id="formAggiungiEntrata" style="display: none; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0;">➕ Nuova Entrata</h3>
@@ -1253,10 +1305,6 @@ select#filtroStato {
                         <input type="text" id="descrizioneEntrata" placeholder="Es: Consulenza, rimborso, altro incasso...">
                     </div>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="contaPerTasseEntrata" checked>
-                    <label for="contaPerTasseEntrata">Conta nell'imponibile per le tasse (entra sempre nei ricavi comunque)</label>
-                </div>
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn btn-success" onclick="aggiungiEntrataManuale()">💾 Salva Entrata</button>
                 </div>
@@ -1271,7 +1319,6 @@ select#filtroStato {
                         <th>Data</th>
                         <th>Descrizione</th>
                         <th>Importo</th>
-                        <th>Per le tasse</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
@@ -1279,8 +1326,8 @@ select#filtroStato {
             </table>
             </div>
 
-            <!-- SPESE GENERALI -->
-            <h4 style="margin-top: 30px;">💸 Spese Generali</h4>
+            <!-- SPESE GENERALI (una tantum) -->
+            <h4 style="margin-top: 30px;">💸 Spese Generali (una tantum)</h4>
             <div id="formAggiungiSpesaGenerale" style="display: none; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="margin: 0;">➕ Nuova Spesa Generale</h3>
@@ -1293,28 +1340,23 @@ select#filtroStato {
                     </div>
                     <div class="form-group">
                         <label>Importo (€)</label>
-                        <input type="number" id="importoSpesaGenerale" placeholder="400">
+                        <input type="number" id="importoSpesaGenerale" placeholder="150">
                     </div>
                     <div class="form-group">
                         <label>Categoria</label>
                         <select id="categoriaSpesaGenerale">
-                            <option value="Affitto">Affitto</option>
-                            <option value="Utenze">Utenze</option>
                             <option value="Commercialista">Commercialista</option>
                             <option value="Assicurazione attività">Assicurazione attività</option>
                             <option value="Marketing/Pubblicità">Marketing/Pubblicità</option>
                             <option value="Manutenzione locale">Manutenzione locale</option>
+                            <option value="Utenze">Utenze</option>
                             <option value="Altro">Altro</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Descrizione</label>
-                        <input type="text" id="descrizioneSpesaGenerale" placeholder="Es: Bolletta luce agosto...">
+                        <input type="text" id="descrizioneSpesaGenerale" placeholder="Es: Consulenza extra, multa, altro...">
                     </div>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="deducibileSpesaGenerale" checked>
-                    <label for="deducibileSpesaGenerale">Deducibile fiscalmente</label>
                 </div>
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn btn-success" onclick="aggiungiSpesaGenerale()">💾 Salva Spesa</button>
@@ -1331,7 +1373,6 @@ select#filtroStato {
                         <th>Categoria</th>
                         <th>Descrizione</th>
                         <th>Importo</th>
-                        <th>Deducibile</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
@@ -1340,17 +1381,9 @@ select#filtroStato {
             </div>
 
             <!-- IMPOSTAZIONI BILANCIO -->
-            <h4 style="margin-top: 30px;">⚙️ Impostazioni Bilancio</h4>
+            <h4 style="margin-top: 30px;">⚙️ Impostazioni</h4>
             <div style="background: #fafafa; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px;">
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Affitto Mensile (€)</label>
-                        <input type="number" id="impostazioneAffittoMensile">
-                    </div>
-                    <div class="form-group">
-                        <label>INPS Trimestrale (€)</label>
-                        <input type="number" id="impostazioneInpsTrimestrale">
-                    </div>
                     <div class="form-group">
                         <label>Aliquota IRPEF forfettario (%)</label>
                         <input type="number" id="impostazioneAliquotaIrpef">
@@ -1652,10 +1685,17 @@ select#filtroStato {
         let preventivi = JSON.parse(localStorage.getItem('preventivi')) || [];
         let speseGenerali = JSON.parse(localStorage.getItem('speseGenerali')) || [];
         let entrateManuali = JSON.parse(localStorage.getItem('entrateManuali')) || [];
+        // Costi fissi che si ripetono nel tempo (affitto, autoscout, bollette, INPS, ecc.), ognuno con
+        // la propria cadenza: entrano nel calcolo del margine come costi, senza bisogno di inserirli
+        // manualmente ogni mese/trimestre
+        let speseFisseRicorrenti = JSON.parse(localStorage.getItem('speseFisseRicorrenti')) || [
+            { id: 1, nome: 'Affitto', importo: 400, cadenza: 'mensile' },
+            { id: 2, nome: 'INPS', importo: 1000, cadenza: 'trimestrale' }
+        ];
         // impostazioniBilancio è concettualmente un oggetto unico (non una lista), ma viene salvato
         // come array con un solo elemento per riusare lo stesso meccanismo di sync di Firestore
         // usato per clienti/auto/contratti/preventivi (che si aspetta sempre un array in localStorage)
-        const impostazioniBilancioDefault = { id: 'impostazioniBilancio', affittoMensile: 400, inpsTrimestrale: 1000, aliquotaIrpef: 30 };
+        const impostazioniBilancioDefault = { id: 'impostazioniBilancio', aliquotaIrpef: 30 };
         let impostazioniBilancio = (JSON.parse(localStorage.getItem('impostazioniBilancio')) || [])[0] || impostazioniBilancioDefault;
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
@@ -1768,6 +1808,7 @@ select#filtroStato {
             preventivi = JSON.parse(localStorage.getItem('preventivi')) || [];
             speseGenerali = JSON.parse(localStorage.getItem('speseGenerali')) || [];
             entrateManuali = JSON.parse(localStorage.getItem('entrateManuali')) || [];
+            speseFisseRicorrenti = JSON.parse(localStorage.getItem('speseFisseRicorrenti')) || speseFisseRicorrenti;
             impostazioniBilancio = (JSON.parse(localStorage.getItem('impostazioniBilancio')) || [])[0] || impostazioniBilancioDefault;
         }
 
@@ -3264,92 +3305,126 @@ select#filtroStato {
             select.value = anniOrdinati.includes(parseInt(valorePrecedente)) ? valorePrecedente : String(annoCorrente);
         }
 
-        function aggiornaBilancio() {
-            const container = document.getElementById('bilancioRicaviTotali');
-            if (!container) return; // pagina non ancora pronta (es. subito dopo il login)
+        // Equivalente mensile di una spesa fissa, in base alla sua cadenza
+        function equivalenteMensile(spesaFissa) {
+            if (spesaFissa.cadenza === 'trimestrale') return spesaFissa.importo / 3;
+            if (spesaFissa.cadenza === 'annuale') return spesaFissa.importo / 12;
+            return spesaFissa.importo; // mensile
+        }
 
-            popolaAnniBilancio();
-            const anno = parseInt(document.getElementById('bilancioAnno').value) || new Date().getFullYear();
-            const inizio = new Date(`${anno}-01-01`);
-            const fine = new Date(`${anno}-12-31T23:59:59`);
+        // Calcola fatturato/costi/margini per un SINGOLO mese reale (non una media annuale divisa per 12)
+        function calcolaBilancioMese(anno, mese) {
+            const inizio = new Date(anno, mese, 1);
+            const fine = new Date(anno, mese + 1, 0, 23, 59, 59);
 
-            const nelPeriodo = (dataStr) => {
+            const nelMese = (dataStr) => {
                 if (!dataStr) return false;
                 const d = new Date(dataStr);
                 return d >= inizio && d <= fine;
             };
 
-            // RICAVI: vendite auto (prezzo finale + extra + voltura) nel periodo + entrate manuali
-            const contrattiPeriodo = contratti.filter(c => nelPeriodo(c.dataContratto));
-            const ricaviVenditeAuto = contrattiPeriodo.reduce((sum, c) => {
+            const fatturatoAuto = contratti.filter(c => nelMese(c.dataContratto)).reduce((sum, c) => {
                 const prezzoFinale = c.prezzoFinaleAuto || (c.auto ? c.auto.prezzoVendita : 0);
                 const extra = (c.extraItems || []).reduce((s, x) => s + x.prezzo, 0);
                 const voltura = c.speseVoltura || 0;
                 return sum + prezzoFinale + extra + voltura;
             }, 0);
+            const fatturatoManuale = entrateManuali.filter(e => nelMese(e.data)).reduce((sum, e) => sum + e.importo, 0);
+            const fatturatoTotale = fatturatoAuto + fatturatoManuale;
 
-            const entratePeriodo = entrateManuali.filter(e => nelPeriodo(e.data));
-            const ricaviEntrateManuali = entratePeriodo.reduce((sum, e) => sum + e.importo, 0);
-            const ricaviEntrateManualiTassabili = entratePeriodo.filter(e => e.contaPerTasse).reduce((sum, e) => sum + e.importo, 0);
-
-            const ricaviTotali = ricaviVenditeAuto + ricaviEntrateManuali;
-            const ricaviTassabili = ricaviVenditeAuto + ricaviEntrateManualiTassabili; // le vendite auto contano sempre per le tasse
-
-            // COSTI AUTO: tutte le spese (incluso il prezzo di acquisto, già tracciato come "Costo Iniziale") con data nel periodo
-            let costiAutoTotali = 0;
+            // Quanto pagato le macchine: tutte le spese auto (incluso il prezzo di acquisto, già tracciato
+            // come "Costo Iniziale") con data in questo mese, indipendentemente dal fatto che l'auto sia già venduta
+            let costoAuto = 0;
             auto.forEach(a => {
                 (a.speseAggiuntive || []).forEach(s => {
-                    if (nelPeriodo(s.data)) costiAutoTotali += s.importo;
+                    if (nelMese(s.data)) costoAuto += s.importo;
                 });
             });
 
-            // SPESE GENERALI nel periodo
-            const speseGeneraliPeriodo = speseGenerali.filter(s => nelPeriodo(s.data));
-            const speseGeneraliTotali = speseGeneraliPeriodo.reduce((sum, s) => sum + s.importo, 0);
-            const speseGeneraliDeducibili = speseGeneraliPeriodo.filter(s => s.deducibile).reduce((sum, s) => sum + s.importo, 0);
+            const speseFisseTotale = speseFisseRicorrenti.reduce((sum, s) => sum + equivalenteMensile(s), 0);
+            const speseGeneraliTotale = speseGenerali.filter(s => nelMese(s.data)).reduce((sum, s) => sum + s.importo, 0);
 
-            // AFFITTO: calcolato sui mesi del periodo effettivamente trascorsi (non oltre oggi, se l'anno è quello corrente)
+            const margineLordo = fatturatoTotale - costoAuto - speseFisseTotale - speseGeneraliTotale;
+            const irpef = margineLordo > 0 ? margineLordo * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
+            const margineNetto = margineLordo - irpef;
+
+            return { anno, mese, fatturatoTotale, costoAuto, speseFisseTotale, speseGeneraliTotale, margineLordo, irpef, margineNetto };
+        }
+
+        function aggiornaBilancio() {
+            const container = document.getElementById('bilancioFatturatoTotale');
+            if (!container) return; // pagina non ancora pronta (es. subito dopo il login)
+
+            popolaAnniBilancio();
+            const anno = parseInt(document.getElementById('bilancioAnno').value) || new Date().getFullYear();
             const oggi = new Date();
-            let mesiTrascorsi = 0;
-            if (anno <= oggi.getFullYear()) {
-                const finePeriodoEffettiva = fine > oggi ? oggi : fine;
-                mesiTrascorsi = Math.max(0, (finePeriodoEffettiva.getFullYear() - inizio.getFullYear()) * 12 + (finePeriodoEffettiva.getMonth() - inizio.getMonth()) + 1);
+            // sull'anno in corso mi fermo al mese in cui siamo davvero, non proietto mesi futuri;
+            // su un anno passato considero tutti e 12 i mesi
+            const ultimoMese = (anno === oggi.getFullYear()) ? oggi.getMonth() : (anno < oggi.getFullYear() ? 11 : -1);
+
+            const datiMensili = [];
+            for (let m = 0; m <= ultimoMese; m++) {
+                datiMensili.push(calcolaBilancioMese(anno, m));
             }
-            const affittoTotale = mesiTrascorsi * (impostazioniBilancio.affittoMensile || 0);
 
-            const costiTotali = costiAutoTotali + speseGeneraliTotali + affittoTotale;
-            const costiDeducibili = costiAutoTotali + speseGeneraliDeducibili + affittoTotale; // l'affitto è sempre deducibile
+            const totali = datiMensili.reduce((acc, d) => {
+                acc.fatturatoTotale += d.fatturatoTotale;
+                acc.costoAuto += d.costoAuto;
+                acc.speseFisseTotale += d.speseFisseTotale;
+                acc.speseGeneraliTotale += d.speseGeneraliTotale;
+                acc.margineLordo += d.margineLordo;
+                return acc;
+            }, { fatturatoTotale: 0, costoAuto: 0, speseFisseTotale: 0, speseGeneraliTotale: 0, margineLordo: 0 });
 
-            // MARGINI
-            const margineLordo = ricaviTotali - costiAutoTotali; // solo i costi diretti delle auto
-            const margineNetto = ricaviTotali - costiTotali; // tutti i costi, incluse spese generali e affitto
+            // L'IRPEF sul periodo si calcola UNA VOLTA sul margine lordo aggregato, non sommando
+            // quella dei singoli mesi: altrimenti un mese profittevole pagherebbe le tasse anche se
+            // l'anno nel complesso è in perdita
+            totali.irpef = totali.margineLordo > 0 ? totali.margineLordo * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
+            totali.margineNetto = totali.margineLordo - totali.irpef;
 
-            // STIME FISCALI
-            const imponibile = Math.max(0, ricaviTassabili - costiDeducibili);
-            const irpefStimata = imponibile * ((impostazioniBilancio.aliquotaIrpef || 0) / 100);
+            const euro = (n) => `€${Math.round(n).toLocaleString('it-IT')}`;
 
-            const trimestriNelPeriodo = Math.ceil(mesiTrascorsi / 3);
-            const inpsStimato = trimestriNelPeriodo * (impostazioniBilancio.inpsTrimestrale || 0);
+            document.getElementById('bilancioFatturatoTotale').textContent = euro(totali.fatturatoTotale);
+            document.getElementById('bilancioCostoAuto').textContent = euro(totali.costoAuto);
+            document.getElementById('bilancioSpeseFisseGenerali').textContent = euro(totali.speseFisseTotale + totali.speseGeneraliTotale);
+            document.getElementById('bilancioMargineLordo').textContent = euro(totali.margineLordo);
+            document.getElementById('bilancioMargineNetto').textContent = euro(totali.margineNetto);
+            document.getElementById('bilancioIrpefNota').textContent = `di cui stima IRPEF ${impostazioniBilancio.aliquotaIrpef || 0}%: ${euro(totali.irpef)}`;
 
-            const utileNetto = margineNetto - irpefStimata - inpsStimato;
-
-            document.getElementById('bilancioRicaviTotali').textContent = `€${Math.round(ricaviTotali).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioCostiTotali').textContent = `€${Math.round(costiTotali).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioMargineLordo').textContent = `€${Math.round(margineLordo).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioMargineNetto').textContent = `€${Math.round(margineNetto).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioIrpef').textContent = `€${Math.round(irpefStimata).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioInps').textContent = `€${Math.round(inpsStimato).toLocaleString('it-IT')}`;
-            document.getElementById('bilancioUtileNetto').textContent = `€${Math.round(utileNetto).toLocaleString('it-IT')}`;
-
-            const campoAffitto = document.getElementById('impostazioneAffittoMensile');
-            if (campoAffitto && document.activeElement !== campoAffitto) campoAffitto.value = impostazioniBilancio.affittoMensile;
-            const campoInps = document.getElementById('impostazioneInpsTrimestrale');
-            if (campoInps && document.activeElement !== campoInps) campoInps.value = impostazioniBilancio.inpsTrimestrale;
             const campoAliquota = document.getElementById('impostazioneAliquotaIrpef');
             if (campoAliquota && document.activeElement !== campoAliquota) campoAliquota.value = impostazioniBilancio.aliquotaIrpef;
 
+            aggiornaTabellaBilancioMensile(datiMensili);
             aggiornaTabellaEntrateManuali();
             aggiornaTabellaSpeseGenerali();
+            aggiornaTabellaSpeseFisseRicorrenti();
+        }
+
+        const NOMI_MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+        function aggiornaTabellaBilancioMensile(datiMensili) {
+            const tbody = document.getElementById('tabellaBilancioMensile');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (datiMensili.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="4">Nessun mese trascorso in questo periodo.</td>';
+                return;
+            }
+
+            const euro = (n) => `€${Math.round(n).toLocaleString('it-IT')}`;
+
+            [...datiMensili].reverse().forEach(d => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${NOMI_MESI[d.mese]}</td>
+                    <td>${euro(d.fatturatoTotale)}</td>
+                    <td style="color:${d.margineLordo >= 0 ? '#10B981' : '#EF4444'}; font-weight:700;">${euro(d.margineLordo)}</td>
+                    <td style="color:${d.margineNetto >= 0 ? '#10B981' : '#EF4444'}; font-weight:700;">${euro(d.margineNetto)}</td>
+                `;
+            });
         }
 
         // ENTRATE MANUALI
@@ -3362,21 +3437,19 @@ select#filtroStato {
             document.getElementById('formAggiungiEntrata').style.display = 'none';
             document.getElementById('importoEntrata').value = '';
             document.getElementById('descrizioneEntrata').value = '';
-            document.getElementById('contaPerTasseEntrata').checked = true;
         }
 
         function aggiungiEntrataManuale() {
             const data = document.getElementById('dataEntrata').value;
             const importo = parseFloat(document.getElementById('importoEntrata').value) || 0;
             const descrizione = document.getElementById('descrizioneEntrata').value.trim();
-            const contaPerTasse = document.getElementById('contaPerTasseEntrata').checked;
 
             if (!data || importo <= 0 || !descrizione) {
                 toast('Data, importo e descrizione sono obbligatori!', 'danger');
                 return;
             }
 
-            entrateManuali.push({ id: Date.now(), data, importo, descrizione, contaPerTasse });
+            entrateManuali.push({ id: Date.now(), data, importo, descrizione });
             salvaEntrateManuali();
             chiudiFormEntrata();
             aggiornaBilancio();
@@ -3404,7 +3477,7 @@ select#filtroStato {
             if (entrateFiltrate.length === 0) {
                 const row = tbody.insertRow();
                 row.className = 'empty-state';
-                row.innerHTML = '<td colspan="5">Nessuna entrata registrata per questo periodo.</td>';
+                row.innerHTML = '<td colspan="4">Nessuna entrata registrata per questo periodo.</td>';
                 return;
             }
 
@@ -3414,7 +3487,6 @@ select#filtroStato {
                     <td>${new Date(e.data).toLocaleDateString('it-IT')}</td>
                     <td>${e.descrizione}</td>
                     <td>€${e.importo.toLocaleString('it-IT')}</td>
-                    <td><span class="badge" style="background:${e.contaPerTasse ? '#10B981' : '#6B7280'};">${e.contaPerTasse ? 'Sì' : 'No'}</span></td>
                     <td class="actions"><button class="btn btn-danger" onclick="eliminaEntrataManuale(${e.id})">🗑️ Elimina</button></td>
                 `;
             });
@@ -3430,8 +3502,7 @@ select#filtroStato {
             document.getElementById('formAggiungiSpesaGenerale').style.display = 'none';
             document.getElementById('importoSpesaGenerale').value = '';
             document.getElementById('descrizioneSpesaGenerale').value = '';
-            document.getElementById('categoriaSpesaGenerale').value = 'Affitto';
-            document.getElementById('deducibileSpesaGenerale').checked = true;
+            document.getElementById('categoriaSpesaGenerale').value = 'Commercialista';
         }
 
         function aggiungiSpesaGenerale() {
@@ -3439,14 +3510,13 @@ select#filtroStato {
             const importo = parseFloat(document.getElementById('importoSpesaGenerale').value) || 0;
             const categoria = document.getElementById('categoriaSpesaGenerale').value;
             const descrizione = document.getElementById('descrizioneSpesaGenerale').value.trim();
-            const deducibile = document.getElementById('deducibileSpesaGenerale').checked;
 
             if (!data || importo <= 0) {
                 toast('Data e importo sono obbligatori!', 'danger');
                 return;
             }
 
-            speseGenerali.push({ id: Date.now(), data, importo, categoria, descrizione, deducibile });
+            speseGenerali.push({ id: Date.now(), data, importo, categoria, descrizione });
             salvaSpeseGenerali();
             chiudiFormSpesaGenerale();
             aggiornaBilancio();
@@ -3474,7 +3544,7 @@ select#filtroStato {
             if (speseFiltrate.length === 0) {
                 const row = tbody.insertRow();
                 row.className = 'empty-state';
-                row.innerHTML = '<td colspan="6">Nessuna spesa generale registrata per questo periodo.</td>';
+                row.innerHTML = '<td colspan="5">Nessuna spesa generale registrata per questo periodo.</td>';
                 return;
             }
 
@@ -3485,7 +3555,6 @@ select#filtroStato {
                     <td>${s.categoria}</td>
                     <td>${s.descrizione || '-'}</td>
                     <td>€${s.importo.toLocaleString('it-IT')}</td>
-                    <td><span class="badge" style="background:${s.deducibile ? '#10B981' : '#6B7280'};">${s.deducibile ? 'Sì' : 'No'}</span></td>
                     <td class="actions"><button class="btn btn-danger" onclick="eliminaSpesaGenerale(${s.id})">🗑️ Elimina</button></td>
                 `;
             });
@@ -3493,14 +3562,74 @@ select#filtroStato {
 
         // IMPOSTAZIONI BILANCIO
         function aggiornaImpostazioniBilancio() {
-            const affittoMensile = parseFloat(document.getElementById('impostazioneAffittoMensile').value) || 0;
-            const inpsTrimestrale = parseFloat(document.getElementById('impostazioneInpsTrimestrale').value) || 0;
             const aliquotaIrpef = parseFloat(document.getElementById('impostazioneAliquotaIrpef').value) || 0;
 
-            impostazioniBilancio = { id: 'impostazioniBilancio', affittoMensile, inpsTrimestrale, aliquotaIrpef };
+            impostazioniBilancio = { id: 'impostazioniBilancio', aliquotaIrpef };
             salvaImpostazioniBilancio();
             aggiornaBilancio();
             toast('✅ Impostazioni salvate!', 'success');
+        }
+
+        // SPESE FISSE RICORRENTI (affitto, autoscout, bollette, INPS, ecc.)
+        function mostraFormSpesaFissa() {
+            document.getElementById('formAggiungiSpesaFissa').style.display = 'block';
+        }
+
+        function chiudiFormSpesaFissa() {
+            document.getElementById('formAggiungiSpesaFissa').style.display = 'none';
+            document.getElementById('nomeSpesaFissa').value = '';
+            document.getElementById('importoSpesaFissa').value = '';
+            document.getElementById('cadenzaSpesaFissa').value = 'mensile';
+        }
+
+        function aggiungiSpesaFissa() {
+            const nome = document.getElementById('nomeSpesaFissa').value.trim();
+            const importo = parseFloat(document.getElementById('importoSpesaFissa').value) || 0;
+            const cadenza = document.getElementById('cadenzaSpesaFissa').value;
+
+            if (!nome || importo <= 0) {
+                toast('Nome e importo sono obbligatori!', 'danger');
+                return;
+            }
+
+            speseFisseRicorrenti.push({ id: Date.now(), nome, importo, cadenza });
+            salvaSpeseFisseRicorrenti();
+            chiudiFormSpesaFissa();
+            aggiornaBilancio();
+            toast('✅ Spesa fissa aggiunta!', 'success');
+        }
+
+        function eliminaSpesaFissa(id) {
+            if (confirm('Eliminare questa spesa fissa ricorrente?')) {
+                speseFisseRicorrenti = speseFisseRicorrenti.filter(s => s.id != id);
+                salvaSpeseFisseRicorrenti();
+                aggiornaBilancio();
+            }
+        }
+
+        function aggiornaTabellaSpeseFisseRicorrenti() {
+            const tbody = document.getElementById('tabellaSpeseFisseRicorrenti');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (speseFisseRicorrenti.length === 0) {
+                const row = tbody.insertRow();
+                row.className = 'empty-state';
+                row.innerHTML = '<td colspan="4">Nessuna spesa fissa configurata.</td>';
+                return;
+            }
+
+            const etichettaCadenza = { mensile: 'al mese', trimestrale: 'a trimestre', annuale: 'all\'anno' };
+
+            speseFisseRicorrenti.forEach(s => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${s.nome}</td>
+                    <td>€${s.importo.toLocaleString('it-IT')}</td>
+                    <td>${etichettaCadenza[s.cadenza] || s.cadenza}</td>
+                    <td class="actions"><button class="btn btn-danger" onclick="eliminaSpesaFissa(${s.id})">🗑️ Elimina</button></td>
+                `;
+            });
         }
 
        // STATISTICHE
@@ -4131,6 +4260,10 @@ const canaliPartenza = (annoCanali === 2025) ? {
 
         function salvaImpostazioniBilancio() {
             localStorage.setItem('impostazioniBilancio', JSON.stringify([impostazioniBilancio]));
+        }
+
+        function salvaSpeseFisseRicorrenti() {
+            localStorage.setItem('speseFisseRicorrenti', JSON.stringify(speseFisseRicorrenti));
         }
 
         // GESTIONE SPESE AUTO
@@ -4833,7 +4966,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","impostazioniBilancio"];
+  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","speseFisseRicorrenti","impostazioniBilancio"];
   const SESSIONE_MAX_MS = 8 * 60 * 60 * 1000; // 8 ore, come prima
 
   // ---- util per evitare reload inutili ----
