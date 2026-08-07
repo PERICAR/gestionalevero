@@ -43,6 +43,11 @@ body {
   padding: 24px;
 }
 
+/* i campi di form e i bottoni non ereditano il font della pagina di default nei browser: va forzato */
+input, select, textarea, button {
+  font-family: inherit;
+}
+
 /* CONTAINER */
 .container {
   max-width: 1500px;
@@ -174,13 +179,14 @@ input[type="text"]#searchContratti {
 
 /* BUTTONS */
 .btn {
-  padding: 12px 18px;
+  padding: 11px 20px;
   border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 800;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -.005em;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all .15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -189,14 +195,14 @@ input[type="text"]#searchContratti {
   text-align: center;
 }
 .btn:active { transform: translateY(1px); }
-.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 6px 16px rgba(227,6,19,.2); }
-.btn-primary:hover { filter: brightness(.96); transform: translateY(-1px); }
-.btn-success { background: var(--success); color: #fff; box-shadow: 0 6px 16px rgba(16,185,129,.18); }
-.btn-success:hover { background: var(--success-700); transform: translateY(-1px); }
-.btn-warning { background: var(--warning); color: #111827; box-shadow: 0 6px 16px rgba(245,158,11,.18); }
-.btn-warning:hover { background: var(--warning-700); transform: translateY(-1px); }
-.btn-danger { background: var(--danger); color: #fff; box-shadow: 0 6px 16px rgba(239,68,68,.2); }
-.btn-danger:hover { background: var(--danger-700); transform: translateY(-1px); }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(227,6,19,.18); }
+.btn-primary:hover { background: var(--brand-600); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(227,6,19,.24); }
+.btn-success { background: var(--success-700); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,.16); }
+.btn-success:hover { background: #0b8763; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16,185,129,.22); }
+.btn-warning { background: var(--warning); color: #78350F; box-shadow: 0 4px 12px rgba(245,158,11,.16); }
+.btn-warning:hover { background: var(--warning-700); color: #fff; transform: translateY(-1px); }
+.btn-danger { background: var(--danger-700); color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.16); }
+.btn-danger:hover { background: #b91c1c; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239,68,68,.22); }
 
 /* TABLES */
 .data-table {
@@ -258,7 +264,7 @@ input[type="text"]#searchContratti {
 .stats-grid .stat-card:nth-child(5) h3 { color: #111827; }
 
 /* ALERTS */
-.alert { padding: 14px; border-radius: 12px; font-weight: 700; border: 1px solid transparent; }
+.alert { padding: 14px; border-radius: 12px; font-weight: 600; border: 1px solid transparent; }
 .alert-success { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
 .alert-danger { background: #FEF2F2; border-color: #FECACA; color: #7F1D1D; }
 
@@ -361,7 +367,7 @@ input[type="text"]#searchContratti {
   height: 5px;
   background: linear-gradient(90deg, var(--brand) 0%, var(--brand-600) 100%);
 }
-.login-header h1 { color: #111827; margin-bottom: 6px; font-size: 24px; font-weight: 900; }
+.login-header h1 { color: #111827; margin-bottom: 6px; font-size: 22px; font-weight: 750; letter-spacing: -.01em; }
 .login-header p { color: var(--muted); margin-bottom: 18px; font-size: 1rem; }
 .login-form { text-align: left; }
 .login-form .form-group { margin-bottom: 18px; }
@@ -378,21 +384,21 @@ input[type="text"]#searchContratti {
 .login-form input:focus { outline: none; border-color: var(--brand); box-shadow: var(--focus); }
 .login-btn {
   width: 100%;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 900;
+  padding: 13px;
+  font-size: .95rem;
+  font-weight: 650;
   margin: 20px 0;
-  border-radius: 12px;
-  letter-spacing: .3px;
+  border-radius: 10px;
+  letter-spacing: -.005em;
 }
 .login-links { text-align: center; margin-top: 12px; }
 .login-links a {
   display: block;
-  color: var(--brand);
+  color: var(--muted);
   text-decoration: none;
   margin: 6px 0;
-  font-size: .95rem;
-  font-weight: 700;
+  font-size: .85rem;
+  font-weight: 600;
   transition: color .2s ease;
 }
 .login-links a:hover { color: var(--brand-700); text-decoration: underline; }
@@ -413,7 +419,7 @@ input[type="text"]#searchContratti {
 td span[style*="background: #28a745"] { background: #10B981 !important; }
 td span[style*="background: #ffc107"] { background: #F59E0B !important; color: #111827 !important; }
 td span[style*="background: #6c757d"] { background: #6B7280 !important; }
-td span[style*="background: #17a2b8"] { background: #1e40af !important; }
+td span[style*="background: #17a2b8"] { background: var(--info) !important; }
 
 /* AZIONI TABELLA — stile "chip" leggero, il rosso pieno resta solo per Elimina */
 .actions { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -451,11 +457,20 @@ select#filtroStato {
 
 #formAggiungiCliente,
 #formAggiungiAuto,
-#formAggiungiContratto {
+#formAggiungiContratto,
+#formAggiungiPreventivo {
   background: #fafafa !important;
   border: 1px solid var(--line) !important;
   border-radius: 14px !important;
   box-shadow: var(--shadow-sm);
+}
+
+/* i titoli "➕ Aggiungi X" dentro i box form usavano un blu hardcoded dal vecchio provider */
+#formAggiungiCliente h3,
+#formAggiungiAuto h3,
+#formAggiungiContratto h3,
+#formAggiungiPreventivo h3 {
+  color: var(--brand) !important;
 }
 
 [style*="background: #d1ecf1"] {
@@ -662,7 +677,7 @@ select#filtroStato {
             <!-- FORM AGGIUNTA CLIENTE (nascosto inizialmente) -->
             <div id="formAggiungiCliente" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuovo Cliente</h3>
+                    <h3 style="margin: 0;">➕ Aggiungi Nuovo Cliente</h3>
                     <button class="btn btn-danger" onclick="chiudiFormCliente()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
@@ -739,7 +754,7 @@ select#filtroStato {
             <!-- FORM AGGIUNTA AUTO (nascosto inizialmente) -->
             <div id="formAggiungiAuto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e40af;">➕ Aggiungi Nuova Auto</h3>
+                    <h3 style="margin: 0;">➕ Aggiungi Nuova Auto</h3>
                     <button class="btn btn-danger" onclick="chiudiFormAuto()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
@@ -883,7 +898,7 @@ select#filtroStato {
             <!-- FORM CREAZIONE PREVENTIVO (nascosto inizialmente) -->
             <div id="formAggiungiPreventivo" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e40af;">📝 Crea Nuovo Preventivo</h3>
+                    <h3 style="margin: 0;">📝 Crea Nuovo Preventivo</h3>
                     <button class="btn btn-danger" onclick="chiudiFormPreventivo()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
 
@@ -927,7 +942,7 @@ select#filtroStato {
                         </div>
                         <div class="form-group">
                             <label>Prezzo Finale Auto (€)</label>
-                            <input type="number" id="prezzoFinalePreventivo" onchange="calcolaScontoPreventivo()" style="font-weight: bold; color: #1e40af;">
+                            <input type="number" id="prezzoFinalePreventivo" onchange="calcolaScontoPreventivo()" style="font-weight: bold; color: var(--brand);">
                         </div>
                     </div>
                 </div>
@@ -999,7 +1014,7 @@ select#filtroStato {
             <!-- FORM CREAZIONE CONTRATTO (nascosto inizialmente) -->
             <div id="formAggiungiContratto" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 2px solid #1e40af;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e40af;">📋 Crea Nuovo Contratto</h3>
+                    <h3 style="margin: 0;">📋 Crea Nuovo Contratto</h3>
                     <button class="btn btn-danger" onclick="chiudiFormContratto()" style="padding: 8px 15px; font-size: 0.9rem;">❌ Chiudi</button>
                 </div>
                 
@@ -1097,7 +1112,7 @@ select#filtroStato {
                         </div>
                         <div class="form-group">
                             <label>Prezzo Finale Auto (€)</label>
-                            <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: #1e40af;">
+                            <input type="number" id="prezzoFinaleAuto" onchange="calcolaSconto()" style="font-weight: bold; color: var(--brand);">
                         </div>
                     </div>
                     <div style="margin-top: 10px; padding: 8px; background: #d1ecf1; border-radius: 6px; font-size: 0.9rem;">
@@ -1428,8 +1443,8 @@ select#filtroStato {
             
             <div id="infoAutoMargine" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
             
-            <div style="background: white; border: 2px solid #1e40af; border-radius: 10px; padding: 20px;">
-                <h3 style="text-align: center; margin-bottom: 15px; color: #1e40af;">CALCOLO MARGINE DETTAGLIATO</h3>
+            <div style="background: white; border: 2px solid var(--brand); border-radius: 10px; padding: 20px;">
+                <h3 style="text-align: center; margin-bottom: 15px; color: var(--brand);">CALCOLO MARGINE DETTAGLIATO</h3>
                 
                 <table class="data-table" style="margin-bottom: 0;">
                     <tbody id="tabellaDettaglioMargine"></tbody>
@@ -2096,7 +2111,7 @@ select#filtroStato {
             const totale = extraItemsPreventivo.reduce((sum, item) => sum + item.prezzo, 0);
             html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
                 <div>TOTALE EXTRA</div>
-                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : '#1e40af'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
+                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : 'var(--brand)'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
                 <div></div>
             </div>`;
 
@@ -2547,7 +2562,7 @@ select#filtroStato {
             const totale = extraItems.reduce((sum, item) => sum + item.prezzo, 0);
             html += `<div style="padding: 8px; border-top: 2px solid #ddd; background: #f8f9fa; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; font-weight: bold;">
                 <div>TOTALE EXTRA</div>
-                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : '#1e40af'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
+                <div style="text-align: right; color: ${totale < 0 ? '#dc3545' : 'var(--brand)'};">${totale < 0 ? '-' : ''}€${Math.abs(totale).toLocaleString()}</div>
                 <div></div>
             </div>`;
             
