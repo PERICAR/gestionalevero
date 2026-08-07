@@ -3148,7 +3148,8 @@ select#filtroStato {
                     <td class="actions">
                         <button class="btn btn-primary" onclick="visualizzaAuto(${autoObj.id})">👁️ Visualizza</button>
                         <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
-                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
+                        <button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>
+                        ${autoObj.stato === 'Venduta' ? `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>` : ''}
                         <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
                     </td>
                 `;
