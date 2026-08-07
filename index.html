@@ -415,7 +415,30 @@ td span[style*="background: #ffc107"] { background: #F59E0B !important; color: #
 td span[style*="background: #6c757d"] { background: #6B7280 !important; }
 td span[style*="background: #17a2b8"] { background: #1e40af !important; }
 
-td .btn { padding: 8px 10px; border-radius: 10px; font-size: 12px; }
+/* AZIONI TABELLA — stile "chip" leggero, il rosso pieno resta solo per Elimina */
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.actions .btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: none;
+  gap: 4px;
+}
+.actions .btn:active { transform: none; }
+.actions .btn-warning,
+.actions .btn-primary,
+.actions .btn-success {
+  border: 1px solid transparent;
+}
+.actions .btn-warning { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
+.actions .btn-warning:hover { background: var(--warning); color: #78350F; filter: none; transform: none; }
+.actions .btn-primary { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.actions .btn-primary:hover { background: var(--info); color: #fff; filter: none; transform: none; }
+.actions .btn-success { background: #ECFDF5; color: #047857; border-color: #A7F3D0; }
+.actions .btn-success:hover { background: var(--success); color: #fff; transform: none; }
+.actions .btn-danger { background: #FEF2F2; color: var(--danger-700); border: 1px solid #FECACA; box-shadow: none; }
+.actions .btn-danger:hover { background: var(--danger); color: #fff; transform: none; }
 input[readonly] { background: #F3F4F6 !important; color: #111827; }
 
 select#filtroStato {
@@ -1384,6 +1407,19 @@ select#filtroStato {
         </div>
     </div>
 
+    <!-- MODAL VISUALIZZA AUTO -->
+    <div id="modalVisualizzaAuto" class="modal">
+        <div class="modal-content" style="max-width: 640px;">
+            <span class="close" onclick="chiudiModalVisualizzaAuto()">&times;</span>
+            <h2 id="titoloVisualizzaAuto">Scheda Auto</h2>
+            <div id="contenutoVisualizzaAuto"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-warning" id="btnModificaDaVisualizza" onclick="modificaDaVisualizzaAuto()">✏️ Modifica</button>
+                <button class="btn btn-danger" onclick="chiudiModalVisualizzaAuto()">❌ Chiudi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETTAGLIO MARGINE -->
     <div id="modalDettaglioMargine" class="modal">
         <div class="modal-content" style="max-width: 600px;">
@@ -1420,6 +1456,7 @@ select#filtroStato {
         let costiAutoItems = []; // Array per costi aggiuntivi auto
         let utenteCorrente = null;
         let preventivoInModifica = null; // id del preventivo in fase di modifica (null se nuovo)
+        let autoInVisualizzazione = null; // id dell'auto aperta nel modal "Visualizza"
         let sortState = {}; // stato ordinamento corrente per tabella {clienti:{campo,dir}, ...}
 
         // NOTIFICHE TOAST (sostituiscono gli alert() informativi)
@@ -1452,18 +1489,25 @@ select#filtroStato {
             const direzione = (statoAttuale && statoAttuale.campo === campo && statoAttuale.dir === 'asc') ? 'desc' : 'asc';
             sortState[nomeArray] = { campo, dir: direzione };
 
+            const soloNumero = /^-?\d+(\.\d+)?$/;
+
             arr.sort((a, b) => {
                 let valA = leggiCampo(a, campo);
                 let valB = leggiCampo(b, campo);
 
-                const numA = parseFloat(valA);
-                const numB = parseFloat(valB);
-                if (!isNaN(numA) && !isNaN(numB) && String(valA).trim() !== '' && String(valB).trim() !== '') {
+                const strA = String(valA ?? '').trim();
+                const strB = String(valB ?? '').trim();
+
+                // Confronto numerico SOLO se l'intera stringa è un numero (non basta un prefisso numerico:
+                // "2026-07-21" con parseFloat diventava 2026, troncando la data e rompendo l'ordinamento)
+                if (soloNumero.test(strA) && soloNumero.test(strB)) {
+                    const numA = parseFloat(strA);
+                    const numB = parseFloat(strB);
                     return direzione === 'asc' ? numA - numB : numB - numA;
                 }
 
-                valA = (valA ?? '').toString().toLowerCase();
-                valB = (valB ?? '').toString().toLowerCase();
+                valA = strA.toLowerCase();
+                valB = strB.toLowerCase();
                 if (valA < valB) return direzione === 'asc' ? -1 : 1;
                 if (valA > valB) return direzione === 'asc' ? 1 : -1;
                 return 0;
@@ -2134,7 +2178,12 @@ select#filtroStato {
                 return;
             }
 
-            preventivi.forEach(preventivo => {
+            // Senza un ordinamento manuale scelto dall'utente, mostra i più recenti per primi
+            const preventiviDaMostrare = sortState.preventivi
+                ? preventivi
+                : [...preventivi].sort((a, b) => String(b.dataPreventivo || '').localeCompare(String(a.dataPreventivo || '')));
+
+            preventiviDaMostrare.forEach(preventivo => {
                 const totaleExtra = (preventivo.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
                 const prezzoBase = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : 0);
                 const prezzoTotale = prezzoBase + totaleExtra;
@@ -2807,9 +2856,9 @@ select#filtroStato {
                         <button class="btn btn-primary" onclick="mostraDettaglioMargine(${autoObj.id})" style="padding: 2px 6px; font-size: 0.7rem; margin-left: 8px;">📊</button>
                     </td>
                     <td class="actions">
+                        <button class="btn btn-primary" onclick="visualizzaAuto(${autoObj.id})">👁️ Visualizza</button>
                         <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
-                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciCostiAuto(${autoObj.id})">💰 Costi</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
-                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>` : ''}
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>` : `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button>`}
                         <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
                     </td>
                 `;
@@ -2827,7 +2876,12 @@ select#filtroStato {
                 return;
             }
 
-            contratti.forEach(contratto => {
+            // Senza un ordinamento manuale scelto dall'utente, mostra i più recenti per primi
+            const contrattiDaMostrare = sortState.contratti
+                ? contratti
+                : [...contratti].sort((a, b) => String(b.dataContratto || '').localeCompare(String(a.dataContratto || '')));
+
+            contrattiDaMostrare.forEach(contratto => {
                 const row = tbody.insertRow();
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
                 const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
@@ -3900,6 +3954,95 @@ const canaliPartenza = (annoCanali === 2025) ? {
             }, 250);
         }
 
+        // VISUALIZZA AUTO (scheda read-only)
+        function visualizzaAuto(id) {
+            const autoObj = auto.find(a => a.id == id);
+            if (!autoObj) return;
+
+            autoInVisualizzazione = id;
+
+            const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
+            const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
+            const margine = autoObj.prezzoVendita - costoTotale;
+
+            const statoColor = autoObj.stato === 'Disponibile' ? '#10B981' : autoObj.stato === 'Venduta' ? '#EF4444' : '#F59E0B';
+
+            document.getElementById('titoloVisualizzaAuto').textContent = `${autoObj.marca} ${autoObj.modello} (${autoObj.targa})`;
+
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; background: #f8f9fa; padding: 18px; border-radius: 12px; margin-bottom: 16px;">
+                    <div><strong>Marca:</strong> ${autoObj.marca}</div>
+                    <div><strong>Modello:</strong> ${autoObj.modello}</div>
+                    <div><strong>Versione:</strong> ${autoObj.versione || '-'}</div>
+                    <div><strong>Targa:</strong> ${autoObj.targa}</div>
+                    <div><strong>Telaio:</strong> ${autoObj.telaio || '-'}</div>
+                    <div><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</div>
+                    <div><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</div>
+                    <div><strong>Tipo:</strong> ${autoObj.tipo}</div>
+                    <div><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</div>
+                    <div><strong>Stato:</strong> <span class="badge" style="background:${statoColor};">${autoObj.stato}</span></div>
+                </div>
+
+                <div style="border: 2px solid var(--brand); border-radius: 10px; padding: 4px 16px; background: #fff; margin-bottom: 16px;">
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:8px;">Prezzo di Acquisto</td>
+                            <td style="padding:8px; text-align:right;">€${autoObj.prezzoAcquisto.toLocaleString()}</td>
+                        </tr>
+                        ${speseAggiuntiveTotali > 0 ? `
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:8px;">Spese aggiuntive</td>
+                            <td style="padding:8px; text-align:right;">€${speseAggiuntiveTotali.toLocaleString()}</td>
+                        </tr>` : ''}
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:8px; font-weight:bold;">Prezzo di Vendita</td>
+                            <td style="padding:8px; text-align:right; font-weight:bold;">€${autoObj.prezzoVendita.toLocaleString()}</td>
+                        </tr>
+                        <tr style="border-top: 2px solid var(--brand); background:#f8f9fa;">
+                            <td style="padding:10px; font-weight:bold;">MARGINE</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; color: ${margine >= 0 ? '#10B981' : '#EF4444'};">${margine >= 0 ? '+' : ''}€${margine.toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+            if ((autoObj.speseAggiuntive || []).length > 0) {
+                html += `
+                    <h3>Spese Registrate</h3>
+                    <div class="table-scroll">
+                    <table class="data-table">
+                        <thead><tr><th>Data</th><th>Categoria</th><th>Importo</th><th>Descrizione</th></tr></thead>
+                        <tbody>
+                            ${autoObj.speseAggiuntive.map(spesa => `
+                                <tr>
+                                    <td>${new Date(spesa.data).toLocaleDateString('it-IT')}</td>
+                                    <td>${spesa.isInitialCost ? 'Costo Iniziale' : spesa.categoria}</td>
+                                    <td>€${spesa.importo.toLocaleString()}</td>
+                                    <td>${spesa.descrizione || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                `;
+            }
+
+            document.getElementById('contenutoVisualizzaAuto').innerHTML = html;
+            document.getElementById('modalVisualizzaAuto').style.display = 'block';
+        }
+
+        function chiudiModalVisualizzaAuto() {
+            document.getElementById('modalVisualizzaAuto').style.display = 'none';
+            autoInVisualizzazione = null;
+        }
+
+        function modificaDaVisualizzaAuto() {
+            if (!autoInVisualizzazione) return;
+            const id = autoInVisualizzazione;
+            chiudiModalVisualizzaAuto();
+            modificaOggetto('auto', id);
+        }
+
         // DETTAGLIO MARGINE
         function mostraDettaglioMargine(autoId) {
             const autoObj = auto.find(a => a.id == autoId);
@@ -3995,7 +4138,8 @@ const canaliPartenza = (annoCanali === 2025) ? {
             const modalRecupero = document.getElementById('modalRecuperoPassword');
             const modalCambio = document.getElementById('modalCambioPassword');
             const modalDettaglioMargine = document.getElementById('modalDettaglioMargine');
-            
+            const modalVisualizzaAuto = document.getElementById('modalVisualizzaAuto');
+
             if (event.target == modalModifica) {
                 chiudiModal();
             }
@@ -4013,6 +4157,9 @@ const canaliPartenza = (annoCanali === 2025) ? {
             }
             if (event.target == modalDettaglioMargine) {
                 chiudiModalDettaglioMargine();
+            }
+            if (event.target == modalVisualizzaAuto) {
+                chiudiModalVisualizzaAuto();
             }
         }
 
