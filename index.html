@@ -256,7 +256,8 @@ input[type="text"]#searchContratti {
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.08); }
 .stat-card .stat-icon { font-size: 22px; display: block; margin-bottom: 8px; opacity: .85; }
-.stat-card h3 { font-size: 28px; margin-bottom: 6px; color: var(--brand); font-weight: 800; letter-spacing: -.02em; }
+.stat-card h3 { font-size: 28px; margin-bottom: 6px; color: #111827; font-weight: 800; letter-spacing: -.02em; }
+.stat-card h3.valore-negativo { color: var(--brand); }
 .stat-card p { font-size: 13.5px; font-weight: 600; color: var(--muted); }
 
 /* ALERTS */
@@ -1404,12 +1405,7 @@ select#filtroStato {
 
         <!-- TAB STATISTICHE -->
         <div id="statistiche" class="tab-content">
-            <h2>Statistiche e Conto Economico</h2>
-
-            <div style="margin-bottom: 20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                <label style="font-weight:700;">Anno:</label>
-                <select id="statisticheAnno" onchange="aggiornaStatistiche()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
-            </div>
+            <h2>Statistiche</h2>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -1418,29 +1414,75 @@ select#filtroStato {
                     <p>Auto in Stock</p>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">📄</span>
-                    <h3 id="totaleContratti">21</h3>
-                    <p>Contratti Firmati</p>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-icon">💶</span>
-                    <h3 id="fatturatoTotale">€132.020</h3>
-                    <p>Fatturato Totale</p>
-                </div>
-                <div class="stat-card">
                     <span class="stat-icon">🏷️</span>
                     <h3 id="valoreStock">€0</h3>
                     <p>Valore Stock Presente</p>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon">📈</span>
-                    <h3 id="mediaVendite">4.0</h3>
-                    <p>Media Auto/Mese</p>
+            </div>
+
+            <!-- AUTO FERME DI PIÙ -->
+            <div class="contract-preview">
+                <h3>🕐 Auto in stock da più tempo</h3>
+                <p style="color: var(--muted); font-size: 13.5px; margin-top: -8px; margin-bottom: 15px;">Le auto disponibili ordinate per giorni di giacenza, dalla più ferma.</p>
+                <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marca/Modello</th>
+                            <th>Targa</th>
+                            <th>Data Acquisto</th>
+                            <th>Giorni in giacenza</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabellaGiacenzaAttuale"></tbody>
+                </table>
                 </div>
             </div>
 
+            <!-- MARCHE PIÙ VELOCI/LENTE A VENDERSI -->
+            <div class="contract-preview">
+                <h3>⚡ Marche più veloci e più lente a vendersi</h3>
+                <p style="color: var(--muted); font-size: 13.5px; margin-top: -8px; margin-bottom: 15px;">Giorni medi di giacenza prima della vendita, calcolati su tutto lo storico delle auto vendute.</p>
+                <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 260px;">
+                        <h4 style="font-size: 0.95rem; color: var(--muted); margin-bottom: 8px;">Più veloci</h4>
+                        <ol id="listaMarchePiuVeloci" style="margin: 0; padding-left: 20px;"></ol>
+                    </div>
+                    <div style="flex: 1; min-width: 260px;">
+                        <h4 style="font-size: 0.95rem; color: var(--muted); margin-bottom: 8px;">Più lente</h4>
+                        <ol id="listaMarchePiuLente" style="margin: 0; padding-left: 20px;"></ol>
+                    </div>
+                </div>
+                <p id="notaMarcheStoriche" style="color: var(--muted); font-size: 13px; margin-top: 12px;"></p>
+            </div>
+
+            <!-- MARGINE PIÙ ALTO -->
+            <div class="contract-preview">
+                <h3>💰 Auto vendute con margine più alto</h3>
+                <p style="color: var(--muted); font-size: 13.5px; margin-top: -8px; margin-bottom: 15px;">Storico completo, non filtrato per anno.</p>
+                <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marca/Modello</th>
+                            <th>Targa</th>
+                            <th>Data Vendita</th>
+                            <th>Margine</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabellaMargineMigliore"></tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- CANALI DI VENDITA -->
             <div class="contract-preview">
                 <h3>📊 Statistiche Canali di Vendita</h3>
+                <div style="margin-bottom: 15px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <label style="font-weight:700;">Anno:</label>
+                    <select id="statisticheAnno" onchange="aggiornaStatistiche()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
+                </div>
+                <div id="statisticheCanaliGrafico" style="margin-bottom: 15px;"></div>
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
 
@@ -3493,7 +3535,9 @@ select#filtroStato {
             document.getElementById('bilancioCostoAuto').textContent = euro(totali.costoAuto);
             document.getElementById('bilancioSpeseFisseGenerali').textContent = euro(totali.speseFisseTotale + totali.speseGeneraliTotale);
             document.getElementById('bilancioMargineLordo').textContent = euro(totali.margineLordo);
+            document.getElementById('bilancioMargineLordo').classList.toggle('valore-negativo', totali.margineLordo < 0);
             document.getElementById('bilancioMargineNetto').textContent = euro(totali.margineNetto);
+            document.getElementById('bilancioMargineNetto').classList.toggle('valore-negativo', totali.margineNetto < 0);
             document.getElementById('bilancioIrpefNota').textContent = `IRPEF stimata (${impostazioniBilancio.aliquotaIrpef || 0}% sull'Utile Lordo): ${euro(totali.irpef)} — già sottratta nell'Utile Netto qui sopra`;
 
             const campoAliquota = document.getElementById('impostazioneAliquotaIrpef');
@@ -3762,78 +3806,41 @@ function popolaAnniStatistiche() {
     : String(annoCorrente);
 }
 
-function aggiornaStatistiche() {
-  const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
-  document.getElementById('totaleAuto').textContent = autoInStock;
+// Stessa stima di data usata nel Bilancio per il costo auto: la vera Data Acquisto se compilata,
+// altrimenti la data di inserimento nel gestionale (l'id è un timestamp) — MAI l'immatricolazione
+function dataAcquistoStimataAuto(a) {
+  return a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
+}
 
+function giorniTra(dataInizio, dataFine) {
+  const d1 = new Date(dataInizio);
+  const d2 = new Date(dataFine);
+  return Math.round((d2 - d1) / 86400000);
+}
+
+function aggiornaStatistiche() {
+  const autoInStock = auto.filter(a => a.stato !== 'Venduta');
+  document.getElementById('totaleAuto').textContent = autoInStock.length;
+
+  // --------- VALORE STOCK PRESENTE ---------
+  const valoreStock = autoInStock.reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
+  document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString('it-IT')}`;
+
+  aggiornaGiacenzaAttuale(autoInStock);
+  aggiornaMarchePiuVeloci();
+  aggiornaMargineMigliore();
+
+  // --------- Canali di Vendita (unica sezione ancora legata a un anno specifico) ---------
   popolaAnniStatistiche();
   const annoSel = document.getElementById('statisticheAnno').value; // 'tutti' oppure es. "2026"
   const mostraTutti = annoSel === 'tutti';
   const annoNum = parseInt(annoSel) || new Date().getFullYear();
 
-  // --------- PARSER NUMERI ROBUSTO (per "350,00", "1.200,50", numeri, ecc.) ---------
-  const num = v => {
-    if (typeof v === 'number') return isFinite(v) ? v : 0;
-    if (typeof v === 'string') {
-      const s = v.replace(/\./g, '').replace(',', '.').trim();
-      const n = parseFloat(s);
-      return isFinite(n) ? n : 0;
-    }
-    return 0;
-  };
-
-  // --------- CONTRATTI NEL PERIODO (anno selezionato, o tutti) ---------
-  const contrattiPeriodo = contratti.filter(c => {
-    const d = c?.dataContratto ? new Date(c.dataContratto) : null;
-    if (!d) return false;
-    return mostraTutti || d.getFullYear() === annoNum;
-  });
-
-  // --------- BASELINE STORICA PRE-GESTIONALE ---------
-  // Si somma solo quando si guarda l'anno a cui si riferisce (o "Tutti gli anni") — è un dato
-  // modificabile dall'utente nel pannello sotto, non più scritto a mano nel codice, quindi non
-  // sparisce più al cambio di anno
+  // Baseline storica pre-gestionale: si somma solo quando si guarda l'anno a cui si riferisce
+  // (o "Tutti gli anni") — è un dato modificabile dall'utente nel pannello sotto, non più scritto
+  // a mano nel codice, quindi non sparisce più al cambio di anno
   const baseline = impostazioniStatistiche || impostazioniStatisticheDefault;
   const includiBaseline = mostraTutti || annoNum === (baseline.baselineAnno || 0);
-  const baselineFatturato = includiBaseline ? (baseline.baselineFatturato || 0) : 0;
-  const storicoContratti = includiBaseline ? (baseline.baselineContratti || 0) : 0;
-
-  // --------- FATTURATO (Prezzo finale + Extra + Voltura) + baseline ---------
-  const fatturatoContratti = contrattiPeriodo.reduce((sum, c) => {
-    const prezzoFinale = num(c?.prezzoFinaleAuto) || num(c?.auto?.prezzoVendita);
-    const extra = Array.isArray(c?.extraItems) ? c.extraItems.reduce((s, x) => s + num(x.prezzo), 0) : 0;
-    const voltura = num(c?.speseVoltura);
-    return sum + prezzoFinale + extra + voltura;
-  }, 0);
-  const fatturatoTotale = baselineFatturato + fatturatoContratti;
-  document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString('it-IT')}`;
-
-  // --------- TOTALE CONTRATTI ---------
-  document.getElementById('totaleContratti').textContent = storicoContratti + contrattiPeriodo.length;
-
-  // --------- VALORE STOCK PRESENTE (fotografia attuale, non dipende dall'anno scelto) ---------
-  const valoreStock = auto
-    .filter(a => a.stato !== 'Venduta')
-    .reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
-  document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString('it-IT')}`;
-
-  // --------- MEDIA VENDITE AL MESE ---------
-  const oggi = new Date();
-  let mesiTrascorsi;
-  if (mostraTutti) {
-    const inizioGlobale = baseline.baselineAnno ? new Date(baseline.baselineAnno, 0, 1) : new Date(annoNum, 0, 1);
-    mesiTrascorsi = ((oggi.getFullYear() - inizioGlobale.getFullYear()) * 12) + (oggi.getMonth() - inizioGlobale.getMonth()) + 1;
-  } else if (annoNum === oggi.getFullYear()) {
-    mesiTrascorsi = oggi.getMonth() + 1; // gennaio..mese corrente incluso
-  } else {
-    mesiTrascorsi = 12; // anno passato: conta tutti e 12 i mesi
-  }
-  mesiTrascorsi = Math.max(1, mesiTrascorsi);
-  const totaleVendite = storicoContratti + contrattiPeriodo.length;
-  const mediaVendite = totaleVendite / mesiTrascorsi;
-  document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
-
-  // --------- Canali ---------
   aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline);
 
   // --------- Ripopola il pannello baseline (mai mentre l'utente ci sta scrivendo dentro) ---------
@@ -3851,6 +3858,147 @@ function aggiornaStatistiche() {
     const el = document.getElementById(idCampo);
     if (el && document.activeElement !== el) el.value = valore;
   });
+}
+
+// --------- AUTO IN STOCK DA PIÙ TEMPO ---------
+function aggiornaGiacenzaAttuale(autoInStock) {
+  const tbody = document.getElementById('tabellaGiacenzaAttuale');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const oggi = new Date().toISOString().split('T')[0];
+  const righe = autoInStock
+    .map(a => ({ auto: a, dataAcquisto: dataAcquistoStimataAuto(a), giorni: giorniTra(dataAcquistoStimataAuto(a), oggi) }))
+    .sort((a, b) => b.giorni - a.giorni);
+
+  if (righe.length === 0) {
+    const row = tbody.insertRow();
+    row.className = 'empty-state';
+    row.innerHTML = '<td colspan="4">Nessuna auto in stock al momento.</td>';
+    return;
+  }
+
+  righe.forEach(r => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${r.auto.marca} ${r.auto.modello}</td>
+      <td>${r.auto.targa || '-'}</td>
+      <td>${r.dataAcquisto ? new Date(r.dataAcquisto).toLocaleDateString('it-IT') : '-'}</td>
+      <td>${r.giorni} gg</td>
+    `;
+  });
+}
+
+// --------- MARCHE PIÙ VELOCI/LENTE A VENDERSI (storico completo) ---------
+function aggiornaMarchePiuVeloci() {
+  const listaVeloci = document.getElementById('listaMarchePiuVeloci');
+  const listaLente = document.getElementById('listaMarchePiuLente');
+  const nota = document.getElementById('notaMarcheStoriche');
+  if (!listaVeloci || !listaLente) return;
+
+  const perMarca = {};
+  auto.filter(a => a.stato === 'Venduta').forEach(a => {
+    const contratto = contratti.find(c => c.autoId == a.id);
+    const dataAcquisto = dataAcquistoStimataAuto(a);
+    if (!contratto || !contratto.dataContratto || !dataAcquisto) return;
+    const giorni = giorniTra(dataAcquisto, contratto.dataContratto);
+    if (giorni < 0) return; // dati incoerenti, escludi
+    const marca = (a.marca || 'Sconosciuta').trim();
+    if (!perMarca[marca]) perMarca[marca] = { totaleGiorni: 0, conteggio: 0 };
+    perMarca[marca].totaleGiorni += giorni;
+    perMarca[marca].conteggio += 1;
+  });
+
+  const classifica = Object.entries(perMarca)
+    .map(([marca, dati]) => ({ marca, media: dati.totaleGiorni / dati.conteggio, conteggio: dati.conteggio }))
+    .sort((a, b) => a.media - b.media);
+
+  if (classifica.length === 0) {
+    listaVeloci.innerHTML = '<li style="color: var(--muted);">Non ci sono ancora abbastanza vendite registrate.</li>';
+    listaLente.innerHTML = '';
+    nota.textContent = '';
+    return;
+  }
+
+  const renderLista = (el, righe) => {
+    el.innerHTML = righe.map(r => `<li><strong>${r.marca}</strong> — ${r.media.toFixed(1)} giorni medi (${r.conteggio} auto vendut${r.conteggio === 1 ? 'a' : 'e'})</li>`).join('');
+  };
+
+  renderLista(listaVeloci, classifica.slice(0, 5));
+  renderLista(listaLente, [...classifica].sort((a, b) => b.media - a.media).slice(0, 5));
+
+  const marcaConPiuStorico = [...classifica].sort((a, b) => b.conteggio - a.conteggio)[0];
+  nota.textContent = marcaConPiuStorico
+    ? `La marca con più storico è ${marcaConPiuStorico.marca} (${marcaConPiuStorico.conteggio} auto vendute, ${marcaConPiuStorico.media.toFixed(1)} giorni medi) — è il riferimento più affidabile. Le marche con una sola vendita registrata vanno lette con cautela.`
+    : '';
+}
+
+// --------- AUTO VENDUTE CON MARGINE PIÙ ALTO (storico completo) ---------
+function aggiornaMargineMigliore() {
+  const tbody = document.getElementById('tabellaMargineMigliore');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const venduteConMargine = auto.filter(a => a.stato === 'Venduta').map(a => {
+    const speseAggiuntiveTotali = (a.speseAggiuntive || []).reduce((sum, s) => sum + s.importo, 0);
+    const costoTotale = (a.prezzoAcquisto || 0) + speseAggiuntiveTotali;
+    const margine = (a.prezzoVendita || 0) - costoTotale;
+    const contratto = contratti.find(c => c.autoId == a.id);
+    return { auto: a, margine, dataVendita: contratto ? contratto.dataContratto : null };
+  }).sort((a, b) => b.margine - a.margine);
+
+  const top10 = venduteConMargine.slice(0, 10);
+
+  if (top10.length === 0) {
+    const row = tbody.insertRow();
+    row.className = 'empty-state';
+    row.innerHTML = '<td colspan="4">Nessuna auto venduta ancora registrata.</td>';
+    return;
+  }
+
+  top10.forEach(r => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${r.auto.marca} ${r.auto.modello}</td>
+      <td>${r.auto.targa || '-'}</td>
+      <td>${r.dataVendita ? new Date(r.dataVendita).toLocaleDateString('it-IT') : '-'}</td>
+      <td style="font-weight: bold; color: ${r.margine >= 0 ? '#111827' : 'var(--brand)'};">€${r.margine.toLocaleString('it-IT')}</td>
+    `;
+  });
+}
+
+// Piccolo grafico a torta in SVG puro, nessuna libreria esterna necessaria.
+// dati: array di { label, valore, colore }
+function generaGraficoTorta(dati, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const attive = dati.filter(d => d.valore > 0);
+  const totale = attive.reduce((s, d) => s + d.valore, 0);
+  if (totale <= 0) { container.innerHTML = ''; return; }
+
+  const cx = 90, cy = 90, r = 80;
+
+  if (attive.length === 1) {
+    container.innerHTML = `<svg viewBox="0 0 180 180" style="max-width:200px; margin:0 auto; display:block;"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${attive[0].colore}"></circle></svg>`;
+    return;
+  }
+
+  let angolo = -Math.PI / 2; // parte dalle ore 12
+  let path = '';
+  attive.forEach(d => {
+    const frazione = d.valore / totale;
+    const angoloFine = angolo + frazione * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(angolo);
+    const y1 = cy + r * Math.sin(angolo);
+    const x2 = cx + r * Math.cos(angoloFine);
+    const y2 = cy + r * Math.sin(angoloFine);
+    const largeArc = (angoloFine - angolo) > Math.PI ? 1 : 0;
+    path += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${d.colore}" stroke="#fff" stroke-width="2"></path>`;
+    angolo = angoloFine;
+  });
+
+  container.innerHTML = `<svg viewBox="0 0 180 180" style="max-width:200px; margin:0 auto; display:block;">${path}</svg>`;
 }
 
 function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline) {
@@ -3875,26 +4023,31 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
   const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
 
   // Percentuali finali (unione tra canali storici e canali comparsi nei contratti reali)
+  const coloreCanale = {
+    'Autoscout': '#1e40af',
+    'Subito': '#dc2626',
+    'Conoscenze': '#059669',
+    'Ingresso spontaneo': '#d97706',
+    'Cip': '#7c3aed'
+  };
   const statisticheFinali = {};
+  const datiTorta = [];
   const tuttiICanali = new Set([...Object.keys(canaliPartenza), ...Object.keys(canaliNuovi)]);
   tuttiICanali.forEach(canale => {
     const venditePartenza = canaliPartenza[canale] || 0;
     const venditeNuove = canaliNuovi[canale] || 0;
     const totaleCanale = venditePartenza + venditeNuove;
     statisticheFinali[canale] = totaleVendite > 0 ? ((totaleCanale / totaleVendite) * 100).toFixed(1) : '0.0';
+    datiTorta.push({ label: canale, valore: totaleCanale, colore: coloreCanale[canale] || '#6b7280' });
   });
+
+  generaGraficoTorta(datiTorta, 'statisticheCanaliGrafico');
 
   // Render
   const container = document.getElementById('statisticheCanali');
   container.innerHTML = '';
   Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
-    const colore = {
-      'Autoscout': '#1e40af',
-      'Subito': '#dc2626',
-      'Conoscenze': '#059669',
-      'Ingresso spontaneo': '#d97706',
-      'Cip': '#7c3aed'
-    }[canale] || '#6b7280';
+    const colore = coloreCanale[canale] || '#6b7280';
 
     container.innerHTML += `
       <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
