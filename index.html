@@ -245,23 +245,19 @@ input[type="text"]#searchContratti {
   margin-bottom: 20px;
 }
 .stat-card {
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-600) 100%);
-  color: #fff;
+  background: #fff;
+  color: #111827;
   padding: 22px;
+  border: 1px solid var(--line);
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 12px 28px rgba(227,6,19,.22);
-  transition: transform .2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-card .stat-icon { font-size: 22px; display: block; margin-bottom: 8px; opacity: .9; }
-.stat-card h3 { font-size: 30px; margin-bottom: 6px; color: #fff; font-weight: 800; letter-spacing: -.02em; }
-.stat-card p { opacity: .95; font-size: 13.5px; font-weight: 600; }
-.stats-grid .stat-card:nth-child(2) { background: linear-gradient(135deg, #111827 0%, #1f2937 100%); box-shadow: 0 12px 28px rgba(17,24,39,.22); }
-.stats-grid .stat-card:nth-child(3) { background: linear-gradient(135deg, var(--success) 0%, var(--success-700) 100%); box-shadow: 0 12px 28px rgba(16,185,129,.22); }
-.stats-grid .stat-card:nth-child(4) { background: linear-gradient(135deg, var(--info) 0%, #1e40af 100%); box-shadow: 0 12px 28px rgba(37,99,235,.22); }
-.stats-grid .stat-card:nth-child(5) { background: linear-gradient(135deg, var(--warning) 0%, var(--warning-700) 100%); color: #111827; box-shadow: 0 12px 28px rgba(245,158,11,.22); }
-.stats-grid .stat-card:nth-child(5) h3 { color: #111827; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+.stat-card .stat-icon { font-size: 22px; display: block; margin-bottom: 8px; opacity: .85; }
+.stat-card h3 { font-size: 28px; margin-bottom: 6px; color: var(--brand); font-weight: 800; letter-spacing: -.02em; }
+.stat-card p { font-size: 13.5px; font-weight: 600; color: var(--muted); }
 
 /* ALERTS */
 .alert { padding: 14px; border-radius: 12px; font-weight: 600; border: 1px solid transparent; }
@@ -1210,17 +1206,17 @@ select#filtroStato {
                 <div class="stat-card">
                     <span class="stat-icon">💸</span>
                     <h3 id="bilancioSpeseFisseGenerali">€0</h3>
-                    <p>Spese Fisse + Generali</p>
+                    <p>Spese Operative (fisse + generali)</p>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">📈</span>
                     <h3 id="bilancioMargineLordo">€0</h3>
-                    <p>Margine Lordo</p>
+                    <p>Utile Lordo <span style="font-weight:400;">(prima delle imposte)</span></p>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">🏆</span>
                     <h3 id="bilancioMargineNetto">€0</h3>
-                    <p>Margine Netto</p>
+                    <p>Utile Netto <span style="font-weight:400;">(dopo le imposte)</span></p>
                 </div>
             </div>
             <p id="bilancioIrpefNota" style="text-align:center; color: var(--muted); font-size: 13px; margin-bottom: 25px;"></p>
@@ -1233,8 +1229,8 @@ select#filtroStato {
                     <tr>
                         <th>Mese</th>
                         <th>Fatturato</th>
-                        <th>Margine Lordo</th>
-                        <th>Margine Netto</th>
+                        <th>Utile Lordo</th>
+                        <th>Utile Netto</th>
                     </tr>
                 </thead>
                 <tbody id="tabellaBilancioMensile"></tbody>
@@ -3498,7 +3494,7 @@ select#filtroStato {
             document.getElementById('bilancioSpeseFisseGenerali').textContent = euro(totali.speseFisseTotale + totali.speseGeneraliTotale);
             document.getElementById('bilancioMargineLordo').textContent = euro(totali.margineLordo);
             document.getElementById('bilancioMargineNetto').textContent = euro(totali.margineNetto);
-            document.getElementById('bilancioIrpefNota').textContent = `di cui stima IRPEF ${impostazioniBilancio.aliquotaIrpef || 0}%: ${euro(totali.irpef)}`;
+            document.getElementById('bilancioIrpefNota').textContent = `IRPEF stimata (${impostazioniBilancio.aliquotaIrpef || 0}% sull'Utile Lordo): ${euro(totali.irpef)} — già sottratta nell'Utile Netto qui sopra`;
 
             const campoAliquota = document.getElementById('impostazioneAliquotaIrpef');
             if (campoAliquota && document.activeElement !== campoAliquota) campoAliquota.value = impostazioniBilancio.aliquotaIrpef;
