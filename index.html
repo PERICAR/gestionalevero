@@ -1220,7 +1220,8 @@ select#filtroStato {
                     <p>Utile Netto <span style="font-weight:400;">(dopo le imposte)</span></p>
                 </div>
             </div>
-            <p id="bilancioIrpefNota" style="text-align:center; color: var(--muted); font-size: 13px; margin-bottom: 25px;"></p>
+            <p id="bilancioIrpefNota" style="text-align:center; color: var(--muted); font-size: 13px; margin-bottom: 4px;"></p>
+            <p id="bilancioBaselineNota" style="text-align:center; color: var(--muted); font-size: 13px; margin-bottom: 25px;"></p>
 
             <!-- ANDAMENTO MENSILE -->
             <h4>📅 Andamento Mensile</h4>
@@ -3522,6 +3523,19 @@ select#filtroStato {
                 return acc;
             }, { fatturatoTotale: 0, costoAuto: 0, speseFisseTotale: 0, speseGeneraliTotale: 0, margineLordo: 0, fatturatoManualeNonTassabile: 0 });
 
+            // Storico pre-gestionale (fatturato accumulato prima di iniziare a usare il gestionale,
+            // es. su carta) — si somma solo al totale annuale quando l'anno visualizzato è quello a
+            // cui si riferisce, mai a un mese specifico (altrimenti gonfierebbe artificialmente un
+            // solo mese, tipo gennaio). Stessa fonte dati della tab Statistiche (impostazioniStatistiche),
+            // per restare coerenti tra le due sezioni.
+            const baselineStatistiche = impostazioniStatistiche || impostazioniStatisticheDefault;
+            let baselineFatturatoIncluso = 0;
+            if (anno === (baselineStatistiche.baselineAnno || 0)) {
+                baselineFatturatoIncluso = baselineStatistiche.baselineFatturato || 0;
+                totali.fatturatoTotale += baselineFatturatoIncluso;
+                totali.margineLordo += baselineFatturatoIncluso;
+            }
+
             // L'IRPEF sul periodo si calcola UNA VOLTA sul margine lordo aggregato, non sommando
             // quella dei singoli mesi: altrimenti un mese profittevole pagherebbe le tasse anche se
             // l'anno nel complesso è in perdita. Le entrate non tassabili escono dalla base imponibile.
@@ -3539,6 +3553,9 @@ select#filtroStato {
             document.getElementById('bilancioMargineNetto').textContent = euro(totali.margineNetto);
             document.getElementById('bilancioMargineNetto').classList.toggle('valore-negativo', totali.margineNetto < 0);
             document.getElementById('bilancioIrpefNota').textContent = `IRPEF stimata (${impostazioniBilancio.aliquotaIrpef || 0}% sull'Utile Lordo): ${euro(totali.irpef)} — già sottratta nell'Utile Netto qui sopra`;
+            document.getElementById('bilancioBaselineNota').textContent = baselineFatturatoIncluso > 0
+                ? `Di cui ${euro(baselineFatturatoIncluso)} di storico pre-gestionale (modificabile in Statistiche → Storico pre-gestionale)`
+                : '';
 
             const campoAliquota = document.getElementById('impostazioneAliquotaIrpef');
             if (campoAliquota && document.activeElement !== campoAliquota) campoAliquota.value = impostazioniBilancio.aliquotaIrpef;
