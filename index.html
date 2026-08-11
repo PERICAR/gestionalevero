@@ -3418,10 +3418,9 @@ select#filtroStato {
             contratti.forEach(c => { if (c.dataContratto) anniConDati.add(new Date(c.dataContratto).getFullYear()); });
             entrateManuali.forEach(e => { if (e.data) anniConDati.add(new Date(e.data).getFullYear()); });
             speseGenerali.forEach(s => { if (s.data) anniConDati.add(new Date(s.data).getFullYear()); });
+            // Gli anni delle vendite auto sono già coperti dal ciclo sui contratti qui sopra (il
+            // costo auto si riconosce al mese di vendita, non di acquisto — vedi calcolaBilancioMese)
             auto.forEach(a => {
-                // stessa stima di data usata in calcolaBilancioMese per il prezzo di acquisto
-                const dataAcquistoStimata = a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
-                if (dataAcquistoStimata) anniConDati.add(new Date(dataAcquistoStimata).getFullYear());
                 (a.speseAggiuntive || []).forEach(s => { if (s.data) anniConDati.add(new Date(s.data).getFullYear()); });
             });
 
@@ -3468,18 +3467,22 @@ select#filtroStato {
                 .reduce((sum, e) => sum + e.importo, 0);
             const fatturatoTotale = fatturatoAuto + fatturatoManuale;
 
-            // Quanto pagato le macchine: il prezzo di acquisto (campo a sé sull'auto, non dentro le
-            // spese — esattamente come nel calcolo del margine mostrato nella tabella Auto) più tutte
-            // le spese aggiuntive registrate, con data in questo mese, indipendentemente dal fatto che
-            // l'auto sia già stata venduta o meno
+            // Quanto pagato le macchine: il prezzo di acquisto conta come costo SOLO nel mese in cui
+            // l'auto viene VENDUTA (abbinato al ricavo di quella vendita, come il costo del venduto
+            // in un conto economico) — MAI nel mese in cui è stata pagata. La Data Acquisto serve
+            // solo per le Statistiche (giacenza), non qui: troppe auto storiche non ce l'hanno, e usare
+            // un ripiego (es. quando la scheda è stata creata nel gestionale) falsava pesantemente
+            // singoli mesi. Un'auto ancora in stock non genera nessun costo finché non viene venduta:
+            // è magazzino, non una spesa. Le spese aggiuntive invece restano datate con la loro data
+            // reale (sempre nota per davvero, a differenza della data di acquisto).
             let costoAuto = 0;
             auto.forEach(a => {
-                // usa la vera Data Acquisto se compilata; per le auto inserite prima che questo campo
-                // esistesse, ripiega sulla data di inserimento nel gestionale (l'id è un timestamp) —
-                // MAI sull'immatricolazione, che è quando l'auto è stata targata la prima volta, non
-                // quando l'abbiamo pagata noi
-                const dataAcquistoStimata = a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
-                if (nelMese(dataAcquistoStimata)) costoAuto += a.prezzoAcquisto || 0;
+                if (a.stato === 'Venduta') {
+                    const contrattoVendita = contratti.find(c => c.autoId == a.id);
+                    if (contrattoVendita && nelMese(contrattoVendita.dataContratto)) {
+                        costoAuto += a.prezzoAcquisto || 0;
+                    }
+                }
                 (a.speseAggiuntive || []).forEach(s => {
                     if (nelMese(s.data)) costoAuto += s.importo;
                 });
