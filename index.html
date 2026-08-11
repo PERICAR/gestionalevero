@@ -1309,6 +1309,12 @@ select#filtroStato {
                         <input type="text" id="descrizioneEntrata" placeholder="Es: Consulenza, rimborso, altro incasso...">
                     </div>
                 </div>
+                <div style="margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                        <input type="checkbox" id="entrataSoggettaATasse" checked style="width: auto;">
+                        Soggetta a tasse (conta nel calcolo IRPEF)
+                    </label>
+                </div>
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn btn-success" onclick="aggiungiEntrataManuale()">💾 Salva Entrata</button>
                 </div>
@@ -1323,6 +1329,7 @@ select#filtroStato {
                         <th>Data</th>
                         <th>Descrizione</th>
                         <th>Importo</th>
+                        <th>Tasse</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
@@ -3348,7 +3355,13 @@ select#filtroStato {
                 const voltura = c.speseVoltura || 0;
                 return sum + prezzoFinale + extra + voltura;
             }, 0);
-            const fatturatoManuale = entrateManuali.filter(e => nelMese(e.data)).reduce((sum, e) => sum + e.importo, 0);
+            const entrateManualiNelMese = entrateManuali.filter(e => nelMese(e.data));
+            const fatturatoManuale = entrateManualiNelMese.reduce((sum, e) => sum + e.importo, 0);
+            // Le entrate manuali spuntate come "non soggetta a tasse" contano comunque nel fatturato e
+            // nel margine reale (sono soldi veri incassati), ma non entrano nella base su cui si calcola l'IRPEF
+            const fatturatoManualeNonTassabile = entrateManualiNelMese
+                .filter(e => e.soggettaATasse === false)
+                .reduce((sum, e) => sum + e.importo, 0);
             const fatturatoTotale = fatturatoAuto + fatturatoManuale;
 
             // Quanto pagato le macchine: il prezzo di acquisto (campo a sé sull'auto, non dentro le
@@ -3372,10 +3385,12 @@ select#filtroStato {
             const speseGeneraliTotale = speseGenerali.filter(s => nelMese(s.data)).reduce((sum, s) => sum + s.importo, 0);
 
             const margineLordo = fatturatoTotale - costoAuto - speseFisseTotale - speseGeneraliTotale;
-            const irpef = margineLordo > 0 ? margineLordo * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
+            // Le entrate non tassabili contano nel margine lordo reale ma escono dalla base IRPEF
+            const margineLordoTassabile = margineLordo - fatturatoManualeNonTassabile;
+            const irpef = margineLordoTassabile > 0 ? margineLordoTassabile * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
             const margineNetto = margineLordo - irpef;
 
-            return { anno, mese, fatturatoTotale, costoAuto, speseFisseTotale, speseGeneraliTotale, margineLordo, irpef, margineNetto };
+            return { anno, mese, fatturatoTotale, costoAuto, speseFisseTotale, speseGeneraliTotale, fatturatoManualeNonTassabile, margineLordo, irpef, margineNetto };
         }
 
         function aggiornaBilancio() {
@@ -3400,13 +3415,15 @@ select#filtroStato {
                 acc.speseFisseTotale += d.speseFisseTotale;
                 acc.speseGeneraliTotale += d.speseGeneraliTotale;
                 acc.margineLordo += d.margineLordo;
+                acc.fatturatoManualeNonTassabile += d.fatturatoManualeNonTassabile;
                 return acc;
-            }, { fatturatoTotale: 0, costoAuto: 0, speseFisseTotale: 0, speseGeneraliTotale: 0, margineLordo: 0 });
+            }, { fatturatoTotale: 0, costoAuto: 0, speseFisseTotale: 0, speseGeneraliTotale: 0, margineLordo: 0, fatturatoManualeNonTassabile: 0 });
 
             // L'IRPEF sul periodo si calcola UNA VOLTA sul margine lordo aggregato, non sommando
             // quella dei singoli mesi: altrimenti un mese profittevole pagherebbe le tasse anche se
-            // l'anno nel complesso è in perdita
-            totali.irpef = totali.margineLordo > 0 ? totali.margineLordo * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
+            // l'anno nel complesso è in perdita. Le entrate non tassabili escono dalla base imponibile.
+            const margineLordoTassabileAnno = totali.margineLordo - totali.fatturatoManualeNonTassabile;
+            totali.irpef = margineLordoTassabileAnno > 0 ? margineLordoTassabileAnno * ((impostazioniBilancio.aliquotaIrpef || 0) / 100) : 0;
             totali.margineNetto = totali.margineLordo - totali.irpef;
 
             const euro = (n) => `€${Math.round(n).toLocaleString('it-IT')}`;
@@ -3464,19 +3481,21 @@ select#filtroStato {
             document.getElementById('formAggiungiEntrata').style.display = 'none';
             document.getElementById('importoEntrata').value = '';
             document.getElementById('descrizioneEntrata').value = '';
+            document.getElementById('entrataSoggettaATasse').checked = true;
         }
 
         function aggiungiEntrataManuale() {
             const data = document.getElementById('dataEntrata').value;
             const importo = parseFloat(document.getElementById('importoEntrata').value) || 0;
             const descrizione = document.getElementById('descrizioneEntrata').value.trim();
+            const soggettaATasse = document.getElementById('entrataSoggettaATasse').checked;
 
             if (!data || importo <= 0 || !descrizione) {
                 toast('Data, importo e descrizione sono obbligatori!', 'danger');
                 return;
             }
 
-            entrateManuali.push({ id: Date.now(), data, importo, descrizione });
+            entrateManuali.push({ id: Date.now(), data, importo, descrizione, soggettaATasse });
             salvaEntrateManuali();
             chiudiFormEntrata();
             aggiornaBilancio();
@@ -3504,16 +3523,18 @@ select#filtroStato {
             if (entrateFiltrate.length === 0) {
                 const row = tbody.insertRow();
                 row.className = 'empty-state';
-                row.innerHTML = '<td colspan="4">Nessuna entrata registrata per questo periodo.</td>';
+                row.innerHTML = '<td colspan="5">Nessuna entrata registrata per questo periodo.</td>';
                 return;
             }
 
             entrateFiltrate.forEach(e => {
+                const tassabile = e.soggettaATasse !== false;
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${new Date(e.data).toLocaleDateString('it-IT')}</td>
                     <td>${e.descrizione}</td>
                     <td>€${e.importo.toLocaleString('it-IT')}</td>
+                    <td><span style="background: ${tassabile ? '#6c757d' : '#F59E0B'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">${tassabile ? 'Sì' : 'No'}</span></td>
                     <td class="actions"><button class="btn btn-danger" onclick="eliminaEntrataManuale(${e.id})">🗑️ Elimina</button></td>
                 `;
             });
