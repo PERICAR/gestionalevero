@@ -2473,6 +2473,7 @@ select#filtroStato {
                 }[preventivo.stato] || '#6B7280';
 
                 const row = tbody.insertRow();
+                row.setAttribute('data-id', preventivo.id);
                 row.innerHTML = `
                     <td>${new Date(preventivo.dataPreventivo).toLocaleDateString('it-IT')}</td>
                     <td>${preventivo.cliente ? preventivo.cliente.nome : 'N/D'}</td>
@@ -3082,6 +3083,7 @@ select#filtroStato {
 
             clientiDaMostrare.forEach(cliente => {
                 const row = tbody.insertRow();
+                row.setAttribute('data-id', cliente.id);
                 row.innerHTML = `
                     <td>${cliente.nome}</td>
                     <td>${cliente.telefono}</td>
@@ -3129,7 +3131,8 @@ select#filtroStato {
                 const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
                 const margine = autoObj.prezzoVendita - costoTotale;
                 const row = tbody.insertRow();
-                
+                row.setAttribute('data-id', autoObj.id);
+
                 const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' : 
                                  autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
                 
@@ -3174,6 +3177,7 @@ select#filtroStato {
 
             contrattiDaMostrare.forEach(contratto => {
                 const row = tbody.insertRow();
+                row.setAttribute('data-id', contratto.id);
                 const permutaText = contratto.permuta.marca ? `${contratto.permuta.marca} ${contratto.permuta.modello} (€${contratto.permuta.valutazione.toLocaleString()})` : 'Nessuna';
                 const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
                 const prezzoBaseAuto = contratto.prezzoFinaleAuto || contratto.auto.prezzoVendita;
@@ -4923,32 +4927,27 @@ const canaliPartenza = (annoCanali === 2025) ? {
             if (tabButton) tabButton.click();
 
             let tbodyId = '';
-            let indice = -1;
 
             if (tipo === 'clienti') {
                 tbodyId = 'tabellaClienti';
-                indice = clienti.findIndex(c => c.id == id);
             } else if (tipo === 'auto') {
                 const filtro = document.getElementById('filtroStato');
                 if (filtro) { filtro.value = 'tutte'; aggiornaTabellaAuto(); }
                 tbodyId = 'tabellaAuto';
-                indice = auto.findIndex(a => a.id == id);
             } else if (tipo === 'contratti') {
                 tbodyId = 'tabellaContratti';
-                indice = contratti.findIndex(c => c.id == id);
             } else if (tipo === 'preventivi') {
                 tbodyId = 'tabellaPreventivi';
-                indice = preventivi.findIndex(p => p.id == id);
             }
 
-            setTimeout(() => evidenziaRigaRicerca(tbodyId, indice), 60);
+            setTimeout(() => evidenziaRigaRicerca(tbodyId, id), 60);
         }
 
-        function evidenziaRigaRicerca(tbodyId, indice) {
+        function evidenziaRigaRicerca(tbodyId, id) {
             const tbody = document.getElementById(tbodyId);
-            if (!tbody || indice < 0 || !tbody.rows[indice]) return;
+            const riga = tbody && tbody.querySelector(`tr[data-id="${id}"]`);
+            if (!riga) return;
 
-            const riga = tbody.rows[indice];
             riga.scrollIntoView({ behavior: 'smooth', block: 'center' });
             riga.style.transition = 'background-color 0.4s';
             riga.style.backgroundColor = '#FEF3C7';
