@@ -1409,7 +1409,12 @@ select#filtroStato {
         <!-- TAB STATISTICHE -->
         <div id="statistiche" class="tab-content">
             <h2>Statistiche e Conto Economico</h2>
-            
+
+            <div style="margin-bottom: 20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <label style="font-weight:700;">Anno:</label>
+                <select id="statisticheAnno" onchange="aggiornaStatistiche()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-icon">🚗</span>
@@ -1443,6 +1448,53 @@ select#filtroStato {
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
 
+            <!-- BASELINE STORICA PRE-GESTIONALE -->
+            <h4 style="margin-top: 30px;">⚙️ Storico pre-gestionale</h4>
+            <div class="alert" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E3A8A; margin-bottom: 15px;">
+                💡 Numeri accumulati prima di iniziare a usare questo gestionale (es. fatturato/contratti registrati solo su carta). Vengono sommati automaticamente alle statistiche dell'anno indicato qui sotto, e restano validi anche cambiando anno o selezionando "Tutti gli anni" — a differenza di prima, non si perdono più al cambio di anno.
+            </div>
+            <div style="background: #fafafa; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Anno di riferimento</label>
+                        <input type="number" id="baselineStatAnno" placeholder="2025">
+                    </div>
+                    <div class="form-group">
+                        <label>Fatturato storico (€)</label>
+                        <input type="number" id="baselineStatFatturato" placeholder="132020">
+                    </div>
+                    <div class="form-group">
+                        <label>Contratti storici</label>
+                        <input type="number" id="baselineStatContratti" placeholder="21">
+                    </div>
+                </div>
+                <h4 style="margin-top: 15px; margin-bottom: 10px; font-size: 0.95rem;">Canali di vendita storici</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Conoscenze</label>
+                        <input type="number" id="baselineStatCanaleConoscenze" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Autoscout</label>
+                        <input type="number" id="baselineStatCanaleAutoscout" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Cip</label>
+                        <input type="number" id="baselineStatCanaleCip" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Ingresso spontaneo</label>
+                        <input type="number" id="baselineStatCanaleIngresso" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Subito</label>
+                        <input type="number" id="baselineStatCanaleSubito" placeholder="0">
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-success" onclick="aggiornaImpostazioniStatistiche()">💾 Salva Storico</button>
+                </div>
+            </div>
 
         </div>
 
@@ -1708,6 +1760,18 @@ select#filtroStato {
         // usato per clienti/auto/contratti/preventivi (che si aspetta sempre un array in localStorage)
         const impostazioniBilancioDefault = { id: 'impostazioniBilancio', aliquotaIrpef: 30 };
         let impostazioniBilancio = (JSON.parse(localStorage.getItem('impostazioniBilancio')) || [])[0] || impostazioniBilancioDefault;
+        // Baseline storica pre-gestionale per le Statistiche: numeri accumulati prima di iniziare a
+        // usare il gestionale (es. su carta), da sommare all'anno indicato. Prima erano scritti a
+        // mano nel codice e validi solo per il 2025 (sparivano al cambio anno) — ora sono un dato
+        // modificabile dall'utente e sincronizzato come tutto il resto.
+        const impostazioniStatisticheDefault = {
+            id: 'impostazioniStatistiche',
+            baselineAnno: 2025,
+            baselineFatturato: 132020,
+            baselineContratti: 21,
+            baselineCanali: { 'Conoscenze': 5, 'Autoscout': 9, 'Cip': 2, 'Ingresso spontaneo': 4, 'Subito': 1 }
+        };
+        let impostazioniStatistiche = (JSON.parse(localStorage.getItem('impostazioniStatistiche')) || [])[0] || impostazioniStatisticheDefault;
         let oggettoInModifica = null;
         let tipoOggettoInModifica = '';
         let autoCorrente = null;
@@ -1821,6 +1885,7 @@ select#filtroStato {
             entrateManuali = JSON.parse(localStorage.getItem('entrateManuali')) || [];
             speseFisseRicorrenti = JSON.parse(localStorage.getItem('speseFisseRicorrenti')) || speseFisseRicorrenti;
             impostazioniBilancio = (JSON.parse(localStorage.getItem('impostazioniBilancio')) || [])[0] || impostazioniBilancioDefault;
+            impostazioniStatistiche = (JSON.parse(localStorage.getItem('impostazioniStatistiche')) || [])[0] || impostazioniStatisticheDefault;
         }
 
         function mostraSistema() {
@@ -3681,16 +3746,34 @@ select#filtroStato {
         }
 
        // STATISTICHE
+function popolaAnniStatistiche() {
+  const select = document.getElementById('statisticheAnno');
+  if (!select) return;
+
+  const anniConDati = new Set();
+  contratti.forEach(c => { if (c.dataContratto) anniConDati.add(new Date(c.dataContratto).getFullYear()); });
+  if (impostazioniStatistiche.baselineAnno) anniConDati.add(impostazioniStatistiche.baselineAnno);
+  const annoCorrente = new Date().getFullYear();
+  anniConDati.add(annoCorrente);
+
+  const anniOrdinati = [...anniConDati].sort((a, b) => b - a);
+  const valorePrecedente = select.value;
+
+  select.innerHTML = '<option value="tutti">Tutti gli anni</option>' +
+    anniOrdinati.map(anno => `<option value="${anno}">${anno}</option>`).join('');
+  select.value = (valorePrecedente === 'tutti' || anniOrdinati.includes(parseInt(valorePrecedente)))
+    ? valorePrecedente
+    : String(annoCorrente);
+}
+
 function aggiornaStatistiche() {
   const autoInStock = auto.filter(a => a.stato !== 'Venduta').length;
   document.getElementById('totaleAuto').textContent = autoInStock;
 
-  // --------- PERIODO & BASELINE ---------
-  const oggi = new Date();
-  const anno = oggi.getFullYear();
-  const start = (anno === 2025) ? new Date('2025-03-01') : new Date(`${anno}-01-01`);
-  const baselineFatturato = (anno === 2025) ? 132020 : 0; // mantiene i 132.020 solo nel 2025
-  const storicoContratti = (anno === 2025) ? 21 : 0;      // mantiene i 21 solo nel 2025
+  popolaAnniStatistiche();
+  const annoSel = document.getElementById('statisticheAnno').value; // 'tutti' oppure es. "2026"
+  const mostraTutti = annoSel === 'tutti';
+  const annoNum = parseInt(annoSel) || new Date().getFullYear();
 
   // --------- PARSER NUMERI ROBUSTO (per "350,00", "1.200,50", numeri, ecc.) ---------
   const num = v => {
@@ -3703,13 +3786,23 @@ function aggiornaStatistiche() {
     return 0;
   };
 
-  // --------- CONTRATTI NEL PERIODO ---------
+  // --------- CONTRATTI NEL PERIODO (anno selezionato, o tutti) ---------
   const contrattiPeriodo = contratti.filter(c => {
     const d = c?.dataContratto ? new Date(c.dataContratto) : null;
-    return d && d >= start;
+    if (!d) return false;
+    return mostraTutti || d.getFullYear() === annoNum;
   });
 
-  // --------- FATTURATO (Prezzo finale + Extra + Voltura) + baseline 2025 ---------
+  // --------- BASELINE STORICA PRE-GESTIONALE ---------
+  // Si somma solo quando si guarda l'anno a cui si riferisce (o "Tutti gli anni") — è un dato
+  // modificabile dall'utente nel pannello sotto, non più scritto a mano nel codice, quindi non
+  // sparisce più al cambio di anno
+  const baseline = impostazioniStatistiche || impostazioniStatisticheDefault;
+  const includiBaseline = mostraTutti || annoNum === (baseline.baselineAnno || 0);
+  const baselineFatturato = includiBaseline ? (baseline.baselineFatturato || 0) : 0;
+  const storicoContratti = includiBaseline ? (baseline.baselineContratti || 0) : 0;
+
+  // --------- FATTURATO (Prezzo finale + Extra + Voltura) + baseline ---------
   const fatturatoContratti = contrattiPeriodo.reduce((sum, c) => {
     const prezzoFinale = num(c?.prezzoFinaleAuto) || num(c?.auto?.prezzoVendita);
     const extra = Array.isArray(c?.extraItems) ? c.extraItems.reduce((s, x) => s + num(x.prezzo), 0) : 0;
@@ -3719,50 +3812,63 @@ function aggiornaStatistiche() {
   const fatturatoTotale = baselineFatturato + fatturatoContratti;
   document.getElementById('fatturatoTotale').textContent = `€${fatturatoTotale.toLocaleString('it-IT')}`;
 
-  // --------- TOTALE CONTRATTI (offset 21 solo 2025) ---------
+  // --------- TOTALE CONTRATTI ---------
   document.getElementById('totaleContratti').textContent = storicoContratti + contrattiPeriodo.length;
 
-  // --------- VALORE STOCK PRESENTE (come ora) ---------
+  // --------- VALORE STOCK PRESENTE (fotografia attuale, non dipende dall'anno scelto) ---------
   const valoreStock = auto
     .filter(a => a.stato !== 'Venduta')
     .reduce((sum, autoObj) => sum + autoObj.prezzoVendita, 0);
   document.getElementById('valoreStock').textContent = `€${valoreStock.toLocaleString('it-IT')}`;
 
-  // --------- MEDIA VENDITE (mese corrente incluso) ---------
-  const dataInizio = start;
-  const dataOggi = new Date();
-  const mesiTrascorsi = Math.max(
-    1,
-    ((dataOggi.getFullYear() - dataInizio.getFullYear()) * 12) + (dataOggi.getMonth() - dataInizio.getMonth()) + 1
-  );
+  // --------- MEDIA VENDITE AL MESE ---------
+  const oggi = new Date();
+  let mesiTrascorsi;
+  if (mostraTutti) {
+    const inizioGlobale = baseline.baselineAnno ? new Date(baseline.baselineAnno, 0, 1) : new Date(annoNum, 0, 1);
+    mesiTrascorsi = ((oggi.getFullYear() - inizioGlobale.getFullYear()) * 12) + (oggi.getMonth() - inizioGlobale.getMonth()) + 1;
+  } else if (annoNum === oggi.getFullYear()) {
+    mesiTrascorsi = oggi.getMonth() + 1; // gennaio..mese corrente incluso
+  } else {
+    mesiTrascorsi = 12; // anno passato: conta tutti e 12 i mesi
+  }
+  mesiTrascorsi = Math.max(1, mesiTrascorsi);
   const totaleVendite = storicoContratti + contrattiPeriodo.length;
   const mediaVendite = totaleVendite / mesiTrascorsi;
   document.getElementById('mediaVendite').textContent = mediaVendite.toFixed(1);
 
   // --------- Canali ---------
-  aggiornaStatisticheCanali();
+  aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline);
+
+  // --------- Ripopola il pannello baseline (mai mentre l'utente ci sta scrivendo dentro) ---------
+  const campiBaseline = {
+    baselineStatAnno: baseline.baselineAnno,
+    baselineStatFatturato: baseline.baselineFatturato,
+    baselineStatContratti: baseline.baselineContratti,
+    baselineStatCanaleConoscenze: (baseline.baselineCanali || {})['Conoscenze'] || 0,
+    baselineStatCanaleAutoscout: (baseline.baselineCanali || {})['Autoscout'] || 0,
+    baselineStatCanaleCip: (baseline.baselineCanali || {})['Cip'] || 0,
+    baselineStatCanaleIngresso: (baseline.baselineCanali || {})['Ingresso spontaneo'] || 0,
+    baselineStatCanaleSubito: (baseline.baselineCanali || {})['Subito'] || 0
+  };
+  Object.entries(campiBaseline).forEach(([idCampo, valore]) => {
+    const el = document.getElementById(idCampo);
+    if (el && document.activeElement !== el) el.value = valore;
+  });
 }
 
-          function aggiornaStatisticheCanali() {
-  // Baseline canali: solo nel 2025 mantieni i numeri storici; dal 2026 azzera
-  const annoCanali = new Date().getFullYear();
-const canaliPartenza = (annoCanali === 2025) ? {
-  'Conoscenze': 5,
-  'Autoscout': 9,
-  'Cip': 2,
-  'Ingresso spontaneo': 4,
-  'Subito': 1
-} : { 'Conoscenze': 0, 'Autoscout': 0, 'Cip': 0, 'Ingresso spontaneo': 0, 'Subito': 0 };
+function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline) {
+  const canaliVuoti = { 'Conoscenze': 0, 'Autoscout': 0, 'Cip': 0, 'Ingresso spontaneo': 0, 'Subito': 0 };
+  const canaliPartenza = includiBaseline
+    ? Object.assign({}, canaliVuoti, baseline.baselineCanali || {})
+    : canaliVuoti;
 
-
-  // Stesso criterio periodo dei contratti/statistiche
-  const startCanali = (annoCanali === 2025) ? new Date('2025-03-01') : new Date(`${annoCanali}-01-01`);
-
-  // Conta vendite per canale solo nel periodo
+  // Conta vendite per canale solo nel periodo (anno selezionato, o tutti)
   const canaliNuovi = {};
   contratti.forEach(contratto => {
     const d = contratto?.dataContratto ? new Date(contratto.dataContratto) : null;
-    if (!d || d < startCanali) return;
+    if (!d) return;
+    if (!mostraTutti && d.getFullYear() !== annoNum) return;
     const canale = contratto.canaleVendita || 'Autoscout';
     canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
   });
@@ -3772,10 +3878,11 @@ const canaliPartenza = (annoCanali === 2025) ? {
   const totaleVenditeNuove = Object.values(canaliNuovi).reduce((sum, val) => sum + val, 0);
   const totaleVendite = totaleVenditePartenza + totaleVenditeNuove;
 
-  // Percentuali finali
+  // Percentuali finali (unione tra canali storici e canali comparsi nei contratti reali)
   const statisticheFinali = {};
-  Object.keys(canaliPartenza).forEach(canale => {
-    const venditePartenza = canaliPartenza[canale];
+  const tuttiICanali = new Set([...Object.keys(canaliPartenza), ...Object.keys(canaliNuovi)]);
+  tuttiICanali.forEach(canale => {
+    const venditePartenza = canaliPartenza[canale] || 0;
     const venditeNuove = canaliNuovi[canale] || 0;
     const totaleCanale = venditePartenza + venditeNuove;
     statisticheFinali[canale] = totaleVendite > 0 ? ((totaleCanale / totaleVendite) * 100).toFixed(1) : '0.0';
@@ -3800,6 +3907,24 @@ const canaliPartenza = (annoCanali === 2025) ? {
       </div>
     `;
   });
+}
+
+function aggiornaImpostazioniStatistiche() {
+  const baselineAnno = parseInt(document.getElementById('baselineStatAnno').value) || 0;
+  const baselineFatturato = parseFloat(document.getElementById('baselineStatFatturato').value) || 0;
+  const baselineContratti = parseInt(document.getElementById('baselineStatContratti').value) || 0;
+  const baselineCanali = {
+    'Conoscenze': parseInt(document.getElementById('baselineStatCanaleConoscenze').value) || 0,
+    'Autoscout': parseInt(document.getElementById('baselineStatCanaleAutoscout').value) || 0,
+    'Cip': parseInt(document.getElementById('baselineStatCanaleCip').value) || 0,
+    'Ingresso spontaneo': parseInt(document.getElementById('baselineStatCanaleIngresso').value) || 0,
+    'Subito': parseInt(document.getElementById('baselineStatCanaleSubito').value) || 0
+  };
+
+  impostazioniStatistiche = { id: 'impostazioniStatistiche', baselineAnno, baselineFatturato, baselineContratti, baselineCanali };
+  salvaImpostazioniStatistiche();
+  aggiornaStatistiche();
+  toast('✅ Storico salvato!', 'success');
 }
 
         // CONTRATTO
@@ -4308,6 +4433,10 @@ const canaliPartenza = (annoCanali === 2025) ? {
 
         function salvaImpostazioniBilancio() {
             localStorage.setItem('impostazioniBilancio', JSON.stringify([impostazioniBilancio]));
+        }
+
+        function salvaImpostazioniStatistiche() {
+            localStorage.setItem('impostazioniStatistiche', JSON.stringify([impostazioniStatistiche]));
         }
 
         function salvaSpeseFisseRicorrenti() {
@@ -5009,7 +5138,7 @@ const canaliPartenza = (annoCanali === 2025) ? {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","speseFisseRicorrenti","impostazioniBilancio"];
+  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","speseFisseRicorrenti","impostazioniBilancio","impostazioniStatistiche"];
   const SESSIONE_MAX_MS = 8 * 60 * 60 * 1000; // 8 ore, come prima
 
   // ---- util per evitare reload inutili ----
@@ -5127,6 +5256,14 @@ const canaliPartenza = (annoCanali === 2025) ? {
       ];
       salvaSpeseFisseRicorrenti();
       localStorage.setItem('__speseFisseSeedFatto', '1');
+    }
+
+    // Stesso discorso per la baseline storica delle Statistiche: se non è mai stata sincronizzata
+    // su Firestore, la creiamo con i valori che prima erano scritti a mano nel codice (validi solo
+    // per il 2025), così restano quelli finché l'utente non li corregge dall'interfaccia
+    if (!localStorage.getItem('__statisticheBaselineSeedFatto')) {
+      salvaImpostazioniStatistiche();
+      localStorage.setItem('__statisticheBaselineSeedFatto', '1');
     }
 
     aggiornaTabelle();
