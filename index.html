@@ -844,6 +844,17 @@ select#filtroStato {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Potenza</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" id="potenzaValore" placeholder="150" oninput="aggiornaHintPotenza()" style="flex:1;">
+                            <select id="potenzaUnita" onchange="aggiornaHintPotenza()" style="width: 90px;">
+                                <option value="CV">CV</option>
+                                <option value="kW">kW</option>
+                            </select>
+                        </div>
+                        <small id="potenzaConvertita" style="color: #888;"></small>
+                    </div>
+                    <div class="form-group">
                         <label>Stato</label>
                         <select id="statoAuto">
                             <option value="Disponibile">Disponibile</option>
@@ -2098,6 +2109,19 @@ select#filtroStato {
             pulisciFormAuto();
         }
 
+        // Conversione potenza motore CV <-> kW (1 CV = 0.7355 kW)
+        function cvToKw(cv) { return cv ? Math.round(cv * 0.7355 * 10) / 10 : 0; }
+        function kwToCv(kw) { return kw ? Math.round(kw / 0.7355) : 0; }
+
+        function aggiornaHintPotenza() {
+            const hint = document.getElementById('potenzaConvertita');
+            if (!hint) return;
+            const valore = parseFloat(document.getElementById('potenzaValore').value) || 0;
+            const unita = document.getElementById('potenzaUnita').value;
+            if (!valore) { hint.textContent = ''; return; }
+            hint.textContent = unita === 'CV' ? `≈ ${cvToKw(valore)} kW` : `≈ ${kwToCv(valore)} CV`;
+        }
+
         // GESTIONE AUTO
         function aggiungiAuto() {
             const marca = document.getElementById('marca').value;
@@ -2113,6 +2137,10 @@ select#filtroStato {
             const tipo = document.getElementById('tipoAuto').value;
             const alimentazione = document.getElementById('alimentazioneAuto').value;
             const stato = document.getElementById('statoAuto').value;
+            const potenzaValore = parseFloat(document.getElementById('potenzaValore').value) || 0;
+            const potenzaUnita = document.getElementById('potenzaUnita').value;
+            const potenzaCV = potenzaUnita === 'CV' ? potenzaValore : kwToCv(potenzaValore);
+            const potenzaKw = potenzaUnita === 'kW' ? potenzaValore : cvToKw(potenzaValore);
 
             if (!marca || !modello || !targa) {
                 toast('Marca, modello e targa sono obbligatori!', 'danger');
@@ -2143,6 +2171,8 @@ select#filtroStato {
                 prezzoVendita,
                 tipo,
                 alimentazione,
+                potenzaCV,
+                potenzaKw,
                 stato,
                 speseAggiuntive: speseIniziali // Tutti i costi come spese unificate
             };
@@ -2173,6 +2203,9 @@ select#filtroStato {
             document.getElementById('importoCostoAuto').value = '';
             document.getElementById('tipoAuto').value = 'USATO';
             document.getElementById('alimentazioneAuto').value = 'Benzina';
+            document.getElementById('potenzaValore').value = '';
+            document.getElementById('potenzaUnita').value = 'CV';
+            document.getElementById('potenzaConvertita').textContent = '';
             document.getElementById('statoAuto').value = 'Disponibile';
             costiAutoItems = [];
             aggiornaListaCostiAuto();
@@ -2977,6 +3010,7 @@ select#filtroStato {
                     {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
                     {nome: 'tipo', label: 'Tipo', tipo: 'select', opzioni: ['NUOVO', 'KM0', 'USATO']},
                     {nome: 'alimentazione', label: 'Alimentazione', tipo: 'select', opzioni: ['Benzina', 'Diesel', 'GPL', 'Metano', 'Ibrido', 'Ibrido Plug-in', 'Elettrico']},
+                    {nome: 'potenza', label: 'Potenza', tipo: 'potenza'},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
             }
@@ -3000,6 +3034,15 @@ select#filtroStato {
                         html += `<option value="${opzione}" ${selected}>${opzione}</option>`;
                     });
                     html += `</select>`;
+                } else if (campo.tipo === 'potenza') {
+                    const valoreCV = oggetto.potenzaCV || (oggetto.potenzaKw ? kwToCv(oggetto.potenzaKw) : '');
+                    html += `<div style="display: flex; gap: 8px;">
+                        <input type="number" id="modifica_potenzaValore" value="${valoreCV || ''}" style="flex:1;">
+                        <select id="modifica_potenzaUnita">
+                            <option value="CV" selected>CV</option>
+                            <option value="kW">kW</option>
+                        </select>
+                    </div>`;
                 } else {
                     html += `<input type="${campo.tipo}" id="modifica_${campo.nome}" value="${oggetto[campo.nome] || ''}">`;
                 }
@@ -3019,13 +3062,22 @@ select#filtroStato {
             const inputs = document.getElementById('contenutoModifica').querySelectorAll('input, select');
             inputs.forEach(input => {
                 const campo = input.id.replace('modifica_', '');
+                if (campo === 'potenzaValore' || campo === 'potenzaUnita') return; // gestito a parte sotto
                 if (input.type === 'number') {
                     oggettoInModifica[campo] = parseFloat(input.value) || 0;
                 } else {
                     oggettoInModifica[campo] = input.value;
                 }
             });
-            
+
+            const potenzaValoreEl = document.getElementById('modifica_potenzaValore');
+            if (potenzaValoreEl) {
+                const valore = parseFloat(potenzaValoreEl.value) || 0;
+                const unita = document.getElementById('modifica_potenzaUnita').value;
+                oggettoInModifica.potenzaCV = unita === 'CV' ? valore : kwToCv(valore);
+                oggettoInModifica.potenzaKw = unita === 'kW' ? valore : cvToKw(valore);
+            }
+
             // Salva nel localStorage
             if (tipoOggettoInModifica === 'cliente') {
                 salvaClienti();
@@ -4200,7 +4252,9 @@ function aggiornaImpostazioniStatistiche() {
                             </tr>
                             <tr>
                                 <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Alimentazione:</td>
-                                <td style="padding: 4px; border: 1px solid #eee;" colspan="3">${contratto.auto.alimentazione || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.alimentazione || '___________'}</td>
+                                <td style="padding: 4px; border: 1px solid #eee; font-weight: bold;">Potenza:</td>
+                                <td style="padding: 4px; border: 1px solid #eee;">${contratto.auto.potenzaCV ? `${contratto.auto.potenzaCV} CV (${contratto.auto.potenzaKw} kW)` : '___________'}</td>
                             </tr>
                         </table>
                     </div>
@@ -4854,6 +4908,7 @@ function aggiornaImpostazioniStatistiche() {
                             <p><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</p>
                             <p><strong>Tipo:</strong> ${autoObj.tipo}</p>
                             <p><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</p>
+                            <p><strong>Potenza:</strong> ${autoObj.potenzaCV ? `${autoObj.potenzaCV} CV (${autoObj.potenzaKw} kW)` : '-'}</p>
                         </div>
                         
                         <div class="info-box">
@@ -4972,6 +5027,7 @@ function aggiornaImpostazioniStatistiche() {
                     <div><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</div>
                     <div><strong>Tipo:</strong> ${autoObj.tipo}</div>
                     <div><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</div>
+                    <div><strong>Potenza:</strong> ${autoObj.potenzaCV ? `${autoObj.potenzaCV} CV (${autoObj.potenzaKw} kW)` : '-'}</div>
                     <div><strong>Stato:</strong> <span class="badge" style="background:${statoColor};">${autoObj.stato}</span></div>
                 </div>
 
