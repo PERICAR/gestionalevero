@@ -5399,11 +5399,17 @@ function aggiornaImpostazioniStatistiche() {
     _sincronizzazioneAttiva = true;
 
     // --- PRELOAD ALL'AVVIO (legge dal cloud, nessun reload) ---
+    // mostraSistema() ha già disegnato le tabelle con gli ultimi dati in cache (letti da
+    // localStorage in modo sincrono all'apertura pagina): se il cloud restituisce esattamente
+    // gli stessi dati, ridisegnare tutto qui sotto produrrebbe solo un micro-flash inutile.
+    let datiCambiatiDalCloud = false;
     try {
       for (const k of KEYS) {
         const s = await getDocs(collection(db, k));
         const arr = s.docs.map(d => d.data());
-        localStorage.setItem(k, stable(arr));
+        const nuovo = stable(arr);
+        if (localStorage.getItem(k) !== nuovo) datiCambiatiDalCloud = true;
+        localStorage.setItem(k, nuovo);
       }
     } catch (e) {
       console.warn("Preload Firestore KO:", e);
@@ -5491,8 +5497,12 @@ function aggiornaImpostazioniStatistiche() {
       localStorage.setItem('__statisticheBaselineSeedFatto', '1');
     }
 
-    aggiornaTabelle();
-    aggiornaStatistiche();
+    // Ridisegna solo se il cloud ha davvero portato dati diversi da quelli già mostrati
+    // da mostraSistema() — evita il micro-flash a ogni avvio quando non è cambiato nulla.
+    if (datiCambiatiDalCloud) {
+      aggiornaTabelle();
+      aggiornaStatistiche();
+    }
   }
 
   // --- AUTENTICAZIONE (Firebase Auth vera) ---
