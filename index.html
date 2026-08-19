@@ -5477,7 +5477,19 @@ function aggiornaImpostazioniStatistiche() {
     // --- REAL-TIME: aggiorna localStorage, ricarica solo se serve ---
     function watchCollection(key) {
       const col = collection(db, key);
+      let primaVoltaIgnorata = false;
       onSnapshot(col, (snap) => {
+        // onSnapshot() invia SEMPRE una prima "replay" immediata dello stato attuale appena
+        // ci si iscrive — dati che il preload qui sopra ha già appena letto con getDocs.
+        // Confrontarla comunque con quanto scritto dal preload è fragile (differenze di
+        // timing/cache tra le due letture Firestore separate possono farle risultare diverse
+        // anche a parità di contenuto) e causava un reload spurio a ogni singolo login,
+        // anche senza che nulla fosse davvero cambiato sul cloud. La ignoriamo e reagiamo
+        // solo dai cambiamenti reali successivi.
+        if (!primaVoltaIgnorata) {
+          primaVoltaIgnorata = true;
+          return;
+        }
         if (_initializing || _writingKeys.has(key)) return; // evita loop durante preload/scrittura di QUESTA chiave
 
         const arr = snap.docs.map(d => d.data());
