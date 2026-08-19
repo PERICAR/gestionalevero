@@ -5368,7 +5368,12 @@ function aggiornaImpostazioniStatistiche() {
 
   // ---- util per evitare reload inutili ----
   let _initializing = true;
-  let _writing = false;
+  // Un set (non un singolo booleano!) perché più collection possono scrivere su Firestore
+  // in parallelo (es. convertiInContratto salva auto+contratti+preventivi quasi insieme):
+  // con un flag condiviso, la scrittura più veloce lo resetta mentre le altre sono ancora
+  // in corso, lasciando passare uno snapshot cloud non aggiornato che sovrascrive il dato
+  // appena salvato — con un set, ogni collection ha la propria guardia indipendente.
+  const _writingKeys = new Set();
   let _sincronizzazioneAttiva = false;
 
   const stable = (arr) => {
@@ -5423,12 +5428,15 @@ function aggiornaImpostazioniStatistiche() {
       realSetItem(key, value);
       if (!KEYS.includes(key)) return;
 
+      // Segna la chiave come "in scrittura" subito, in modo sincrono, prima che parta
+      // l'async qui sotto: niente finestra scoperta tra il salvataggio locale e l'inizio
+      // della scrittura su Firestore in cui uno snapshot vecchio potrebbe intrufolarsi.
+      _writingKeys.add(key);
+
       (async () => {
         try {
           const arr = JSON.parse(value);
           if (!Array.isArray(arr)) return;
-
-          _writing = true;
 
           // upsert
           const wantedIds = new Set();
@@ -5449,8 +5457,8 @@ function aggiornaImpostazioniStatistiche() {
         } catch(e){
           console.warn("Cloud sync error:", key, e);
         } finally {
-          // piccola pausa prima di riattivare gli snapshot
-          setTimeout(() => { _writing = false; }, 300);
+          // piccola pausa prima di riattivare gli snapshot, solo per QUESTA chiave
+          setTimeout(() => { _writingKeys.delete(key); }, 300);
         }
       })();
     };
@@ -5459,7 +5467,7 @@ function aggiornaImpostazioniStatistiche() {
     function watchCollection(key) {
       const col = collection(db, key);
       onSnapshot(col, (snap) => {
-        if (_initializing || _writing) return; // evita loop durante preload/scrittura
+        if (_initializing || _writingKeys.has(key)) return; // evita loop durante preload/scrittura di QUESTA chiave
 
         const arr = snap.docs.map(d => d.data());
         const next = stable(arr);
