@@ -4157,14 +4157,22 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
     ? Object.assign({}, canaliVuoti, baseline.baselineCanali || {})
     : canaliVuoti;
 
-  // Conta vendite per canale solo nel periodo (anno selezionato, o tutti)
+  // Conta vendite per canale solo nel periodo (anno selezionato, o tutti) e tiene traccia dei
+  // singoli contratti/vendite per mostrarli quando l'utente apre il dettaglio di un canale
   const canaliNuovi = {};
+  const dettagliPerCanale = {};
+  const aggiungiDettaglio = (canale, voce) => {
+    if (!dettagliPerCanale[canale]) dettagliPerCanale[canale] = [];
+    dettagliPerCanale[canale].push(voce);
+  };
+
   contratti.forEach(contratto => {
     const d = contratto?.dataContratto ? new Date(contratto.dataContratto) : null;
     if (!d) return;
     if (!mostraTutti && d.getFullYear() !== annoNum) return;
     const canale = contratto.canaleVendita || 'Autoscout';
     canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
+    aggiungiDettaglio(canale, { testo: `${contratto.auto.marca} ${contratto.auto.modello} — ${contratto.cliente.nome}`, data: contratto.dataContratto });
   });
   // Anche le vendite fuori gestionale contano nei canali (mai negli introiti, solo qui)
   venditeEsterne.forEach(v => {
@@ -4173,7 +4181,10 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
     if (!mostraTutti && d.getFullYear() !== annoNum) return;
     const canale = v.canaleVendita || 'Autoscout';
     canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
+    aggiungiDettaglio(canale, { testo: `${v.marca} ${v.modello} — fuori gestionale${v.note ? ' (' + v.note + ')' : ''}`, data: v.dataVendita });
   });
+
+  Object.values(dettagliPerCanale).forEach(lista => lista.sort((a, b) => String(b.data || '').localeCompare(String(a.data || ''))));
 
   // Calcola totale vendite
   const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
@@ -4206,14 +4217,41 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
   container.innerHTML = '';
   Object.entries(statisticheFinali).forEach(([canale, percentuale]) => {
     const colore = coloreCanale[canale] || '#6b7280';
+    const espanso = canaliEspansi.has(canale);
+    const dettagli = dettagliPerCanale[canale] || [];
+    const storiciCanale = includiBaseline ? (canaliPartenza[canale] || 0) : 0;
+
+    let dettaglioHtml = '';
+    if (espanso) {
+      const righeDettaglio = dettagli.map(d => `<li>${d.testo}${d.data ? ` — ${new Date(d.data).toLocaleDateString('it-IT')}` : ''}</li>`).join('');
+      const notaStorico = storiciCanale > 0 ? `<p style="margin: 6px 0 0 0; color: var(--muted); font-size: 12px;">+ ${storiciCanale} contratti storici pre-gestionale, non elencabili singolarmente.</p>` : '';
+      dettaglioHtml = `
+        <div style="background:#fff; border:1px solid var(--line); border-top:none; border-radius:0 0 10px 10px; padding:12px; text-align:left; max-height:220px; overflow-y:auto;">
+          ${dettagli.length > 0 ? `<ul style="margin:0; padding-left:18px; font-size:13px;">${righeDettaglio}</ul>` : '<p style="margin:0; color: var(--muted); font-size:13px;">Nessun contratto in questo periodo.</p>'}
+          ${notaStorico}
+        </div>
+      `;
+    }
 
     container.innerHTML += `
-      <div style="background: ${colore}; color: white; padding: 15px; border-radius: 10px; text-align: center;">
-        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
-        <p style="margin: 0; font-size: 0.9rem;">${canale}</p>
+      <div>
+        <div style="background: ${colore}; color: white; padding: 15px; border-radius: ${espanso ? '10px 10px 0 0' : '10px'}; text-align: center; cursor: pointer;" onclick="toggleCanaleDettaglio('${canale}')">
+          <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${percentuale}%</h4>
+          <p style="margin: 0; font-size: 0.9rem;">${canale} ${espanso ? '▲' : '▼'}</p>
+        </div>
+        ${dettaglioHtml}
       </div>
     `;
   });
+}
+
+// Canali attualmente "aperti" nella vista Canali di Vendita — un Set persistente (non locale alla
+// funzione di render) così il pannello resta aperto quando aggiornaStatistiche() ridisegna tutto
+let canaliEspansi = new Set();
+function toggleCanaleDettaglio(canale) {
+  if (canaliEspansi.has(canale)) canaliEspansi.delete(canale);
+  else canaliEspansi.add(canale);
+  aggiornaStatistiche();
 }
 
 // --------- VENDITE FUORI GESTIONALE (solo ai fini statistici, mai per il Bilancio) ---------
