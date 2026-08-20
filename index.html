@@ -1510,6 +1510,11 @@ select#filtroStato {
                         <h3 id="autoVenduteAnno">0</h3>
                         <p id="autoVenduteAnnoLabel">Auto vendute</p>
                     </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">📅</span>
+                        <h3 id="autoVenduteMedia">0</h3>
+                        <p id="autoVenduteMediaLabel">Media al mese</p>
+                    </div>
                 </div>
                 <p id="autoVenduteBaselineNota" style="color: var(--muted); font-size: 13px; margin-top: -8px; margin-bottom: 12px;"></p>
                 <div id="autoVenduteMeseWrap" class="table-scroll">
@@ -4291,7 +4296,8 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
   const vendEsterne = venditeEsterne.filter(v => v.dataVendita && (mostraTutti || new Date(v.dataVendita).getFullYear() === annoNum));
   const contrattiStorici = includiBaseline ? (baseline.baselineContratti || 0) : 0;
 
-  el.textContent = vendGestionale.length + vendEsterne.length + contrattiStorici;
+  const totaleAnno = vendGestionale.length + vendEsterne.length + contrattiStorici;
+  el.textContent = totaleAnno;
   document.getElementById('autoVenduteAnnoLabel').textContent = mostraTutti ? 'Auto vendute in totale' : `Auto vendute nel ${annoNum}`;
 
   const notaEl = document.getElementById('autoVenduteBaselineNota');
@@ -4299,6 +4305,26 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
     notaEl.textContent = contrattiStorici > 0
       ? `Di cui ${contrattiStorici} contratti storici pre-gestionale (${baseline.baselineAnno}) — non compaiono nel dettaglio mensile qui sotto perché non si sa in che mese siano avvenuti.`
       : '';
+  }
+
+  // --------- Media al mese ---------
+  // Per l'anno in corso si divide per i mesi già trascorsi (altrimenti la media sarebbe
+  // artificialmente bassa a inizio anno); per un anno passato si divide sempre per 12.
+  // Con "Tutti gli anni" selezionato una media mensile non avrebbe un periodo chiaro su cui
+  // basarsi, quindi non viene mostrata.
+  const mediaEl = document.getElementById('autoVenduteMedia');
+  const mediaLabelEl = document.getElementById('autoVenduteMediaLabel');
+  if (mediaEl && mediaLabelEl) {
+    if (mostraTutti) {
+      mediaEl.textContent = '-';
+      mediaLabelEl.textContent = 'Media al mese (seleziona un anno)';
+    } else {
+      const oggi = new Date();
+      const mesiPerMedia = annoNum === oggi.getFullYear() ? (oggi.getMonth() + 1) : 12;
+      const media = mesiPerMedia > 0 ? totaleAnno / mesiPerMedia : 0;
+      mediaEl.textContent = media.toLocaleString('it-IT', { maximumFractionDigits: 1 });
+      mediaLabelEl.textContent = `Media al mese (${annoNum})`;
+    }
   }
 
   const wrap = document.getElementById('autoVenduteMeseWrap');
