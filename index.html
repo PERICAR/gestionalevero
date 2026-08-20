@@ -1555,6 +1555,16 @@ select#filtroStato {
                             <input type="date" id="dataAcquistoVenditaEsterna">
                         </div>
                         <div class="form-group">
+                            <label>Canale di Vendita</label>
+                            <select id="canaleVenditaEsterna">
+                                <option value="Autoscout">Autoscout</option>
+                                <option value="Subito">Subito</option>
+                                <option value="Conoscenze">Conoscenze</option>
+                                <option value="Ingresso spontaneo">Ingresso spontaneo</option>
+                                <option value="Cip">Cip</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Note (opzionale)</label>
                             <input type="text" id="noteVenditaEsterna" placeholder="Es: conto vendita">
                         </div>
@@ -1574,6 +1584,7 @@ select#filtroStato {
                             <th>Marca/Modello</th>
                             <th>Data Vendita</th>
                             <th>Data Acquisto</th>
+                            <th>Canale</th>
                             <th>Note</th>
                             <th>Azioni</th>
                         </tr>
@@ -4149,6 +4160,14 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
     const canale = contratto.canaleVendita || 'Autoscout';
     canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
   });
+  // Anche le vendite fuori gestionale contano nei canali (mai negli introiti, solo qui)
+  venditeEsterne.forEach(v => {
+    const d = v?.dataVendita ? new Date(v.dataVendita) : null;
+    if (!d) return;
+    if (!mostraTutti && d.getFullYear() !== annoNum) return;
+    const canale = v.canaleVendita || 'Autoscout';
+    canaliNuovi[canale] = (canaliNuovi[canale] || 0) + 1;
+  });
 
   // Calcola totale vendite
   const totaleVenditePartenza = Object.values(canaliPartenza).reduce((sum, val) => sum + val, 0);
@@ -4202,6 +4221,7 @@ function chiudiFormVenditaEsterna() {
   document.getElementById('marcaVenditaEsterna').value = '';
   document.getElementById('modelloVenditaEsterna').value = '';
   document.getElementById('dataAcquistoVenditaEsterna').value = '';
+  document.getElementById('canaleVenditaEsterna').value = 'Autoscout';
   document.getElementById('noteVenditaEsterna').value = '';
 }
 
@@ -4210,6 +4230,7 @@ function aggiungiVenditaEsterna() {
   const modello = document.getElementById('modelloVenditaEsterna').value.trim();
   const dataVendita = document.getElementById('dataVenditaEsterna').value;
   const dataAcquisto = document.getElementById('dataAcquistoVenditaEsterna').value;
+  const canaleVendita = document.getElementById('canaleVenditaEsterna').value;
   const note = document.getElementById('noteVenditaEsterna').value.trim();
 
   if (!marca || !modello || !dataVendita) {
@@ -4217,7 +4238,7 @@ function aggiungiVenditaEsterna() {
     return;
   }
 
-  venditeEsterne.push({ id: Date.now(), marca, modello, dataVendita, dataAcquisto: dataAcquisto || null, note });
+  venditeEsterne.push({ id: Date.now(), marca, modello, dataVendita, dataAcquisto: dataAcquisto || null, canaleVendita, note });
   salvaVenditeEsterne();
   chiudiFormVenditaEsterna();
   aggiornaTabellaVenditeEsterne();
@@ -4253,6 +4274,7 @@ function aggiornaTabellaVenditeEsterne() {
       <td>${v.marca} ${v.modello}</td>
       <td>${v.dataVendita ? new Date(v.dataVendita).toLocaleDateString('it-IT') : '-'}</td>
       <td>${v.dataAcquisto ? new Date(v.dataAcquisto).toLocaleDateString('it-IT') : '-'}</td>
+      <td>${v.canaleVendita || '-'}</td>
       <td>${v.note || '-'}</td>
       <td class="actions"><button class="btn btn-danger" onclick="eliminaVenditaEsterna(${v.id})">🗑️ Elimina</button></td>
     `;
