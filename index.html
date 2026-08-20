@@ -1495,62 +1495,91 @@ select#filtroStato {
                 </div>
             </div>
 
+            <div style="margin-bottom: 15px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <label style="font-weight:700;">Anno:</label>
+                <select id="statisticheAnno" onchange="aggiornaStatistiche()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
+            </div>
+
+            <!-- AUTO VENDUTE (ANNO + MESE) -->
+            <div class="contract-preview">
+                <h3>🚗 Auto Vendute</h3>
+                <p style="color: var(--muted); font-size: 13.5px; margin-top: -8px; margin-bottom: 15px;">Include le vendite dal gestionale e quelle registrate come "fuori gestionale" più sotto.</p>
+                <div class="stats-grid" style="margin-bottom: 15px;">
+                    <div class="stat-card">
+                        <span class="stat-icon">🚗</span>
+                        <h3 id="autoVenduteAnno">0</h3>
+                        <p id="autoVenduteAnnoLabel">Auto vendute</p>
+                    </div>
+                </div>
+                <div id="autoVenduteMeseWrap" class="table-scroll">
+                <table class="data-table">
+                    <thead><tr><th>Mese</th><th>Auto vendute</th></tr></thead>
+                    <tbody id="tabellaAutoVenduteMese"></tbody>
+                </table>
+                </div>
+            </div>
+
             <!-- CANALI DI VENDITA -->
             <div class="contract-preview">
                 <h3>📊 Statistiche Canali di Vendita</h3>
-                <div style="margin-bottom: 15px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <label style="font-weight:700;">Anno:</label>
-                    <select id="statisticheAnno" onchange="aggiornaStatistiche()" style="padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px;"></select>
-                </div>
                 <div id="statisticheCanaliGrafico" style="margin-bottom: 15px;"></div>
                 <div id="statisticheCanali" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
             </div>
 
-            <!-- BASELINE STORICA PRE-GESTIONALE -->
-            <h4 style="margin-top: 30px;">⚙️ Storico pre-gestionale</h4>
-            <div class="alert" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E3A8A; margin-bottom: 15px;">
-                💡 Numeri accumulati prima di iniziare a usare questo gestionale (es. fatturato/contratti registrati solo su carta). Vengono sommati automaticamente alle statistiche dell'anno indicato qui sotto, e restano validi anche cambiando anno o selezionando "Tutti gli anni" — a differenza di prima, non si perdono più al cambio di anno.
+            <!-- STORICO PRE-GESTIONALE (fisso, non più modificabile) -->
+            <div class="alert" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E3A8A; margin-top: 30px; margin-bottom: 15px;">
+                💡 Storico pre-gestionale (fisso): <span id="baselineStatRiepilogo"></span>
             </div>
-            <div style="background: #fafafa; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px;">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Anno di riferimento</label>
-                        <input type="number" id="baselineStatAnno" placeholder="2025">
+
+            <!-- VENDITE FUORI GESTIONALE -->
+            <div class="contract-preview">
+                <h3>🧾 Vendite fuori gestionale</h3>
+                <p style="color: var(--muted); font-size: 13.5px; margin-top: -8px; margin-bottom: 15px;">Per auto vendute al di fuori del gestionale (es. conto vendita). Contano per le statistiche (numero auto vendute, marche più vendute/veloci) ma MAI per il Bilancio/introiti.</p>
+
+                <div id="formAggiungiVenditaEsterna" style="display:none; background: #fafafa; border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Marca</label>
+                            <input type="text" id="marcaVenditaEsterna" placeholder="BMW">
+                        </div>
+                        <div class="form-group">
+                            <label>Modello</label>
+                            <input type="text" id="modelloVenditaEsterna" placeholder="Serie 3">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Vendita</label>
+                            <input type="date" id="dataVenditaEsterna">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Acquisto (opzionale, serve per le marche più veloci a vendersi)</label>
+                            <input type="date" id="dataAcquistoVenditaEsterna">
+                        </div>
+                        <div class="form-group">
+                            <label>Note (opzionale)</label>
+                            <input type="text" id="noteVenditaEsterna" placeholder="Es: conto vendita">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Fatturato storico (€)</label>
-                        <input type="number" id="baselineStatFatturato" placeholder="132020">
-                    </div>
-                    <div class="form-group">
-                        <label>Contratti storici</label>
-                        <input type="number" id="baselineStatContratti" placeholder="21">
-                    </div>
-                </div>
-                <h4 style="margin-top: 15px; margin-bottom: 10px; font-size: 0.95rem;">Canali di vendita storici</h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Conoscenze</label>
-                        <input type="number" id="baselineStatCanaleConoscenze" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Autoscout</label>
-                        <input type="number" id="baselineStatCanaleAutoscout" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Cip</label>
-                        <input type="number" id="baselineStatCanaleCip" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Ingresso spontaneo</label>
-                        <input type="number" id="baselineStatCanaleIngresso" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Subito</label>
-                        <input type="number" id="baselineStatCanaleSubito" placeholder="0">
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="aggiungiVenditaEsterna()">💾 Registra Vendita</button>
+                        <button class="btn btn-danger" onclick="chiudiFormVenditaEsterna()">❌ Annulla</button>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 15px;">
-                    <button class="btn btn-success" onclick="aggiornaImpostazioniStatistiche()">💾 Salva Storico</button>
+                <div style="margin-bottom: 15px;">
+                    <button class="btn btn-success" onclick="mostraFormVenditaEsterna()">➕ Registra Vendita Fuori Gestionale</button>
+                </div>
+                <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marca/Modello</th>
+                            <th>Data Vendita</th>
+                            <th>Data Acquisto</th>
+                            <th>Note</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabellaVenditeEsterne"></tbody>
+                </table>
                 </div>
             </div>
 
@@ -1806,6 +1835,10 @@ select#filtroStato {
         let preventivi = JSON.parse(localStorage.getItem('preventivi')) || [];
         let speseGenerali = JSON.parse(localStorage.getItem('speseGenerali')) || [];
         let entrateManuali = JSON.parse(localStorage.getItem('entrateManuali')) || [];
+        // Auto vendute FUORI dal gestionale (es. conto vendita): contano solo ai fini statistici
+        // (numero auto vendute, marche più veloci/vendute) ma mai nel Bilancio/introiti, perché lì
+        // il ricavo non è mai passato dal gestionale.
+        let venditeEsterne = JSON.parse(localStorage.getItem('venditeEsterne')) || [];
         // Costi fissi che si ripetono nel tempo (affitto, autoscout, bollette, INPS, ecc.), ognuno con
         // la propria cadenza: entrano nel calcolo del margine come costi, senza bisogno di inserirli
         // manualmente ogni mese/trimestre
@@ -1941,6 +1974,7 @@ select#filtroStato {
             preventivi = JSON.parse(localStorage.getItem('preventivi')) || [];
             speseGenerali = JSON.parse(localStorage.getItem('speseGenerali')) || [];
             entrateManuali = JSON.parse(localStorage.getItem('entrateManuali')) || [];
+            venditeEsterne = JSON.parse(localStorage.getItem('venditeEsterne')) || [];
             speseFisseRicorrenti = JSON.parse(localStorage.getItem('speseFisseRicorrenti')) || speseFisseRicorrenti;
             impostazioniBilancio = (JSON.parse(localStorage.getItem('impostazioniBilancio')) || [])[0] || impostazioniBilancioDefault;
             impostazioniStatistiche = (JSON.parse(localStorage.getItem('impostazioniStatistiche')) || [])[0] || impostazioniStatisticheDefault;
@@ -3887,6 +3921,7 @@ function popolaAnniStatistiche() {
 
   const anniConDati = new Set();
   contratti.forEach(c => { if (c.dataContratto) anniConDati.add(new Date(c.dataContratto).getFullYear()); });
+  venditeEsterne.forEach(v => { if (v.dataVendita) anniConDati.add(new Date(v.dataVendita).getFullYear()); });
   if (impostazioniStatistiche.baselineAnno) anniConDati.add(impostazioniStatistiche.baselineAnno);
   const annoCorrente = new Date().getFullYear();
   anniConDati.add(annoCorrente);
@@ -3924,35 +3959,26 @@ function aggiornaStatistiche() {
   aggiornaGiacenzaAttuale(autoInStock);
   aggiornaMarchePiuVeloci();
   aggiornaMargineMigliore();
+  aggiornaTabellaVenditeEsterne();
 
-  // --------- Canali di Vendita (unica sezione ancora legata a un anno specifico) ---------
+  // --------- Sezioni legate a un anno specifico (Auto Vendute + Canali di Vendita) ---------
   popolaAnniStatistiche();
   const annoSel = document.getElementById('statisticheAnno').value; // 'tutti' oppure es. "2026"
   const mostraTutti = annoSel === 'tutti';
   const annoNum = parseInt(annoSel) || new Date().getFullYear();
 
-  // Baseline storica pre-gestionale: si somma solo quando si guarda l'anno a cui si riferisce
-  // (o "Tutti gli anni") — è un dato modificabile dall'utente nel pannello sotto, non più scritto
-  // a mano nel codice, quindi non sparisce più al cambio di anno
+  aggiornaAutoVendute(mostraTutti, annoNum);
+
+  // Baseline storica pre-gestionale: fissa, non più modificabile dall'interfaccia — si somma
+  // solo quando si guarda l'anno a cui si riferisce (o "Tutti gli anni")
   const baseline = impostazioniStatistiche || impostazioniStatisticheDefault;
   const includiBaseline = mostraTutti || annoNum === (baseline.baselineAnno || 0);
   aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline);
 
-  // --------- Ripopola il pannello baseline (mai mentre l'utente ci sta scrivendo dentro) ---------
-  const campiBaseline = {
-    baselineStatAnno: baseline.baselineAnno,
-    baselineStatFatturato: baseline.baselineFatturato,
-    baselineStatContratti: baseline.baselineContratti,
-    baselineStatCanaleConoscenze: (baseline.baselineCanali || {})['Conoscenze'] || 0,
-    baselineStatCanaleAutoscout: (baseline.baselineCanali || {})['Autoscout'] || 0,
-    baselineStatCanaleCip: (baseline.baselineCanali || {})['Cip'] || 0,
-    baselineStatCanaleIngresso: (baseline.baselineCanali || {})['Ingresso spontaneo'] || 0,
-    baselineStatCanaleSubito: (baseline.baselineCanali || {})['Subito'] || 0
-  };
-  Object.entries(campiBaseline).forEach(([idCampo, valore]) => {
-    const el = document.getElementById(idCampo);
-    if (el && document.activeElement !== el) el.value = valore;
-  });
+  const riepilogoEl = document.getElementById('baselineStatRiepilogo');
+  if (riepilogoEl) {
+    riepilogoEl.textContent = `€${(baseline.baselineFatturato || 0).toLocaleString('it-IT')} di fatturato e ${baseline.baselineContratti || 0} contratti nel ${baseline.baselineAnno || '-'}, accumulati prima di iniziare a usare il gestionale.`;
+  }
 }
 
 // --------- AUTO IN STOCK DA PIÙ TEMPO ---------
@@ -3999,6 +4025,18 @@ function aggiornaMarchePiuVeloci() {
     const giorni = giorniTra(dataAcquisto, contratto.dataContratto);
     if (giorni < 0) return; // dati incoerenti, escludi
     const marca = (a.marca || 'Sconosciuta').trim();
+    if (!perMarca[marca]) perMarca[marca] = { totaleGiorni: 0, conteggio: 0 };
+    perMarca[marca].totaleGiorni += giorni;
+    perMarca[marca].conteggio += 1;
+  });
+
+  // Vendite fuori gestionale: contano qui solo se è stata indicata anche la Data Acquisto
+  // (senza le due date non si può calcolare nessuna giacenza)
+  venditeEsterne.forEach(v => {
+    if (!v.dataAcquisto || !v.dataVendita) return;
+    const giorni = giorniTra(v.dataAcquisto, v.dataVendita);
+    if (giorni < 0) return;
+    const marca = (v.marca || 'Sconosciuta').trim();
     if (!perMarca[marca]) perMarca[marca] = { totaleGiorni: 0, conteggio: 0 };
     perMarca[marca].totaleGiorni += giorni;
     perMarca[marca].conteggio += 1;
@@ -4153,22 +4191,101 @@ function aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseli
   });
 }
 
-function aggiornaImpostazioniStatistiche() {
-  const baselineAnno = parseInt(document.getElementById('baselineStatAnno').value) || 0;
-  const baselineFatturato = parseFloat(document.getElementById('baselineStatFatturato').value) || 0;
-  const baselineContratti = parseInt(document.getElementById('baselineStatContratti').value) || 0;
-  const baselineCanali = {
-    'Conoscenze': parseInt(document.getElementById('baselineStatCanaleConoscenze').value) || 0,
-    'Autoscout': parseInt(document.getElementById('baselineStatCanaleAutoscout').value) || 0,
-    'Cip': parseInt(document.getElementById('baselineStatCanaleCip').value) || 0,
-    'Ingresso spontaneo': parseInt(document.getElementById('baselineStatCanaleIngresso').value) || 0,
-    'Subito': parseInt(document.getElementById('baselineStatCanaleSubito').value) || 0
-  };
+// --------- VENDITE FUORI GESTIONALE (solo ai fini statistici, mai per il Bilancio) ---------
+function mostraFormVenditaEsterna() {
+  document.getElementById('formAggiungiVenditaEsterna').style.display = 'block';
+  document.getElementById('dataVenditaEsterna').value = new Date().toISOString().split('T')[0];
+}
 
-  impostazioniStatistiche = { id: 'impostazioniStatistiche', baselineAnno, baselineFatturato, baselineContratti, baselineCanali };
-  salvaImpostazioniStatistiche();
+function chiudiFormVenditaEsterna() {
+  document.getElementById('formAggiungiVenditaEsterna').style.display = 'none';
+  document.getElementById('marcaVenditaEsterna').value = '';
+  document.getElementById('modelloVenditaEsterna').value = '';
+  document.getElementById('dataAcquistoVenditaEsterna').value = '';
+  document.getElementById('noteVenditaEsterna').value = '';
+}
+
+function aggiungiVenditaEsterna() {
+  const marca = document.getElementById('marcaVenditaEsterna').value.trim();
+  const modello = document.getElementById('modelloVenditaEsterna').value.trim();
+  const dataVendita = document.getElementById('dataVenditaEsterna').value;
+  const dataAcquisto = document.getElementById('dataAcquistoVenditaEsterna').value;
+  const note = document.getElementById('noteVenditaEsterna').value.trim();
+
+  if (!marca || !modello || !dataVendita) {
+    toast('Marca, modello e data vendita sono obbligatori!', 'danger');
+    return;
+  }
+
+  venditeEsterne.push({ id: Date.now(), marca, modello, dataVendita, dataAcquisto: dataAcquisto || null, note });
+  salvaVenditeEsterne();
+  chiudiFormVenditaEsterna();
+  aggiornaTabellaVenditeEsterne();
   aggiornaStatistiche();
-  toast('✅ Storico salvato!', 'success');
+  toast('✅ Vendita registrata (solo ai fini statistici, non entra nel Bilancio)!', 'success');
+}
+
+function eliminaVenditaEsterna(id) {
+  if (confirm('Eliminare questa vendita registrata fuori gestionale?')) {
+    venditeEsterne = venditeEsterne.filter(v => v.id != id);
+    salvaVenditeEsterne();
+    aggiornaTabellaVenditeEsterne();
+    aggiornaStatistiche();
+  }
+}
+
+function aggiornaTabellaVenditeEsterne() {
+  const tbody = document.getElementById('tabellaVenditeEsterne');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (venditeEsterne.length === 0) {
+    const row = tbody.insertRow();
+    row.className = 'empty-state';
+    row.innerHTML = '<td colspan="5">Nessuna vendita fuori gestionale registrata.</td>';
+    return;
+  }
+
+  const ordinate = [...venditeEsterne].sort((a, b) => String(b.dataVendita || '').localeCompare(String(a.dataVendita || '')));
+  ordinate.forEach(v => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${v.marca} ${v.modello}</td>
+      <td>${v.dataVendita ? new Date(v.dataVendita).toLocaleDateString('it-IT') : '-'}</td>
+      <td>${v.dataAcquisto ? new Date(v.dataAcquisto).toLocaleDateString('it-IT') : '-'}</td>
+      <td>${v.note || '-'}</td>
+      <td class="actions"><button class="btn btn-danger" onclick="eliminaVenditaEsterna(${v.id})">🗑️ Elimina</button></td>
+    `;
+  });
+}
+
+// --------- AUTO VENDUTE NELL'ANNO E AL MESE (gestionale + fuori gestionale) ---------
+function aggiornaAutoVendute(mostraTutti, annoNum) {
+  const el = document.getElementById('autoVenduteAnno');
+  if (!el) return;
+
+  const vendGestionale = contratti.filter(c => c.dataContratto && (mostraTutti || new Date(c.dataContratto).getFullYear() === annoNum));
+  const vendEsterne = venditeEsterne.filter(v => v.dataVendita && (mostraTutti || new Date(v.dataVendita).getFullYear() === annoNum));
+
+  el.textContent = vendGestionale.length + vendEsterne.length;
+  document.getElementById('autoVenduteAnnoLabel').textContent = mostraTutti ? 'Auto vendute in totale' : `Auto vendute nel ${annoNum}`;
+
+  const wrap = document.getElementById('autoVenduteMeseWrap');
+  const tbody = document.getElementById('tabellaAutoVenduteMese');
+  if (!wrap || !tbody) return;
+
+  if (mostraTutti) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+
+  const mesiNomi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const conteggiMese = new Array(12).fill(0);
+  vendGestionale.forEach(c => conteggiMese[new Date(c.dataContratto).getMonth()]++);
+  vendEsterne.forEach(v => conteggiMese[new Date(v.dataVendita).getMonth()]++);
+
+  tbody.innerHTML = mesiNomi.map((nome, i) => `<tr><td>${nome}</td><td>${conteggiMese[i]}</td></tr>`).join('');
 }
 
         // CONTRATTO
@@ -4675,6 +4792,10 @@ function aggiornaImpostazioniStatistiche() {
 
         function salvaEntrateManuali() {
             localStorage.setItem('entrateManuali', JSON.stringify(entrateManuali));
+        }
+
+        function salvaVenditeEsterne() {
+            localStorage.setItem('venditeEsterne', JSON.stringify(venditeEsterne));
         }
 
         function salvaImpostazioniBilancio() {
@@ -5387,7 +5508,7 @@ function aggiornaImpostazioniStatistiche() {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","speseFisseRicorrenti","impostazioniBilancio","impostazioniStatistiche"];
+  const KEYS = ["clienti","auto","contratti","preventivi","speseGenerali","entrateManuali","speseFisseRicorrenti","impostazioniBilancio","impostazioniStatistiche","venditeEsterne"];
   const SESSIONE_MAX_MS = 8 * 60 * 60 * 1000; // 8 ore, come prima
 
   // ---- util per evitare reload inutili ----
