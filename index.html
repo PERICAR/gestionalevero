@@ -1511,6 +1511,7 @@ select#filtroStato {
                         <p id="autoVenduteAnnoLabel">Auto vendute</p>
                     </div>
                 </div>
+                <p id="autoVenduteBaselineNota" style="color: var(--muted); font-size: 13px; margin-top: -8px; margin-bottom: 12px;"></p>
                 <div id="autoVenduteMeseWrap" class="table-scroll">
                 <table class="data-table">
                     <thead><tr><th>Mese</th><th>Auto vendute</th></tr></thead>
@@ -3978,12 +3979,12 @@ function aggiornaStatistiche() {
   const mostraTutti = annoSel === 'tutti';
   const annoNum = parseInt(annoSel) || new Date().getFullYear();
 
-  aggiornaAutoVendute(mostraTutti, annoNum);
-
   // Baseline storica pre-gestionale: fissa, non più modificabile dall'interfaccia — si somma
   // solo quando si guarda l'anno a cui si riferisce (o "Tutti gli anni")
   const baseline = impostazioniStatistiche || impostazioniStatisticheDefault;
   const includiBaseline = mostraTutti || annoNum === (baseline.baselineAnno || 0);
+
+  aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline);
   aggiornaStatisticheCanali(mostraTutti, annoNum, includiBaseline, baseline);
 
   const riepilogoEl = document.getElementById('baselineStatRiepilogo');
@@ -4282,15 +4283,23 @@ function aggiornaTabellaVenditeEsterne() {
 }
 
 // --------- AUTO VENDUTE NELL'ANNO E AL MESE (gestionale + fuori gestionale) ---------
-function aggiornaAutoVendute(mostraTutti, annoNum) {
+function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
   const el = document.getElementById('autoVenduteAnno');
   if (!el) return;
 
   const vendGestionale = contratti.filter(c => c.dataContratto && (mostraTutti || new Date(c.dataContratto).getFullYear() === annoNum));
   const vendEsterne = venditeEsterne.filter(v => v.dataVendita && (mostraTutti || new Date(v.dataVendita).getFullYear() === annoNum));
+  const contrattiStorici = includiBaseline ? (baseline.baselineContratti || 0) : 0;
 
-  el.textContent = vendGestionale.length + vendEsterne.length;
+  el.textContent = vendGestionale.length + vendEsterne.length + contrattiStorici;
   document.getElementById('autoVenduteAnnoLabel').textContent = mostraTutti ? 'Auto vendute in totale' : `Auto vendute nel ${annoNum}`;
+
+  const notaEl = document.getElementById('autoVenduteBaselineNota');
+  if (notaEl) {
+    notaEl.textContent = contrattiStorici > 0
+      ? `Di cui ${contrattiStorici} contratti storici pre-gestionale (${baseline.baselineAnno}) — non compaiono nel dettaglio mensile qui sotto perché non si sa in che mese siano avvenuti.`
+      : '';
+  }
 
   const wrap = document.getElementById('autoVenduteMeseWrap');
   const tbody = document.getElementById('tabellaAutoVenduteMese');
