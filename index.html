@@ -991,6 +991,42 @@ select#filtroStato {
                     <div id="listaExtraPreventivo" style="margin-top: 15px;"></div>
                 </div>
 
+                <h4>Auto in Permuta (Opzionale)</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Marca Permuta</label>
+                        <input type="text" id="marcaPermutaPreventivo" placeholder="Fiat">
+                    </div>
+                    <div class="form-group">
+                        <label>Modello Permuta</label>
+                        <input type="text" id="modelloPermutaPreventivo" placeholder="Punto">
+                    </div>
+                    <div class="form-group">
+                        <label>Targa Permuta</label>
+                        <input type="text" id="targaPermutaPreventivo" placeholder="EF456GH">
+                    </div>
+                    <div class="form-group">
+                        <label>Telaio Permuta</label>
+                        <input type="text" id="telaioPermutaPreventivo" placeholder="ZFA123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Immatricolazione Permuta</label>
+                        <input type="date" id="dataImmatricolazionePermutaPreventivo">
+                    </div>
+                    <div class="form-group">
+                        <label>Km Permuta</label>
+                        <input type="number" id="chilometriPermutaPreventivo" placeholder="80000">
+                    </div>
+                    <div class="form-group">
+                        <label>Versione Permuta</label>
+                        <input type="text" id="versionePermutaPreventivo" placeholder="1.2 Benzina">
+                    </div>
+                    <div class="form-group">
+                        <label>Valutazione Permuta (€)</label>
+                        <input type="number" id="valutazionePermutaPreventivo" placeholder="8000" onchange="aggiornaRiepilogoPreventivo()">
+                    </div>
+                </div>
+
                 <h4>📊 Riepilogo (si aggiorna in automatico)</h4>
                 <div id="riepilogoPreventivoLive" style="margin-bottom: 20px;"></div>
 
@@ -2421,6 +2457,14 @@ select#filtroStato {
             document.getElementById('descrizioneExtraPreventivo').value = '';
             document.getElementById('prezzoExtraPreventivo').value = '';
             document.getElementById('notePreventivo').value = '';
+            document.getElementById('marcaPermutaPreventivo').value = '';
+            document.getElementById('modelloPermutaPreventivo').value = '';
+            document.getElementById('targaPermutaPreventivo').value = '';
+            document.getElementById('telaioPermutaPreventivo').value = '';
+            document.getElementById('dataImmatricolazionePermutaPreventivo').value = '';
+            document.getElementById('chilometriPermutaPreventivo').value = '';
+            document.getElementById('versionePermutaPreventivo').value = '';
+            document.getElementById('valutazionePermutaPreventivo').value = '';
             extraItemsPreventivo = [];
             aggiornaListaExtraPreventivo();
             preventivoInModifica = null;
@@ -2501,6 +2545,7 @@ select#filtroStato {
             const sconto = parseFloat(document.getElementById('scontoPreventivo').value) || 0;
             const prezzoFinale = parseFloat(document.getElementById('prezzoFinalePreventivo').value) || 0;
             const totaleExtra = extraItemsPreventivo.reduce((s, i) => s + i.prezzo, 0);
+            const valutazionePermuta = parseFloat(document.getElementById('valutazionePermutaPreventivo').value) || 0;
 
             if (!prezzoBase && !prezzoFinale) {
                 container.innerHTML = '<p style="color:#666; font-style:italic; margin:0;">Seleziona un\'auto per vedere il riepilogo</p>';
@@ -2508,6 +2553,7 @@ select#filtroStato {
             }
 
             const totale = prezzoFinale + totaleExtra;
+            const totaleNetto = totale - valutazionePermuta;
 
             let righe = rigaRiepilogo('PREZZO LISTINO VEICOLO', prezzoBase, { grassetto: true });
             if (sconto > 0) {
@@ -2528,6 +2574,17 @@ select#filtroStato {
                         </tr>
                     </table>
                 </div>
+                ${valutazionePermuta > 0 ? `
+                <div style="margin-top: 10px; border: 2px solid #28a745; border-radius: 10px; padding: 12px 14px; background: #f0fdf4;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold; color:#166534;">🔄 Valore ritiro permuta</span>
+                        <span style="font-weight:bold; color:#166534; font-size:1.05rem;">-€${valutazionePermuta.toLocaleString()}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0;">
+                        <span style="font-weight:bold;">NETTO DA VERSARE</span>
+                        <span style="font-weight:bold; font-size:1.1rem; color:#166534;">€${totaleNetto.toLocaleString()}</span>
+                    </div>
+                </div>` : ''}
             `;
         }
 
@@ -2621,6 +2678,22 @@ select#filtroStato {
             const cliente = clienti.find(c => c.id == clienteId);
             const autoSelezionata = auto.find(a => a.id == autoId);
 
+            // La permuta è opzionale: si registra (e quindi compare stampata) solo se marca,
+            // modello e valutazione sono stati effettivamente compilati
+            const marcaPermuta = document.getElementById('marcaPermutaPreventivo').value.trim();
+            const modelloPermuta = document.getElementById('modelloPermutaPreventivo').value.trim();
+            const valutazionePermuta = parseFloat(document.getElementById('valutazionePermutaPreventivo').value) || 0;
+            const permuta = (marcaPermuta && modelloPermuta && valutazionePermuta > 0) ? {
+                marca: marcaPermuta,
+                modello: modelloPermuta,
+                targa: document.getElementById('targaPermutaPreventivo').value.trim(),
+                telaio: document.getElementById('telaioPermutaPreventivo').value.trim(),
+                dataImmatricolazione: document.getElementById('dataImmatricolazionePermutaPreventivo').value,
+                chilometri: parseInt(document.getElementById('chilometriPermutaPreventivo').value) || 0,
+                versione: document.getElementById('versionePermutaPreventivo').value.trim(),
+                valutazione: valutazionePermuta
+            } : null;
+
             const preventivo = {
                 id: preventivoInModifica || Date.now(),
                 clienteId,
@@ -2630,6 +2703,7 @@ select#filtroStato {
                 scontoApplicato: parseFloat(document.getElementById('scontoPreventivo').value) || 0,
                 prezzoFinaleAuto: parseFloat(document.getElementById('prezzoFinalePreventivo').value) || autoSelezionata.prezzoVendita,
                 extraItems: [...extraItemsPreventivo],
+                permuta,
                 note,
                 stato: 'In Attesa',
                 cliente,
@@ -2719,6 +2793,10 @@ select#filtroStato {
             const dataScadenza = new Date(preventivo.dataPreventivo);
             dataScadenza.setDate(dataScadenza.getDate() + (preventivo.validitaGiorni || 7));
 
+            const permuta = preventivo.permuta;
+            const haPermuta = !!(permuta && permuta.valutazione > 0);
+            const totaleNetto = prezzoTotale - (haPermuta ? permuta.valutazione : 0);
+
             const html = `
                 <div class="contract-preview">
                     <div style="text-align:center; margin-bottom: 16px;">
@@ -2791,6 +2869,18 @@ select#filtroStato {
                         </tr>
                     </table>
 
+                    ${haPermuta ? `
+                    <div style="margin-top:12px; border: 2px solid #28a745; border-radius: 8px; padding: 10px 12px; background: #f0fdf4;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                            <span style="font-weight:bold; color:#166534;">🔄 Valore ritiro permuta (${permuta.marca} ${permuta.modello}${permuta.targa ? ' - ' + permuta.targa : ''})</span>
+                            <span style="font-weight:bold; color:#166534;">-€${permuta.valutazione.toLocaleString()}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #bbf7d0; font-size:0.85rem;">
+                            <span style="font-weight:bold;">NETTO DA VERSARE</span>
+                            <span style="font-weight:bold; color:#166534;">€${totaleNetto.toLocaleString()}</span>
+                        </div>
+                    </div>` : ''}
+
                     ${preventivo.note ? `<div style="margin-top:12px; padding:10px; background:#f8f9fa; border-radius:6px; font-size:0.75rem;"><strong>Note:</strong> ${preventivo.note}</div>` : ''}
 
                     <p style="margin-top:14px; font-size:0.65rem; color:#666;">Documento privo di valore contrattuale. Prezzi e disponibilità salvo conferma al momento dell'ordine.</p>
@@ -2848,6 +2938,16 @@ select#filtroStato {
             document.getElementById('prezzoFinalePreventivo').value = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : '');
             document.getElementById('notePreventivo').value = preventivo.note || '';
 
+            const permutaEsistente = preventivo.permuta || {};
+            document.getElementById('marcaPermutaPreventivo').value = permutaEsistente.marca || '';
+            document.getElementById('modelloPermutaPreventivo').value = permutaEsistente.modello || '';
+            document.getElementById('targaPermutaPreventivo').value = permutaEsistente.targa || '';
+            document.getElementById('telaioPermutaPreventivo').value = permutaEsistente.telaio || '';
+            document.getElementById('dataImmatricolazionePermutaPreventivo').value = permutaEsistente.dataImmatricolazione || '';
+            document.getElementById('chilometriPermutaPreventivo').value = permutaEsistente.chilometri || '';
+            document.getElementById('versionePermutaPreventivo').value = permutaEsistente.versione || '';
+            document.getElementById('valutazionePermutaPreventivo').value = permutaEsistente.valutazione || '';
+
             extraItemsPreventivo = [...(preventivo.extraItems || [])];
             aggiornaListaExtraPreventivo();
 
@@ -2889,7 +2989,7 @@ select#filtroStato {
                 autoId: preventivo.autoId,
                 dataContratto: new Date().toISOString().split('T')[0],
                 luogo: 'Asti',
-                permuta: { marca: '', modello: '', targa: '', telaio: '', dataImmatricolazione: '', chilometri: 0, versione: '', valutazione: 0 },
+                permuta: preventivo.permuta || { marca: '', modello: '', targa: '', telaio: '', dataImmatricolazione: '', chilometri: 0, versione: '', valutazione: 0 },
                 permutaAutoId: null,
                 depositoCauzionale: 0,
                 speseVoltura: 0,
