@@ -2518,48 +2518,41 @@ select#filtroStato {
 
             const prezzoBase = parseFloat(document.getElementById('prezzoBasePreventivo').value) || 0;
             const sconto = parseFloat(document.getElementById('scontoPreventivo').value) || 0;
-            const prezzoFinale = parseFloat(document.getElementById('prezzoFinalePreventivo').value) || 0;
             const totaleExtra = extraItemsPreventivo.reduce((s, i) => s + i.prezzo, 0);
             const valutazionePermuta = parseFloat(document.getElementById('valutazionePermutaPreventivo').value) || 0;
 
-            if (!prezzoBase && !prezzoFinale) {
+            if (!prezzoBase) {
                 container.innerHTML = '<p style="color:#666; font-style:italic; margin:0;">Seleziona un\'auto per vedere il riepilogo</p>';
                 return;
             }
 
-            const totale = prezzoFinale + totaleExtra;
-            const totaleNetto = totale - valutazionePermuta;
+            // Prima si sommano macchina + spese (TOTALE PREVENTIVO), POI si sottraggono sconto e
+            // permuta — solo se presenti — per arrivare al TOTALE A SALDO, non il contrario
+            const totalePreventivo = prezzoBase + totaleExtra;
+            const totaleASaldo = totalePreventivo - sconto - valutazionePermuta;
 
             let righe = rigaRiepilogo('PREZZO LISTINO VEICOLO', prezzoBase, { grassetto: true });
-            if (sconto > 0) {
-                righe += rigaRiepilogo('Sconto applicato', -sconto);
-                righe += rigaRiepilogo('PREZZO SCONTATO VEICOLO', prezzoFinale, { grassetto: true, sfondo: '#f0f8ff', colore: '#111827' });
-            }
             extraItemsPreventivo.forEach(item => {
                 righe += rigaRiepilogo(item.descrizione, item.prezzo, { colore: '#111827' });
             });
+            righe += rigaRiepilogo('TOTALE PREVENTIVO', totalePreventivo, { grassetto: true, sfondo: '#f0f8ff', colore: '#111827' });
+            if (sconto > 0) {
+                righe += rigaRiepilogo('Sconto applicato', -sconto);
+            }
+            if (valutazionePermuta > 0) {
+                righe += rigaRiepilogo('Valore ritiro permuta', -valutazionePermuta, { colore: '#28a745', grassetto: true });
+            }
 
             container.innerHTML = `
                 <div style="border: 2px solid var(--brand); border-radius: 10px; padding: 4px 14px; background: #fff;">
                     <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
                         ${righe}
                         <tr style="border-top: 2px solid var(--brand); background:#f8f9fa;">
-                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE PREVENTIVATO</td>
-                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color: var(--brand);">€${totale.toLocaleString()}</td>
+                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE A SALDO</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color: var(--brand);">€${totaleASaldo.toLocaleString()}</td>
                         </tr>
                     </table>
                 </div>
-                ${valutazionePermuta > 0 ? `
-                <div style="margin-top: 10px; border: 2px solid #28a745; border-radius: 10px; padding: 12px 14px; background: #f0fdf4;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:bold; color:#166534;">🔄 Valore ritiro permuta</span>
-                        <span style="font-weight:bold; color:#166534; font-size:1.05rem;">-€${valutazionePermuta.toLocaleString()}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid #bbf7d0;">
-                        <span style="font-weight:bold;">NETTO DA VERSARE</span>
-                        <span style="font-weight:bold; font-size:1.1rem; color:#166534;">€${totaleNetto.toLocaleString()}</span>
-                    </div>
-                </div>` : ''}
             `;
         }
 
@@ -2718,7 +2711,8 @@ select#filtroStato {
             preventiviDaMostrare.forEach(preventivo => {
                 const totaleExtra = (preventivo.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
                 const prezzoBase = preventivo.prezzoFinaleAuto || (preventivo.auto ? preventivo.auto.prezzoVendita : 0);
-                const prezzoTotale = prezzoBase + totaleExtra;
+                const valutazionePermutaLista = (preventivo.permuta && preventivo.permuta.valutazione) || 0;
+                const prezzoTotale = prezzoBase + totaleExtra - valutazionePermutaLista;
 
                 const statoColor = {
                     'In Attesa': '#F59E0B',
@@ -2762,15 +2756,16 @@ select#filtroStato {
             const totaleExtra = (preventivo.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
             const prezzoBaseAuto = preventivo.auto.prezzoVendita;
             const scontoApplicato = preventivo.scontoApplicato || 0;
-            const prezzoFinaleAuto = preventivo.prezzoFinaleAuto || prezzoBaseAuto;
-            const prezzoTotale = prezzoFinaleAuto + totaleExtra;
+            const permuta = preventivo.permuta;
+            const haPermuta = !!(permuta && permuta.valutazione > 0);
+
+            // Prima si sommano macchina + spese (TOTALE PREVENTIVO), POI si sottraggono sconto e
+            // permuta — solo se presenti — per arrivare al TOTALE A SALDO
+            const totalePreventivo = prezzoBaseAuto + totaleExtra;
+            const totaleASaldo = totalePreventivo - scontoApplicato - (haPermuta ? permuta.valutazione : 0);
 
             const dataScadenza = new Date(preventivo.dataPreventivo);
             dataScadenza.setDate(dataScadenza.getDate() + (preventivo.validitaGiorni || 7));
-
-            const permuta = preventivo.permuta;
-            const haPermuta = !!(permuta && permuta.valutazione > 0);
-            const totaleNetto = prezzoTotale - (haPermuta ? permuta.valutazione : 0);
 
             const html = `
                 <div class="contract-preview">
@@ -2824,37 +2819,30 @@ select#filtroStato {
                             <td style="padding:8px; font-weight:bold;">PREZZO VEICOLO</td>
                             <td style="padding:8px; text-align:right; font-weight:bold;">€${prezzoBaseAuto.toLocaleString()}</td>
                         </tr>
-                        ${scontoApplicato > 0 ? `
-                        <tr style="border-bottom:1px solid #ddd;">
-                            <td style="padding:8px; color:#dc3545;">Sconto applicato</td>
-                            <td style="padding:8px; text-align:right; color:#dc3545;">-€${scontoApplicato.toLocaleString()}</td>
-                        </tr>
-                        <tr style="border-bottom:1px solid #ddd; background:#f0f8ff;">
-                            <td style="padding:8px; font-weight:bold;">PREZZO SCONTATO</td>
-                            <td style="padding:8px; text-align:right; font-weight:bold;">€${prezzoFinaleAuto.toLocaleString()}</td>
-                        </tr>` : ''}
                         ${(preventivo.extraItems || []).map(item => `
                         <tr style="border-bottom:1px solid #ddd;">
                             <td style="padding:8px;">${item.descrizione}</td>
                             <td style="padding:8px; text-align:right; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</td>
                         </tr>`).join('')}
+                        <tr style="border-bottom:1px solid #ddd; background:#f0f8ff;">
+                            <td style="padding:8px; font-weight:bold;">TOTALE PREVENTIVO</td>
+                            <td style="padding:8px; text-align:right; font-weight:bold;">€${totalePreventivo.toLocaleString()}</td>
+                        </tr>
+                        ${scontoApplicato > 0 ? `
+                        <tr style="border-bottom:1px solid #ddd;">
+                            <td style="padding:8px; color:#dc3545;">Sconto applicato</td>
+                            <td style="padding:8px; text-align:right; color:#dc3545;">-€${scontoApplicato.toLocaleString()}</td>
+                        </tr>` : ''}
+                        ${haPermuta ? `
+                        <tr style="border-bottom:1px solid #ddd;">
+                            <td style="padding:8px; color:#28a745; font-weight:bold;">🔄 Valore ritiro permuta (${permuta.marca} ${permuta.modello})</td>
+                            <td style="padding:8px; text-align:right; color:#28a745; font-weight:bold;">-€${permuta.valutazione.toLocaleString()}</td>
+                        </tr>` : ''}
                         <tr style="border-top:2px solid #E30613; background:#f8f9fa;">
-                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE PREVENTIVATO</td>
-                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color:#E30613;">€${prezzoTotale.toLocaleString()}</td>
+                            <td style="padding:10px; font-weight:bold; font-size:0.95rem;">TOTALE A SALDO</td>
+                            <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color:#E30613;">€${totaleASaldo.toLocaleString()}</td>
                         </tr>
                     </table>
-
-                    ${haPermuta ? `
-                    <div style="margin-top:12px; border: 2px solid #28a745; border-radius: 8px; padding: 10px 12px; background: #f0fdf4;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
-                            <span style="font-weight:bold; color:#166534;">🔄 Valore ritiro permuta (${permuta.marca} ${permuta.modello}${permuta.targa ? ' - ' + permuta.targa : ''})</span>
-                            <span style="font-weight:bold; color:#166534;">-€${permuta.valutazione.toLocaleString()}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #bbf7d0; font-size:0.85rem;">
-                            <span style="font-weight:bold;">NETTO DA VERSARE</span>
-                            <span style="font-weight:bold; color:#166534;">€${totaleNetto.toLocaleString()}</span>
-                        </div>
-                    </div>` : ''}
 
                     ${preventivo.note ? `<div style="margin-top:12px; padding:10px; background:#f8f9fa; border-radius:6px; font-size:0.75rem;"><strong>Note:</strong> ${preventivo.note}</div>` : ''}
 
