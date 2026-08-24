@@ -1002,26 +1002,6 @@ select#filtroStato {
                         <input type="text" id="modelloPermutaPreventivo" placeholder="Punto">
                     </div>
                     <div class="form-group">
-                        <label>Targa Permuta</label>
-                        <input type="text" id="targaPermutaPreventivo" placeholder="EF456GH">
-                    </div>
-                    <div class="form-group">
-                        <label>Telaio Permuta</label>
-                        <input type="text" id="telaioPermutaPreventivo" placeholder="ZFA123456789">
-                    </div>
-                    <div class="form-group">
-                        <label>Data Immatricolazione Permuta</label>
-                        <input type="date" id="dataImmatricolazionePermutaPreventivo">
-                    </div>
-                    <div class="form-group">
-                        <label>Km Permuta</label>
-                        <input type="number" id="chilometriPermutaPreventivo" placeholder="80000">
-                    </div>
-                    <div class="form-group">
-                        <label>Versione Permuta</label>
-                        <input type="text" id="versionePermutaPreventivo" placeholder="1.2 Benzina">
-                    </div>
-                    <div class="form-group">
                         <label>Valutazione Permuta (€)</label>
                         <input type="number" id="valutazionePermutaPreventivo" placeholder="8000" onchange="aggiornaRiepilogoPreventivo()">
                     </div>
@@ -2459,11 +2439,6 @@ select#filtroStato {
             document.getElementById('notePreventivo').value = '';
             document.getElementById('marcaPermutaPreventivo').value = '';
             document.getElementById('modelloPermutaPreventivo').value = '';
-            document.getElementById('targaPermutaPreventivo').value = '';
-            document.getElementById('telaioPermutaPreventivo').value = '';
-            document.getElementById('dataImmatricolazionePermutaPreventivo').value = '';
-            document.getElementById('chilometriPermutaPreventivo').value = '';
-            document.getElementById('versionePermutaPreventivo').value = '';
             document.getElementById('valutazionePermutaPreventivo').value = '';
             extraItemsPreventivo = [];
             aggiornaListaExtraPreventivo();
@@ -2686,11 +2661,11 @@ select#filtroStato {
             const permuta = (marcaPermuta && modelloPermuta && valutazionePermuta > 0) ? {
                 marca: marcaPermuta,
                 modello: modelloPermuta,
-                targa: document.getElementById('targaPermutaPreventivo').value.trim(),
-                telaio: document.getElementById('telaioPermutaPreventivo').value.trim(),
-                dataImmatricolazione: document.getElementById('dataImmatricolazionePermutaPreventivo').value,
-                chilometri: parseInt(document.getElementById('chilometriPermutaPreventivo').value) || 0,
-                versione: document.getElementById('versionePermutaPreventivo').value.trim(),
+                targa: '',
+                telaio: '',
+                dataImmatricolazione: '',
+                chilometri: 0,
+                versione: '',
                 valutazione: valutazionePermuta
             } : null;
 
@@ -2941,11 +2916,6 @@ select#filtroStato {
             const permutaEsistente = preventivo.permuta || {};
             document.getElementById('marcaPermutaPreventivo').value = permutaEsistente.marca || '';
             document.getElementById('modelloPermutaPreventivo').value = permutaEsistente.modello || '';
-            document.getElementById('targaPermutaPreventivo').value = permutaEsistente.targa || '';
-            document.getElementById('telaioPermutaPreventivo').value = permutaEsistente.telaio || '';
-            document.getElementById('dataImmatricolazionePermutaPreventivo').value = permutaEsistente.dataImmatricolazione || '';
-            document.getElementById('chilometriPermutaPreventivo').value = permutaEsistente.chilometri || '';
-            document.getElementById('versionePermutaPreventivo').value = permutaEsistente.versione || '';
             document.getElementById('valutazionePermutaPreventivo').value = permutaEsistente.valutazione || '';
 
             extraItemsPreventivo = [...(preventivo.extraItems || [])];
