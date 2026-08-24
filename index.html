@@ -1904,6 +1904,7 @@ select#filtroStato {
         let costiAutoItems = []; // Array per costi aggiuntivi auto
         let utenteCorrente = null;
         let preventivoInModifica = null; // id del preventivo in fase di modifica (null se nuovo)
+        let preventivoDaConvertire = null; // id del preventivo che ha precompilato il form Contratto, in attesa che l'utente lo completi e salvi
         let autoInVisualizzazione = null; // id dell'auto aperta nel modal "Visualizza"
         let sortState = {}; // stato ordinamento corrente per tabella {clienti:{campo,dir}, ...}
 
@@ -2369,10 +2370,21 @@ select#filtroStato {
             }
 
             contratti.push(contratto);
-            
+
             // Aggiorna stato auto venduta
             autoVenduta.stato = 'Venduta';
-            
+
+            // Se il form era stato precompilato da "Converti" su un preventivo, ora che il
+            // contratto è stato davvero salvato lo si segna come Convertito
+            if (preventivoDaConvertire) {
+                const preventivoOrigine = preventivi.find(p => p.id == preventivoDaConvertire);
+                if (preventivoOrigine) {
+                    preventivoOrigine.stato = 'Convertito';
+                    salvaPreventivi();
+                }
+                preventivoDaConvertire = null;
+            }
+
             salvaContratti();
             salvaAuto();
             aggiornaTabelle();
@@ -2414,6 +2426,7 @@ select#filtroStato {
             document.getElementById('prezzoExtra').value = '';
             extraItems = [];
             aggiornaListaExtra();
+            preventivoDaConvertire = null;
         }
 
         // GESTIONE FORM PREVENTIVI
@@ -2939,39 +2952,36 @@ select#filtroStato {
                 return;
             }
 
-            if (!confirm('Confermi la conversione del preventivo in contratto? L\'auto verrà segnata come venduta.')) return;
-
-            const contratto = {
-                id: Date.now(),
-                clienteId: preventivo.clienteId,
-                autoId: preventivo.autoId,
-                dataContratto: new Date().toISOString().split('T')[0],
-                luogo: 'Asti',
-                permuta: preventivo.permuta || { marca: '', modello: '', targa: '', telaio: '', dataImmatricolazione: '', chilometri: 0, versione: '', valutazione: 0 },
-                permutaAutoId: null,
-                depositoCauzionale: 0,
-                speseVoltura: 0,
-                canaleVendita: 'Autoscout',
-                scontoApplicato: preventivo.scontoApplicato || 0,
-                prezzoFinaleAuto: preventivo.prezzoFinaleAuto || autoAttuale.prezzoVendita,
-                extraItems: [...(preventivo.extraItems || [])],
-                cliente: preventivo.cliente,
-                auto: autoAttuale
-            };
-
-            contratti.push(contratto);
-            autoAttuale.stato = 'Venduta';
-            preventivo.stato = 'Convertito';
-
-            salvaContratti();
-            salvaAuto();
-            salvaPreventivi();
-            aggiornaTabelle();
-            aggiornaStatistiche();
+            // Non crea subito il contratto: precompila il form Contratto con auto, prezzo,
+            // sconto, extra e permuta del preventivo, ma lascia il Cliente vuoto — i preventivi
+            // si fanno spesso a proprio nome, quindi qui si sceglie/crea prima l'anagrafica del
+            // vero cliente, poi si completa e si clicca "Crea Contratto" per salvare davvero.
+            // Il preventivo diventa "Convertito" solo a quel punto (vedi creaContratto()).
             aggiornaSelectAuto();
+            mostraFormContratto();
 
-            toast('✅ Preventivo convertito in contratto! Completa eventuali dettagli (permuta, deposito, canale) modificando il contratto.', 'success');
-            mostraContratto(contratto);
+            document.getElementById('clienteContratto').value = '';
+            document.getElementById('autoContratto').value = preventivo.autoId;
+            document.getElementById('dataContratto').value = new Date().toISOString().split('T')[0];
+            document.getElementById('luogoContratto').value = 'Asti';
+            document.getElementById('prezzoBaseAuto').value = autoAttuale.prezzoVendita;
+            document.getElementById('scontoApplicato').value = preventivo.scontoApplicato || 0;
+            document.getElementById('prezzoFinaleAuto').value = preventivo.prezzoFinaleAuto || autoAttuale.prezzoVendita;
+
+            const permutaPreventivo = preventivo.permuta;
+            document.getElementById('marcaPermuta').value = permutaPreventivo ? permutaPreventivo.marca : '';
+            document.getElementById('modelloPermuta').value = permutaPreventivo ? permutaPreventivo.modello : '';
+            document.getElementById('valutazionePermuta').value = permutaPreventivo ? permutaPreventivo.valutazione : '';
+
+            extraItems = [...(preventivo.extraItems || [])];
+            aggiornaListaExtra();
+
+            preventivoDaConvertire = preventivo.id;
+
+            showTab('contratti');
+            document.querySelector('[onclick="showTab(\'contratti\')"]').click();
+
+            toast('Preventivo caricato nel form Contratto: scegli o crea il cliente giusto, controlla i dati e clicca "Crea Contratto" per salvare.', 'warning');
         }
 
         // GESTIONE COSTI AUTO
