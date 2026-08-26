@@ -785,7 +785,7 @@ select#filtroStato {
                         <input type="date" id="dataImmatricolazione">
                     </div>
                     <div class="form-group">
-                        <label>Data Acquisto (quando l'hai pagata tu)</label>
+                        <label>Data Acquisto</label>
                         <input type="date" id="dataAcquisto">
                     </div>
                     <div class="form-group">
@@ -905,6 +905,7 @@ select#filtroStato {
                         <th class="sortable" onclick="ordinaTabella('auto','chilometri',this)">Km<span class="sort-arrow">⇅</span></th>
                         <th class="sortable" onclick="ordinaTabella('auto','tipo',this)">Tipo<span class="sort-arrow">⇅</span></th>
                         <th class="sortable" onclick="ordinaTabella('auto','stato',this)">Stato<span class="sort-arrow">⇅</span></th>
+                        <th>Giacenza</th>
                         <th class="sortable" onclick="ordinaTabella('auto','prezzoVendita',this)">Prezzo Vendita<span class="sort-arrow">⇅</span></th>
                         <th>Margine</th>
                         <th>Azioni</th>
@@ -3134,7 +3135,7 @@ select#filtroStato {
                     {nome: 'targa', label: 'Targa', tipo: 'text'},
                     {nome: 'telaio', label: 'Telaio', tipo: 'text'},
                     {nome: 'dataImmatricolazione', label: 'Data Immatricolazione', tipo: 'date'},
-                    {nome: 'dataAcquisto', label: 'Data Acquisto (quando l\'hai pagata tu)', tipo: 'date'},
+                    {nome: 'dataAcquisto', label: 'Data Acquisto', tipo: 'date'},
                     {nome: 'chilometri', label: 'Chilometri', tipo: 'number'},
                     {nome: 'prezzoAcquisto', label: 'Prezzo Acquisto (€)', tipo: 'number'},
                     {nome: 'prezzoVendita', label: 'Prezzo Vendita (€)', tipo: 'number'},
@@ -3421,7 +3422,7 @@ select#filtroStato {
             if (autoFiltrate.length === 0) {
                 const row = tbody.insertRow();
                 row.className = 'empty-state';
-                row.innerHTML = '<td colspan="9">Nessuna auto da mostrare per questo filtro.</td>';
+                row.innerHTML = '<td colspan="10">Nessuna auto da mostrare per questo filtro.</td>';
                 return;
             }
 
@@ -3438,9 +3439,22 @@ select#filtroStato {
                 const row = tbody.insertRow();
                 row.setAttribute('data-id', autoObj.id);
 
-                const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' : 
+                const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' :
                                  autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
-                
+
+                // Giorni di giacenza: dalla data acquisto (stimata se mancante) a oggi se l'auto è
+                // ancora in stock, oppure fino alla data di vendita se è già stata venduta
+                const dataAcquistoStimata = dataAcquistoStimataAuto(autoObj);
+                let giorniGiacenza = null;
+                if (dataAcquistoStimata) {
+                    let dataFineGiacenza = new Date().toISOString().split('T')[0];
+                    if (autoObj.stato === 'Venduta') {
+                        const contrattoVendita = contratti.find(c => c.autoId == autoObj.id);
+                        if (contrattoVendita && contrattoVendita.dataContratto) dataFineGiacenza = contrattoVendita.dataContratto;
+                    }
+                    giorniGiacenza = giorniTra(dataAcquistoStimata, dataFineGiacenza);
+                }
+
                 row.innerHTML = `
                     <td>${autoObj.marca} ${autoObj.modello}${autoObj.isPermuta ? ' <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">🔄 PERMUTA</span>' : ''}</td>
                     <td>${autoObj.targa}</td>
@@ -3448,6 +3462,7 @@ select#filtroStato {
                     <td>${autoObj.chilometri.toLocaleString()}</td>
                     <td><span style="background: ${autoObj.tipo === 'NUOVO' ? '#28a745' : autoObj.tipo === 'KM0' ? '#ffc107' : '#6c757d'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.tipo}</span></td>
                     <td><span style="background: ${statoColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">${autoObj.stato}</span></td>
+                    <td>${giorniGiacenza !== null ? giorniGiacenza + ' gg' : '-'}</td>
                     <td>€${autoObj.prezzoVendita.toLocaleString()}</td>
                     <td style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">
                         €${margine.toLocaleString()}
@@ -5332,6 +5347,7 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                     <div><strong>Targa:</strong> ${autoObj.targa}</div>
                     <div><strong>Telaio:</strong> ${autoObj.telaio || '-'}</div>
                     <div><strong>Immatricolazione:</strong> ${autoObj.dataImmatricolazione ? new Date(autoObj.dataImmatricolazione).toLocaleDateString('it-IT') : '-'}</div>
+                    <div><strong>Data Acquisto:</strong> ${autoObj.dataAcquisto ? new Date(autoObj.dataAcquisto).toLocaleDateString('it-IT') : '-'}</div>
                     <div><strong>Chilometri:</strong> ${autoObj.chilometri.toLocaleString()}</div>
                     <div><strong>Tipo:</strong> ${autoObj.tipo}</div>
                     <div><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</div>
