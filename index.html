@@ -1300,6 +1300,17 @@ select#filtroStato {
                             <option value="annuale">Annuale</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Valida da (vuoto = da sempre)</label>
+                        <input type="date" id="validaDaSpesaFissa">
+                    </div>
+                    <div class="form-group">
+                        <label>Valida fino a (vuoto = ancora in corso)</label>
+                        <input type="date" id="validaFinoSpesaFissa">
+                    </div>
+                </div>
+                <div class="alert" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E3A8A; margin-top: 10px;">
+                    💡 Se un importo cambia (es. l'affitto scende), non modificare quella vecchia: mettile una "Valida fino a" (l'ultimo mese in cui vale il vecchio importo) con "✏️ Modifica", poi aggiungine una nuova con "Valida da" il mese in cui parte il nuovo importo. Così il Bilancio dei mesi passati non cambia.
                 </div>
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn btn-success" onclick="aggiungiSpesaFissa()">💾 Salva Spesa Fissa</button>
@@ -1315,6 +1326,8 @@ select#filtroStato {
                         <th>Nome</th>
                         <th>Importo</th>
                         <th>Cadenza</th>
+                        <th>Valida da</th>
+                        <th>Valida fino a</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
@@ -3145,8 +3158,17 @@ select#filtroStato {
                     {nome: 'trasmissione', label: 'Trasmissione', tipo: 'select', opzioni: ['Anteriore', 'Posteriore', 'Integrale']},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
+            } else if (tipo === 'spesaFissa') {
+                oggetto = speseFisseRicorrenti.find(s => s.id == id);
+                campi = [
+                    {nome: 'nome', label: 'Nome', tipo: 'text'},
+                    {nome: 'importo', label: 'Importo (€)', tipo: 'number'},
+                    {nome: 'cadenza', label: 'Cadenza', tipo: 'select', opzioni: ['mensile', 'trimestrale', 'annuale']},
+                    {nome: 'validaDa', label: 'Valida da (vuoto = da sempre)', tipo: 'date'},
+                    {nome: 'validaFino', label: 'Valida fino a (vuoto = ancora in corso)', tipo: 'date'}
+                ];
             }
-            
+
             if (!oggetto) return;
             
             oggettoInModifica = oggetto;
@@ -3217,10 +3239,13 @@ select#filtroStato {
             } else if (tipoOggettoInModifica === 'auto') {
                 salvaAuto();
                 aggiornaSelectAuto();
+            } else if (tipoOggettoInModifica === 'spesaFissa') {
+                salvaSpeseFisseRicorrenti();
             }
-            
+
             aggiornaTabelle();
             aggiornaStatistiche();
+            aggiornaBilancio();
             chiudiModal();
         }
 
@@ -3697,7 +3722,16 @@ select#filtroStato {
                 });
             });
 
-            const speseFisseTotale = speseFisseRicorrenti.reduce((sum, s) => sum + equivalenteMensile(s), 0);
+            // Ogni spesa fissa conta solo nei mesi coperti dal suo intervallo di validità (validaDa/
+            // validaFino, entrambi opzionali): così cambiare un importo non riscrive i mesi passati
+            // già calcolati con l'importo precedente — basta chiudere la vecchia e aprirne una nuova
+            const speseFisseTotale = speseFisseRicorrenti
+                .filter(s => {
+                    const iniziataInTempo = !s.validaDa || new Date(s.validaDa) <= fine;
+                    const nonAncoraFinita = !s.validaFino || new Date(s.validaFino) >= inizio;
+                    return iniziataInTempo && nonAncoraFinita;
+                })
+                .reduce((sum, s) => sum + equivalenteMensile(s), 0);
             const speseGeneraliTotale = speseGenerali.filter(s => nelMese(s.data)).reduce((sum, s) => sum + s.importo, 0);
 
             const margineLordo = fatturatoTotale - costoAuto - speseFisseTotale - speseGeneraliTotale;
@@ -3962,19 +3996,23 @@ select#filtroStato {
             document.getElementById('nomeSpesaFissa').value = '';
             document.getElementById('importoSpesaFissa').value = '';
             document.getElementById('cadenzaSpesaFissa').value = 'mensile';
+            document.getElementById('validaDaSpesaFissa').value = '';
+            document.getElementById('validaFinoSpesaFissa').value = '';
         }
 
         function aggiungiSpesaFissa() {
             const nome = document.getElementById('nomeSpesaFissa').value.trim();
             const importo = parseFloat(document.getElementById('importoSpesaFissa').value) || 0;
             const cadenza = document.getElementById('cadenzaSpesaFissa').value;
+            const validaDa = document.getElementById('validaDaSpesaFissa').value || null;
+            const validaFino = document.getElementById('validaFinoSpesaFissa').value || null;
 
             if (!nome || importo <= 0) {
                 toast('Nome e importo sono obbligatori!', 'danger');
                 return;
             }
 
-            speseFisseRicorrenti.push({ id: Date.now(), nome, importo, cadenza });
+            speseFisseRicorrenti.push({ id: Date.now(), nome, importo, cadenza, validaDa, validaFino });
             salvaSpeseFisseRicorrenti();
             chiudiFormSpesaFissa();
             aggiornaBilancio();
@@ -3997,7 +4035,7 @@ select#filtroStato {
             if (speseFisseRicorrenti.length === 0) {
                 const row = tbody.insertRow();
                 row.className = 'empty-state';
-                row.innerHTML = '<td colspan="4">Nessuna spesa fissa configurata.</td>';
+                row.innerHTML = '<td colspan="6">Nessuna spesa fissa configurata.</td>';
                 return;
             }
 
@@ -4009,7 +4047,12 @@ select#filtroStato {
                     <td>${s.nome}</td>
                     <td>€${s.importo.toLocaleString('it-IT')}</td>
                     <td>${etichettaCadenza[s.cadenza] || s.cadenza}</td>
-                    <td class="actions"><button class="btn btn-danger" onclick="eliminaSpesaFissa(${s.id})">🗑️ Elimina</button></td>
+                    <td>${s.validaDa ? new Date(s.validaDa).toLocaleDateString('it-IT') : 'da sempre'}</td>
+                    <td>${s.validaFino ? new Date(s.validaFino).toLocaleDateString('it-IT') : 'in corso'}</td>
+                    <td class="actions">
+                        <button class="btn btn-warning" onclick="modificaOggetto('spesaFissa', ${s.id})">✏️ Modifica</button>
+                        <button class="btn btn-danger" onclick="eliminaSpesaFissa(${s.id})">🗑️ Elimina</button>
+                    </td>
                 `;
             });
         }
