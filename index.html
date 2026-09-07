@@ -3467,7 +3467,7 @@ select#filtroStato {
             autoFiltrate.forEach(autoObj => {
                 const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
                 const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
-                const margine = autoObj.prezzoVendita - costoTotale;
+                const margine = ricavoRealeAuto(autoObj) - costoTotale;
                 const row = tbody.insertRow();
                 row.setAttribute('data-id', autoObj.id);
 
@@ -4092,6 +4092,24 @@ function dataAcquistoStimataAuto(a) {
   return a.dataAcquisto || (a.id ? new Date(a.id).toISOString().split('T')[0] : null);
 }
 
+// Ricavo reale di un'auto venduta: quanto è stato davvero fatturato al cliente (prezzo finale
+// del contratto, comprensivo di extra/spese ricaricate e voltura), non il semplice prezzo di
+// listino dell'auto. Senza questo, le spese ricaricate al cliente (es. pratiche, garanzia)
+// non risultano mai come incasso nel margine, ma i costi corrispondenti (registrati da
+// fattura) lo abbassano comunque — stessa logica già usata in calcolaBilancioMese.
+function ricavoRealeAuto(autoObj) {
+  if (autoObj.stato === 'Venduta') {
+    const contrattoVendita = contratti.find(c => c.autoId == autoObj.id);
+    if (contrattoVendita) {
+      const prezzoFinale = contrattoVendita.prezzoFinaleAuto || autoObj.prezzoVendita;
+      const extra = (contrattoVendita.extraItems || []).reduce((s, x) => s + x.prezzo, 0);
+      const voltura = contrattoVendita.speseVoltura || 0;
+      return prezzoFinale + extra + voltura;
+    }
+  }
+  return autoObj.prezzoVendita;
+}
+
 function giorniTra(dataInizio, dataFine) {
   const d1 = new Date(dataInizio);
   const d2 = new Date(dataFine);
@@ -4225,7 +4243,7 @@ function aggiornaMargineMigliore() {
   const venduteConMargine = auto.filter(a => a.stato === 'Venduta').map(a => {
     const speseAggiuntiveTotali = (a.speseAggiuntive || []).reduce((sum, s) => sum + s.importo, 0);
     const costoTotale = (a.prezzoAcquisto || 0) + speseAggiuntiveTotali;
-    const margine = (a.prezzoVendita || 0) - costoTotale;
+    const margine = ricavoRealeAuto(a) - costoTotale;
     const contratto = contratti.find(c => c.autoId == a.id);
     return { auto: a, margine, dataVendita: contratto ? contratto.dataContratto : null };
   }).sort((a, b) => b.margine - a.margine);
@@ -5053,15 +5071,16 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             
             const speseAggiuntiveTotali = (autoCorrente.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
             const costoTotale = autoCorrente.prezzoAcquisto + speseAggiuntiveTotali;
-            const margine = autoCorrente.prezzoVendita - costoTotale;
-            
+            const ricavoReale = ricavoRealeAuto(autoCorrente);
+            const margine = ricavoReale - costoTotale;
+
             document.getElementById('infoAuto').innerHTML = `
                 <h3>${autoCorrente.marca} ${autoCorrente.modello} (${autoCorrente.targa})</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div><strong>Prezzo Acquisto:</strong> €${autoCorrente.prezzoAcquisto.toLocaleString()}</div>
                     <div><strong>Spese Totali:</strong> €${speseAggiuntiveTotali.toLocaleString()}</div>
                     <div><strong>Costo Totale:</strong> €${costoTotale.toLocaleString()}</div>
-                    <div><strong>Prezzo Vendita:</strong> €${autoCorrente.prezzoVendita.toLocaleString()}</div>
+                    <div><strong>${autoCorrente.stato === 'Venduta' ? 'Incassato dal Cliente' : 'Prezzo Vendita'}:</strong> €${ricavoReale.toLocaleString()}</div>
                     <div style="color: ${margine >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;"><strong>Margine:</strong> €${margine.toLocaleString()}</div>
                 </div>
             `;
@@ -5208,7 +5227,12 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             const speseAggiuntive = autoObj.speseAggiuntive || [];
             const speseAggiuntiveTotali = speseAggiuntive.reduce((sum, spesa) => sum + spesa.importo, 0);
             const costoTotale = autoObj.prezzoAcquisto + (autoObj.costiAggiuntivi || 0) + speseAggiuntiveTotali;
-            const margine = autoObj.prezzoVendita - costoTotale;
+            const prezzoFinaleContratto = contratto ? (contratto.prezzoFinaleAuto || autoObj.prezzoVendita) : autoObj.prezzoVendita;
+            const extraContratto = contratto ? (contratto.extraItems || []) : [];
+            const extraContrattoTotale = extraContratto.reduce((s, x) => s + x.prezzo, 0);
+            const volturaContratto = contratto ? (contratto.speseVoltura || 0) : 0;
+            const ricavoReale = prezzoFinaleContratto + extraContrattoTotale + volturaContratto;
+            const margine = ricavoReale - costoTotale;
             
             const printWindow = window.open('', '_blank');
             
@@ -5288,7 +5312,9 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                             <h3>Dati Vendita</h3>
                             <p><strong>Cliente:</strong> ${contratto ? contratto.cliente.nome : 'N/D'}</p>
                             <p><strong>Data Vendita:</strong> ${contratto ? new Date(contratto.dataContratto).toLocaleDateString('it-IT') : 'N/D'}</p>
-                            <p><strong>Prezzo Vendita:</strong> €${autoObj.prezzoVendita.toLocaleString()}</p>
+                            <p><strong>Prezzo Vendita Auto:</strong> €${prezzoFinaleContratto.toLocaleString()}</p>
+                            ${extraContrattoTotale > 0 ? `<p><strong>Extra Ricaricati al Cliente:</strong> €${extraContrattoTotale.toLocaleString()}</p>` : ''}
+                            ${volturaContratto > 0 ? `<p><strong>Voltura Ricaricata:</strong> €${volturaContratto.toLocaleString()}</p>` : ''}
                             ${contratto && contratto.permuta.valutazione > 0 ? `<p><strong>Permuta:</strong> ${contratto.permuta.marca} ${contratto.permuta.modello} - €${contratto.permuta.valutazione.toLocaleString()}</p>` : ''}
                         </div>
                     </div>
@@ -5324,9 +5350,21 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                         <h2>RIEPILOGO ECONOMICO</h2>
                         <table>
                             <tr>
-                                <td><strong>Prezzo Vendita</strong></td>
-                                <td style="text-align: right;"><strong>€${autoObj.prezzoVendita.toLocaleString()}</strong></td>
+                                <td><strong>Prezzo Vendita Auto</strong></td>
+                                <td style="text-align: right;"><strong>€${prezzoFinaleContratto.toLocaleString()}</strong></td>
                             </tr>
+                            ${extraContrattoTotale > 0 ? `
+                            <tr>
+                                <td>Extra Ricaricati al Cliente</td>
+                                <td style="text-align: right;">€${extraContrattoTotale.toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
+                            ${volturaContratto > 0 ? `
+                            <tr>
+                                <td>Voltura Ricaricata</td>
+                                <td style="text-align: right;">€${volturaContratto.toLocaleString()}</td>
+                            </tr>
+                            ` : ''}
                             <tr>
                                 <td>Costo Acquisto</td>
                                 <td style="text-align: right;">-€${autoObj.prezzoAcquisto.toLocaleString()}</td>
@@ -5383,7 +5421,8 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
 
             const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
             const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
-            const margine = autoObj.prezzoVendita - costoTotale;
+            const ricavoReale = ricavoRealeAuto(autoObj);
+            const margine = ricavoReale - costoTotale;
 
             const statoColor = autoObj.stato === 'Disponibile' ? '#10B981' : autoObj.stato === 'Venduta' ? '#EF4444' : '#F59E0B';
 
@@ -5418,8 +5457,8 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                             <td style="padding:8px; text-align:right;">€${speseAggiuntiveTotali.toLocaleString()}</td>
                         </tr>` : ''}
                         <tr style="border-bottom:1px solid #eee;">
-                            <td style="padding:8px; font-weight:bold;">Prezzo di Vendita</td>
-                            <td style="padding:8px; text-align:right; font-weight:bold;">€${autoObj.prezzoVendita.toLocaleString()}</td>
+                            <td style="padding:8px; font-weight:bold;">${autoObj.stato === 'Venduta' ? 'Incassato dal Cliente' : 'Prezzo di Vendita'}</td>
+                            <td style="padding:8px; text-align:right; font-weight:bold;">€${ricavoReale.toLocaleString()}</td>
                         </tr>
                         <tr style="border-top: 2px solid var(--brand); background:#f8f9fa;">
                             <td style="padding:10px; font-weight:bold;">MARGINE</td>
@@ -5473,8 +5512,14 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             
             const speseAggiuntiveTotali = (autoObj.speseAggiuntive || []).reduce((sum, spesa) => sum + spesa.importo, 0);
             const costoTotale = autoObj.prezzoAcquisto + speseAggiuntiveTotali;
-            const margine = autoObj.prezzoVendita - costoTotale;
-            
+            const contrattoVendita = autoObj.stato === 'Venduta' ? contratti.find(c => c.autoId == autoObj.id) : null;
+            const prezzoFinaleContratto = contrattoVendita ? (contrattoVendita.prezzoFinaleAuto || autoObj.prezzoVendita) : autoObj.prezzoVendita;
+            const extraContratto = contrattoVendita ? (contrattoVendita.extraItems || []) : [];
+            const extraContrattoTotale = extraContratto.reduce((s, x) => s + x.prezzo, 0);
+            const volturaContratto = contrattoVendita ? (contrattoVendita.speseVoltura || 0) : 0;
+            const ricavoReale = prezzoFinaleContratto + extraContrattoTotale + volturaContratto;
+            const margine = ricavoReale - costoTotale;
+
             // Info auto
             document.getElementById('infoAutoMargine').innerHTML = `
                 <h3>${autoObj.marca} ${autoObj.modello} (${autoObj.targa})</h3>
@@ -5493,10 +5538,35 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             // Prezzo vendita
             let row = tbody.insertRow();
             row.innerHTML = `
-                <td style="padding: 12px; font-weight: bold; background: #e8f5e8;">💰 PREZZO DI VENDITA</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${autoObj.prezzoVendita.toLocaleString()}</td>
+                <td style="padding: 12px; font-weight: bold; background: #e8f5e8;">💰 PREZZO DI VENDITA AUTO</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${prezzoFinaleContratto.toLocaleString()}</td>
             `;
-            
+
+            // Extra ricaricati al cliente in fase di contratto (es. pratiche, garanzia, accessori)
+            if (extraContrattoTotale > 0) {
+                row = tbody.insertRow();
+                row.innerHTML = `
+                    <td style="padding: 12px; font-weight: bold; background: #e8f5e8;">➕ EXTRA RICARICATI AL CLIENTE</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${extraContrattoTotale.toLocaleString()}</td>
+                `;
+                extraContratto.forEach(item => {
+                    row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td style="padding: 8px 12px 8px 30px; font-size: 0.9rem; color: #666;">${item.descrizione}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-size: 0.9rem; color: #666;">+€${item.prezzo.toLocaleString()}</td>
+                    `;
+                });
+            }
+
+            // Voltura ricaricata al cliente
+            if (volturaContratto > 0) {
+                row = tbody.insertRow();
+                row.innerHTML = `
+                    <td style="padding: 12px; font-weight: bold; background: #e8f5e8;">➕ VOLTURA RICARICATA</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold; background: #e8f5e8; color: #28a745;">+€${volturaContratto.toLocaleString()}</td>
+                `;
+            }
+
             // Prezzo acquisto
             row = tbody.insertRow();
             row.innerHTML = `
@@ -5539,10 +5609,10 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             `;
             
             // Percentuale margine
-            const percentualeMargine = autoObj.prezzoVendita > 0 ? ((margine / autoObj.prezzoVendita) * 100).toFixed(1) : 0;
+            const percentualeMargine = ricavoReale > 0 ? ((margine / ricavoReale) * 100).toFixed(1) : 0;
             row = tbody.insertRow();
             row.innerHTML = `
-                <td style="padding: 10px; font-style: italic; color: #666;">📈 Percentuale margine sul prezzo di vendita</td>
+                <td style="padding: 10px; font-style: italic; color: #666;">📈 Percentuale margine sull'incassato</td>
                 <td style="padding: 10px; text-align: right; font-style: italic; color: ${margine >= 0 ? '#28a745' : '#dc3545'};">${percentualeMargine}%</td>
             `;
             
