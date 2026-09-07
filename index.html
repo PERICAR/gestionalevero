@@ -1188,6 +1188,11 @@ select#filtroStato {
                     <div id="listaExtra" style="margin-top: 15px;"></div>
                 </div>
 
+                <h4>Note (stampate sul contratto)</h4>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <textarea id="noteContratto" placeholder="Note aggiuntive da stampare sul contratto..." rows="3"></textarea>
+                </div>
+
                 <h4>📊 Riepilogo (si aggiorna in automatico)</h4>
                 <div id="riepilogoContrattoLive" style="margin-bottom: 20px;"></div>
 
@@ -2378,6 +2383,7 @@ select#filtroStato {
                 scontoApplicato: parseFloat(document.getElementById('scontoApplicato').value) || 0,
                 prezzoFinaleAuto: parseFloat(document.getElementById('prezzoFinaleAuto').value) || autoVenduta.prezzoVendita,
                 extraItems: [...extraItems], // Copia degli extra items
+                note: document.getElementById('noteContratto').value,
                 cliente,
                 auto: autoVenduta
             };
@@ -2445,6 +2451,7 @@ select#filtroStato {
             document.getElementById('prezzoBaseAuto').value = '';
             document.getElementById('descrizioneExtra').value = '';
             document.getElementById('prezzoExtra').value = '';
+            document.getElementById('noteContratto').value = '';
             extraItems = [];
             aggiornaListaExtra();
             preventivoDaConvertire = null;
@@ -2996,6 +3003,8 @@ select#filtroStato {
 
             extraItems = [...(preventivo.extraItems || [])];
             aggiornaListaExtra();
+
+            document.getElementById('noteContratto').value = preventivo.note || '';
 
             preventivoDaConvertire = preventivo.id;
 
@@ -4544,6 +4553,7 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             
             const html = `
                 <div class="contract-preview">
+                    <div id="paginaFronteContratto">
                     <!-- Header con logo, info azienda e titolo -->
                     <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 4px; margin-top: -15px; align-items: start;">
                         <!-- Colonna sinistra - Logo e titolo -->
@@ -4779,7 +4789,8 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                     <!-- Spazio per note -->
                     <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         <div style="font-size: 0.7rem; font-weight: bold; margin-bottom: 8px;">NOTE:</div>
-                        <div style="border-bottom: 1px solid #ccc; height: 20px;"></div>
+                        ${contratto.note ? `<div style="font-size: 0.7rem; white-space: pre-wrap;">${contratto.note}</div>` : `<div style="border-bottom: 1px solid #ccc; height: 20px;"></div>`}
+                    </div>
                     </div>
 
                     <div style="page-break-before: always; margin-top: 10px;">
@@ -4967,6 +4978,22 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             printWindow.document.close();
             printWindow.focus();
             setTimeout(() => {
+                // Se con tante voci extra la prima pagina (fino a NOTE) non entra nell'area
+                // stampabile, la si rimpicciolisce quel tanto che basta a farcela stare tutta:
+                // altrimenti solo il riquadro NOTE traboccava da solo sulla pagina successiva,
+                // lasciando la Pagina 2 quasi vuota prima delle Condizioni Generali (che devono
+                // sempre iniziare a pagina 2, "a tergo").
+                const paginaFronte = printWindow.document.getElementById('paginaFronteContratto');
+                if (paginaFronte) {
+                    const mmToPx = 96 / 25.4;
+                    const maxHeightPx = (297 - 10 - 15) * mmToPx; // A4 meno i margini di @page
+                    const altezzaReale = paginaFronte.getBoundingClientRect().height;
+                    if (altezzaReale > maxHeightPx) {
+                        const fattore = Math.max(0.65, maxHeightPx / altezzaReale);
+                        paginaFronte.style.zoom = fattore;
+                        paginaFronte.style.width = (100 / fattore) + '%';
+                    }
+                }
                 printWindow.print();
                 printWindow.close();
             }, 250);
@@ -5005,7 +5032,9 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             // Ripristina extra items
             extraItems = [...(contratto.extraItems || [])];
             aggiornaListaExtra();
-            
+
+            document.getElementById('noteContratto').value = contratto.note || '';
+
             // Elimina il contratto esistente per permettere la modifica
             eliminaContratto(id);
             
