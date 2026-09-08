@@ -449,6 +449,7 @@ td span[style*="background: #17a2b8"] { background: var(--info) !important; }
 .actions .btn-success:hover { background: var(--success); color: #fff; transform: none; }
 .actions .btn-danger { background: #FEF2F2; color: var(--danger-700); border: 1px solid #FECACA; box-shadow: none; }
 .actions .btn-danger:hover { background: var(--danger); color: #fff; transform: none; }
+.actions .btn-icon { width: 30px; height: 30px; padding: 0; font-size: 14px; flex-shrink: 0; }
 input[readonly] { background: #F3F4F6 !important; color: #111827; }
 
 select#filtroStato {
@@ -3512,11 +3513,11 @@ select#filtroStato {
                         <button class="btn btn-primary" onclick="mostraDettaglioMargine(${autoObj.id})" style="padding: 2px 6px; font-size: 0.7rem; margin-left: 8px;">📊</button>
                     </td>
                     <td class="actions">
-                        <button class="btn btn-primary" onclick="visualizzaAuto(${autoObj.id})">👁️ Visualizza</button>
-                        <button class="btn btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})">✏️ Modifica</button>
-                        <button class="btn btn-primary" onclick="gestisciSpese(${autoObj.id})">📋 Spese</button>
-                        ${autoObj.stato === 'Venduta' ? `<button class="btn btn-success" onclick="stampaReportAuto(${autoObj.id})">📊 Report</button><button class="btn btn-primary" onclick="apriContrattoDaAuto(${autoObj.id})">📄 Contratto</button>` : ''}
-                        <button class="btn btn-danger" onclick="eliminaAuto(${autoObj.id})">🗑️ Elimina</button>
+                        <button class="btn btn-icon btn-primary" onclick="visualizzaAuto(${autoObj.id})" title="Visualizza">👁️</button>
+                        <button class="btn btn-icon btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})" title="Modifica">✏️</button>
+                        <button class="btn btn-icon btn-primary" onclick="gestisciSpese(${autoObj.id})" title="Spese">📋</button>
+                        ${autoObj.stato === 'Venduta' ? `<button class="btn btn-icon btn-success" onclick="stampaReportAuto(${autoObj.id})" title="Report">📊</button><button class="btn btn-icon btn-primary" onclick="apriContrattoDaAuto(${autoObj.id})" title="Contratto">📄</button>` : ''}
+                        <button class="btn btn-icon btn-danger" onclick="eliminaAuto(${autoObj.id})" title="Elimina">🗑️</button>
                     </td>
                 `;
             });
