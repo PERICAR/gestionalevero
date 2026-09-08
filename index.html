@@ -2517,7 +2517,8 @@ select#filtroStato {
                 return;
             }
 
-            const totaleASaldo = prezzoFinale + totaleExtra - valutazionePermuta - deposito + voltura;
+            const totaleDovuto = prezzoFinale + totaleExtra - valutazionePermuta + voltura;
+            const totaleASaldo = totaleDovuto - deposito;
 
             let righe = rigaRiepilogo('PREZZO LISTINO VEICOLO', prezzoBase, { grassetto: true });
             if (sconto > 0) {
@@ -2533,11 +2534,12 @@ select#filtroStato {
             if (valutazionePermuta > 0) {
                 righe += rigaRiepilogo('Valore ritiro permuta', -valutazionePermuta, { colore: '#28a745' });
             }
-            if (deposito > 0) {
-                righe += rigaRiepilogo('Deposito cauzionale', -deposito, { colore: '#28a745' });
-            }
             if (voltura > 0) {
                 righe += rigaRiepilogo('Spese voltura', voltura, { colore: '#111827', forzaPiu: true });
+            }
+            righe += rigaRiepilogo('TOTALE DOVUTO', totaleDovuto, { grassetto: true, sfondo: '#fff3cd', colore: '#111827' });
+            if (deposito > 0) {
+                righe += rigaRiepilogo('Deposito cauzionale già versato', -deposito, { colore: '#28a745' });
             }
 
             container.innerHTML = `
@@ -4549,8 +4551,13 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             const prezzoBaseAuto = contratto.auto.prezzoVendita;
             const scontoApplicato = contratto.scontoApplicato || 0;
             const prezzoFinaleAuto = contratto.prezzoFinaleAuto || prezzoBaseAuto;
-            const totaleASaldo = prezzoFinaleAuto + totaleExtra - (contratto.permuta.valutazione || 0) - contratto.depositoCauzionale + contratto.speseVoltura;
-            
+            // Totale dovuto: il vero prezzo complessivo del veicolo (extra e voltura inclusi,
+            // permuta scalata), PRIMA di togliere la caparra già versata — senza questa riga
+            // il contratto mostrava solo il saldo residuo, senza mai indicare l'importo totale
+            // dovuto dal cliente.
+            const totaleDovuto = prezzoFinaleAuto + totaleExtra - (contratto.permuta.valutazione || 0) + contratto.speseVoltura;
+            const totaleASaldo = totaleDovuto - contratto.depositoCauzionale;
+
             const html = `
                 <div class="contract-preview">
                     <div id="paginaFronteContratto">
@@ -4737,12 +4744,16 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                                     </tr>
                                     ` : ''}
                                     <tr style="border-bottom: 1px solid #ddd;">
-                                        <td style="padding: 6px;">Deposito cauzionale</td>
-                                        <td style="padding: 6px; text-align: right; color: #28a745;">-€${contratto.depositoCauzionale.toLocaleString()}</td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid #ddd;">
                                         <td style="padding: 6px;">Spese voltura</td>
                                         <td style="padding: 6px; text-align: right;">€${contratto.speseVoltura.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #333; background: #fff3cd;">
+                                        <td style="padding: 8px; font-weight: bold; font-size: 0.85rem;">TOTALE DOVUTO</td>
+                                        <td style="padding: 8px; text-align: right; font-weight: bold; font-size: 0.9rem;">€${totaleDovuto.toLocaleString()}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #ddd;">
+                                        <td style="padding: 6px;">Deposito cauzionale (già versato)</td>
+                                        <td style="padding: 6px; text-align: right; color: #28a745;">-€${contratto.depositoCauzionale.toLocaleString()}</td>
                                     </tr>
                                     <tr style="border-top: 2px solid #E30613; background: #f8f9fa;">
                                         <td style="padding: 8px; font-weight: bold; font-size: 0.8rem;">TOTALE A SALDO</td>
