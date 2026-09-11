@@ -913,7 +913,7 @@ select#filtroStato {
                         <th class="sortable" onclick="ordinaTabella('auto','chilometri',this)">Km<span class="sort-arrow">⇅</span></th>
                         <th class="sortable" onclick="ordinaTabella('auto','tipo',this)">Tipo<span class="sort-arrow">⇅</span></th>
                         <th class="sortable" onclick="ordinaTabella('auto','stato',this)">Stato<span class="sort-arrow">⇅</span></th>
-                        <th>Giacenza</th>
+                        <th class="sortable" onclick="ordinaTabella('auto','giacenza',this)">Giacenza<span class="sort-arrow">⇅</span></th>
                         <th class="sortable" onclick="ordinaTabella('auto','prezzoVendita',this)">Prezzo Vendita<span class="sort-arrow">⇅</span></th>
                         <th>Margine</th>
                         <th>Azioni</th>
@@ -1968,6 +1968,17 @@ select#filtroStato {
             const soloNumero = /^-?\d+(\.\d+)?$/;
 
             arr.sort((a, b) => {
+                // La Giacenza non è un campo salvato sull'oggetto auto ma va ricalcolata
+                // (vedi giorniGiacenzaAuto) — leggiCampo non può leggerla come un campo normale.
+                if (nomeArray === 'auto' && campo === 'giacenza') {
+                    const gA = giorniGiacenzaAuto(a);
+                    const gB = giorniGiacenzaAuto(b);
+                    if (gA === null && gB === null) return 0;
+                    if (gA === null) return 1; // auto senza data nota: sempre in fondo
+                    if (gB === null) return -1;
+                    return direzione === 'asc' ? gA - gB : gB - gA;
+                }
+
                 let valA = leggiCampo(a, campo);
                 let valB = leggiCampo(b, campo);
 
@@ -3486,18 +3497,7 @@ select#filtroStato {
                 const statoColor = autoObj.stato === 'Disponibile' ? '#28a745' :
                                  autoObj.stato === 'Venduta' ? '#dc3545' : '#ffc107';
 
-                // Giorni di giacenza: dalla data acquisto (stimata se mancante) a oggi se l'auto è
-                // ancora in stock, oppure fino alla data di vendita se è già stata venduta
-                const dataAcquistoStimata = dataAcquistoStimataAuto(autoObj);
-                let giorniGiacenza = null;
-                if (dataAcquistoStimata) {
-                    let dataFineGiacenza = new Date().toISOString().split('T')[0];
-                    if (autoObj.stato === 'Venduta') {
-                        const contrattoVendita = contratti.find(c => c.autoId == autoObj.id);
-                        if (contrattoVendita && contrattoVendita.dataContratto) dataFineGiacenza = contrattoVendita.dataContratto;
-                    }
-                    giorniGiacenza = giorniTra(dataAcquistoStimata, dataFineGiacenza);
-                }
+                const giorniGiacenza = giorniGiacenzaAuto(autoObj);
 
                 row.innerHTML = `
                     <td>${autoObj.marca} ${autoObj.modello}${autoObj.isPermuta ? ' <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">🔄 PERMUTA</span>' : ''}</td>
@@ -4126,6 +4126,21 @@ function giorniTra(dataInizio, dataFine) {
   const d1 = new Date(dataInizio);
   const d2 = new Date(dataFine);
   return Math.round((d2 - d1) / 86400000);
+}
+
+// Giorni di giacenza di un'auto: dalla data acquisto (stimata se mancante) a oggi se è ancora
+// in stock, oppure fino alla data di vendita se è già stata venduta. Non è un campo salvato
+// sull'oggetto auto ma va ricalcolato ogni volta — serve sia per la tabella Auto sia per
+// l'ordinamento per Giacenza (ordinaTabella non può leggerlo come un campo qualsiasi).
+function giorniGiacenzaAuto(autoObj) {
+  const dataAcquistoStimata = dataAcquistoStimataAuto(autoObj);
+  if (!dataAcquistoStimata) return null;
+  let dataFineGiacenza = new Date().toISOString().split('T')[0];
+  if (autoObj.stato === 'Venduta') {
+    const contrattoVendita = contratti.find(c => c.autoId == autoObj.id);
+    if (contrattoVendita && contrattoVendita.dataContratto) dataFineGiacenza = contrattoVendita.dataContratto;
+  }
+  return giorniTra(dataAcquistoStimata, dataFineGiacenza);
 }
 
 function aggiornaStatistiche() {
