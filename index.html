@@ -664,6 +664,9 @@ select#filtroStato {
 
                 <div class="sidebar-footer">
                     <div class="sidebar-user">👤 <span id="utenteLoggato"></span></div>
+                    <button class="btn btn-primary" onclick="esportaBackup()" title="Scarica un file con una copia di tutti i dati">⬇️ Backup</button>
+                    <input type="file" id="fileImportaBackup" accept="application/json" style="display:none" onchange="importaBackup(event)">
+                    <button class="btn btn-warning" onclick="document.getElementById('fileImportaBackup').click()" title="Ripristina i dati da un file di backup">⬆️ Importa</button>
                     <button class="btn btn-danger" onclick="effettuaLogout()">🚪 Esci</button>
                 </div>
             </aside>
@@ -5111,6 +5114,101 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
 
         function salvaSpeseFisseRicorrenti() {
             localStorage.setItem('speseFisseRicorrenti', JSON.stringify(speseFisseRicorrenti));
+        }
+
+        // BACKUP: esporta tutti i dati in un file JSON scaricabile. Non è un salvataggio nel
+        // senso del sync cloud (quello è automatico) — è una copia indipendente che l'utente
+        // può conservare, per proteggersi da cancellazioni/errori che altrimenti si
+        // sincronizzerebbero subito ovunque, senza nessuna versione precedente da recuperare.
+        function esportaBackup() {
+            const backup = {
+                tipo: 'backup-gestionale-pericar',
+                versione: 1,
+                dataEsportazione: new Date().toISOString(),
+                clienti, auto, contratti, preventivi,
+                speseGenerali, entrateManuali, speseFisseRicorrenti, venditeEsterne,
+                impostazioniBilancio, impostazioniStatistiche
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_gestionale_PERICAR_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('Backup scaricato.', 'success');
+        }
+
+        // BACKUP: importa un file esportato da esportaBackup(), sovrascrivendo TUTTI i dati
+        // attuali (locali e sul cloud, tramite il normale sync). Richiede conferma esplicita
+        // perché è un'operazione distruttiva sui dati correnti.
+        function importaBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let backup;
+                try {
+                    backup = JSON.parse(e.target.result);
+                } catch (err) {
+                    toast('File non valido: non è un JSON leggibile.', 'danger');
+                    event.target.value = '';
+                    return;
+                }
+
+                if (!Array.isArray(backup.clienti) || !Array.isArray(backup.auto) || !Array.isArray(backup.contratti)) {
+                    toast('File non valido: non sembra un backup del gestionale PERICAR.', 'danger');
+                    event.target.value = '';
+                    return;
+                }
+
+                const dataBackup = backup.dataEsportazione ? new Date(backup.dataEsportazione).toLocaleString('it-IT') : 'sconosciuta';
+                const confermato = confirm(
+                    `Stai per SOVRASCRIVERE tutti i dati attuali (locali e sul cloud) con questo backup.\n\n` +
+                    `Data del backup: ${dataBackup}\n` +
+                    `Contiene: ${backup.clienti.length} clienti, ${backup.auto.length} auto, ${backup.contratti.length} contratti, ${(backup.preventivi || []).length} preventivi.\n\n` +
+                    `I dati attuali andranno persi e non saranno recuperabili. Continuare?`
+                );
+                if (!confermato) {
+                    event.target.value = '';
+                    return;
+                }
+
+                clienti = backup.clienti || [];
+                auto = backup.auto || [];
+                contratti = backup.contratti || [];
+                preventivi = backup.preventivi || [];
+                speseGenerali = backup.speseGenerali || [];
+                entrateManuali = backup.entrateManuali || [];
+                speseFisseRicorrenti = backup.speseFisseRicorrenti || [];
+                venditeEsterne = backup.venditeEsterne || [];
+                impostazioniBilancio = backup.impostazioniBilancio || impostazioniBilancioDefault;
+                impostazioniStatistiche = backup.impostazioniStatistiche || impostazioniStatisticheDefault;
+
+                salvaClienti();
+                salvaAuto();
+                salvaContratti();
+                salvaPreventivi();
+                salvaSpeseGenerali();
+                salvaEntrateManuali();
+                salvaSpeseFisseRicorrenti();
+                salvaVenditeEsterne();
+                salvaImpostazioniBilancio();
+                salvaImpostazioniStatistiche();
+
+                aggiornaTabelle();
+                aggiornaStatistiche();
+                aggiornaSelectClienti();
+                aggiornaSelectAuto();
+                aggiornaBilancio();
+
+                event.target.value = '';
+                toast('Backup importato. La sincronizzazione col cloud prosegue in background: non chiudere questa pagina per un minuto se il backup era grande.', 'warning');
+            };
+            reader.readAsText(file);
         }
 
         // GESTIONE SPESE AUTO
