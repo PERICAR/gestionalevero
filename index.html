@@ -682,6 +682,8 @@ select#filtroStato {
 
                 <div class="main-content">
 
+        <div id="avvisoBackup" style="display:none; align-items:center; gap:12px; flex-wrap:wrap; background:#FFFBEB; border:1px solid #FDE68A; color:#92400E; padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:0.9rem;"></div>
+
         <!-- TAB CLIENTI -->
         <div id="clienti" class="tab-content active">
             <h2>Gestione Clienti</h2>
@@ -985,14 +987,18 @@ select#filtroStato {
 
                 <h4>Servizi/Accessori Aggiuntivi</h4>
                 <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
-                    <div class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                    <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto;">
                         <div class="form-group">
                             <label>Descrizione</label>
                             <input type="text" id="descrizioneExtraPreventivo" placeholder="Es: Assicurazione Kasko, Navigatore, Cerchi in lega...">
                         </div>
                         <div class="form-group">
-                            <label>Prezzo (€)</label>
+                            <label>Prezzo al cliente (€)</label>
                             <input type="number" id="prezzoExtraPreventivo" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Mio costo (€, facoltativo)</label>
+                            <input type="number" id="costoExtraPreventivo" placeholder="0" title="Quanto ti costa davvero: non compare nel preventivo, serve solo per il margine stimato">
                         </div>
                         <div class="form-group">
                             <label>&nbsp;</label>
@@ -1864,6 +1870,7 @@ select#filtroStato {
             <h2 id="titoloVisualizzaAuto">Scheda Auto</h2>
             <div id="contenutoVisualizzaAuto"></div>
             <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-success" onclick="condividiSchedaAuto(autoInVisualizzazione)" title="Crea un PDF pronto da inviare al cliente">📤 Condividi scheda</button>
                 <button class="btn btn-warning" id="btnModificaDaVisualizza" onclick="modificaDaVisualizzaAuto()">✏️ Modifica</button>
                 <button class="btn btn-danger" onclick="chiudiModalVisualizzaAuto()">❌ Chiudi</button>
             </div>
@@ -2080,6 +2087,7 @@ select#filtroStato {
             document.getElementById('dataAcquisto').value = new Date().toISOString().split('T')[0];
 
             aggiornaBilancio();
+            aggiornaAvvisoBackup();
         }
 
         function mostraErroreLogin(messaggio) {
@@ -2501,6 +2509,7 @@ select#filtroStato {
             document.getElementById('prezzoBasePreventivo').value = '';
             document.getElementById('descrizioneExtraPreventivo').value = '';
             document.getElementById('prezzoExtraPreventivo').value = '';
+            document.getElementById('costoExtraPreventivo').value = '';
             document.getElementById('notePreventivo').value = '';
             document.getElementById('marcaPermutaPreventivo').value = '';
             document.getElementById('modelloPermutaPreventivo').value = '';
@@ -2610,6 +2619,47 @@ select#filtroStato {
                 righe += rigaRiepilogo('Valore ritiro permuta', -valutazionePermuta, { colore: '#28a745', grassetto: true });
             }
 
+            // Margine stimato (solo per te, non compare nel preventivo): incasso = auto scontata + extra
+            // al prezzo che fai pagare, meno costo dell'auto, spese già registrate su di lei e quanto
+            // ti costano davvero gli extra (campo "Mio costo"). La permuta non conta: l'auto ritirata
+            // entra in stock al suo valore, non è un costo della vendita.
+            let boxMargine = '';
+            const autoScelta = auto.find(a => a.id == document.getElementById('autoPreventivo').value);
+            if (autoScelta) {
+                const incasso = (prezzoBase - sconto) + totaleExtra;
+                const costoAuto = autoScelta.prezzoAcquisto || 0;
+                const speseAuto = (autoScelta.speseAggiuntive || []).reduce((s, x) => s + x.importo, 0);
+                const costiExtra = extraItemsPreventivo.reduce((s, i) => s + (i.costo || 0), 0);
+                const margine = incasso - costoAuto - speseAuto - costiExtra;
+                const percentuale = incasso > 0 ? (margine / incasso * 100) : 0;
+                const soglia = impostazioniBilancio.sogliaMargineMinimo || 0;
+                const sottoSoglia = margine < 0 || (soglia > 0 && margine < soglia);
+
+                let righeMargine = rigaRiepilogo('Incasso previsto (auto scontata + extra)', incasso, { colore: '#111827' });
+                righeMargine += rigaRiepilogo('Costo di acquisto auto', -costoAuto);
+                if (speseAuto > 0) righeMargine += rigaRiepilogo('Spese già registrate sull\'auto', -speseAuto);
+                if (costiExtra > 0) righeMargine += rigaRiepilogo('Tuoi costi sugli extra', -costiExtra);
+
+                boxMargine = `
+                    <div style="margin-top: 14px; border: 2px dashed ${sottoSoglia ? '#dc3545' : '#10B981'}; border-radius: 10px; padding: 4px 14px; background: #fff;">
+                        <div style="padding: 8px 0 2px; font-weight: bold; font-size: 0.85rem;">📈 Margine stimato <span style="font-weight: normal; color: #6b7280;">— solo per te, non compare nel preventivo</span></div>
+                        <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                            ${righeMargine}
+                            <tr style="border-top: 2px solid ${sottoSoglia ? '#dc3545' : '#10B981'}; background: ${sottoSoglia ? '#FEF2F2' : '#ECFDF5'};">
+                                <td style="padding:10px; font-weight:bold;">MARGINE STIMATO <span style="font-weight: normal; color: #6b7280;">(${percentuale.toFixed(1)}% dell'incasso)</span></td>
+                                <td style="padding:10px; text-align:right; font-weight:bold; font-size:1rem; color: ${sottoSoglia ? '#dc3545' : '#047857'};">${margine < 0 ? '-' : ''}€${Math.abs(margine).toLocaleString()}</td>
+                            </tr>
+                        </table>
+                        ${sottoSoglia ? `<div style="padding: 4px 0 8px; color: #dc3545; font-weight: bold; font-size: 0.85rem;">⚠️ ${margine < 0 ? 'Margine negativo: stai vendendo in perdita.' : `Margine sotto la tua soglia minima di €${soglia.toLocaleString()}.`}</div>` : ''}
+                        ${valutazionePermuta > 0 ? '<div style="padding: 0 0 6px; color: #6b7280; font-size: 0.75rem;">La permuta non è inclusa: l\'auto ritirata entra in stock al suo valore.</div>' : ''}
+                        <div style="padding: 4px 0 10px; font-size: 0.8rem; color: #374151;">
+                            Avvisami se il margine scende sotto €
+                            <input type="number" value="${soglia || ''}" placeholder="0 = nessun avviso" onchange="salvaSogliaMargine(this.value)" style="width: 150px; padding: 4px 8px; margin-left: 4px;">
+                        </div>
+                    </div>
+                `;
+            }
+
             container.innerHTML = `
                 <div style="border: 2px solid var(--brand); border-radius: 10px; padding: 4px 14px; background: #fff;">
                     <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
@@ -2620,7 +2670,14 @@ select#filtroStato {
                         </tr>
                     </table>
                 </div>
+                ${boxMargine}
             `;
+        }
+
+        function salvaSogliaMargine(valore) {
+            impostazioniBilancio = { ...impostazioniBilancio, sogliaMargineMinimo: parseFloat(valore) || 0 };
+            salvaImpostazioniBilancio();
+            aggiornaRiepilogoPreventivo();
         }
 
         // GESTIONE EXTRA PREVENTIVO
@@ -2633,11 +2690,14 @@ select#filtroStato {
                 return;
             }
 
-            extraItemsPreventivo.push({ id: Date.now(), descrizione, prezzo });
+            // Il costo reale è facoltativo, interno e mai stampato: serve solo al margine stimato
+            const costo = parseFloat(document.getElementById('costoExtraPreventivo').value) || 0;
+            extraItemsPreventivo.push(costo > 0 ? { id: Date.now(), descrizione, prezzo, costo } : { id: Date.now(), descrizione, prezzo });
             aggiornaListaExtraPreventivo();
 
             document.getElementById('descrizioneExtraPreventivo').value = '';
             document.getElementById('prezzoExtraPreventivo').value = '';
+            document.getElementById('costoExtraPreventivo').value = '';
         }
 
         function rimuoviExtraPreventivo(id) {
@@ -2662,7 +2722,7 @@ select#filtroStato {
 
             extraItemsPreventivo.forEach(item => {
                 html += `<div style="padding: 8px; border-top: 1px solid #eee; display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center;">
-                    <div>${item.descrizione}</div>
+                    <div>${item.descrizione}${item.costo ? ` <small style="color:#6b7280;">(mio costo €${item.costo.toLocaleString()})</small>` : ''}</div>
                     <div style="text-align: right; font-weight: bold; color: ${item.prezzo < 0 ? '#dc3545' : 'inherit'};">${item.prezzo < 0 ? '-' : ''}€${Math.abs(item.prezzo).toLocaleString()}</div>
                     <div><button class="btn btn-danger" onclick="rimuoviExtraPreventivo(${item.id})" style="padding: 4px 8px; font-size: 0.8rem;">🗑️</button></div>
                 </div>`;
@@ -3091,6 +3151,65 @@ select#filtroStato {
             });
         }
 
+        // Scheda del veicolo da mandare a un cliente: solo dati tecnici e prezzo di listino, mai
+        // costi/margini né targa e telaio
+        function costruisciHtmlSchedaAuto(a) {
+            const immatricolazione = a.dataImmatricolazione
+                ? new Date(a.dataImmatricolazione).toLocaleDateString('it-IT', { month: '2-digit', year: 'numeric' })
+                : '';
+            const dati = [
+                ['Immatricolazione', immatricolazione],
+                ['Chilometri', (a.chilometri || a.chilometri === 0) ? a.chilometri.toLocaleString('it-IT') + ' km' : ''],
+                ['Alimentazione', a.alimentazione],
+                ['Potenza', a.potenzaCV ? `${a.potenzaCV} CV${a.potenzaKw ? ` (${a.potenzaKw} kW)` : ''}` : ''],
+                ['Trasmissione', a.trasmissione],
+                ['Tipo', a.tipo]
+            ].filter(([, valore]) => valore);
+
+            const righe = dati.map(([etichetta, valore]) => `
+                <tr>
+                    <td style="padding:10px; border-bottom:1px solid #eee; font-weight:bold; width:40%;">${etichetta}</td>
+                    <td style="padding:10px; border-bottom:1px solid #eee;">${valore}</td>
+                </tr>`).join('');
+
+            return `
+                <div class="contract-preview">
+                    <div style="text-align:center; margin-bottom: 16px;">
+                        <img src="https://gestionalevero.netlify.app/logopericar2.png" alt="PERICAR Logo" style="height: 2.6cm; width: auto; margin-bottom: 6px;">
+                        <div style="background: #E30613; color: white; padding: 6px; font-size: 0.9rem; font-weight: bold;">SCHEDA VEICOLO</div>
+                    </div>
+                    <div style="text-align:center; margin: 22px 0 6px; font-size: 1.6rem; font-weight: 800;">${a.marca} ${a.modello}</div>
+                    ${a.versione ? `<div style="text-align:center; color:#555; font-size: 1rem; margin-bottom: 14px;">${a.versione}</div>` : '<div style="margin-bottom: 14px;"></div>'}
+                    <div style="text-align:center; margin: 0 auto 22px; padding: 14px; border: 2px solid #E30613; border-radius: 10px; width: 60%;">
+                        <div style="font-size: 0.8rem; color:#555;">PREZZO</div>
+                        <div style="font-size: 2rem; font-weight: 800; color:#E30613;">€${(a.prezzoVendita || 0).toLocaleString('it-IT')}</div>
+                    </div>
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.95rem; border-top:1px solid #eee;">${righe}</table>
+                    <div style="margin-top: 26px; padding: 12px; background: #f8f9fa; border-radius: 8px; text-align:center; font-size: 0.85rem; line-height: 1.5;">
+                        <strong style="color:#E30613;">PERICAR di Giacomo Perissinotto</strong><br>
+                        Corso Casale 99, 14100 Asti (AT)<br>
+                        Tel: +39 339 6831296 &nbsp;•&nbsp; giacomo@pericar.it
+                    </div>
+                    <p style="margin-top:14px; font-size:0.65rem; color:#666;">Documento privo di valore contrattuale. Prezzi e disponibilità salvo conferma.</p>
+                </div>
+            `;
+        }
+
+        function condividiSchedaAuto(id) {
+            if (condivisionePdfInCorso) return;
+            const autoObj = auto.find(a => a.id == id);
+            if (!autoObj) {
+                toast('Auto non trovata.', 'danger');
+                return;
+            }
+            return condividiHtmlComePdf({
+                html: costruisciHtmlSchedaAuto(autoObj),
+                nomeFile: ('Scheda_' + autoObj.marca + '_' + autoObj.modello).replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '.pdf',
+                titolo: `PERICAR - ${autoObj.marca} ${autoObj.modello}`,
+                sezioniDa: (doc) => [{ el: doc, modo: 'una' }]
+            });
+        }
+
         function condividiContratto(id) {
             if (condivisionePdfInCorso) return;
             const contratto = contratti.find(c => c.id == id);
@@ -3217,7 +3336,9 @@ select#filtroStato {
             document.getElementById('modelloPermuta').value = permutaPreventivo ? permutaPreventivo.modello : '';
             document.getElementById('valutazionePermuta').value = permutaPreventivo ? permutaPreventivo.valutazione : '';
 
-            extraItems = [...(preventivo.extraItems || [])];
+            // "Mio costo" degli extra è solo una stima interna del preventivo: nel contratto non deve
+            // passare, i costi reali arrivano dalle fatture registrate sull'auto
+            extraItems = (preventivo.extraItems || []).map(({ costo, ...resto }) => resto);
             aggiornaListaExtra();
 
             document.getElementById('noteContratto').value = preventivo.note || '';
@@ -3718,6 +3839,7 @@ select#filtroStato {
                         <button class="btn btn-icon btn-primary" onclick="visualizzaAuto(${autoObj.id})" title="Visualizza">👁️</button>
                         <button class="btn btn-icon btn-warning" onclick="modificaOggetto('auto', ${autoObj.id})" title="Modifica">✏️</button>
                         <button class="btn btn-icon btn-primary" onclick="gestisciSpese(${autoObj.id})" title="Spese">📋</button>
+                        ${autoObj.stato !== 'Venduta' ? `<button class="btn btn-icon btn-success" onclick="condividiSchedaAuto(${autoObj.id})" title="Condividi scheda (PDF da mandare al cliente)">📤</button>` : ''}
                         ${autoObj.stato === 'Venduta' ? `<button class="btn btn-icon btn-success" onclick="stampaReportAuto(${autoObj.id})" title="Report">📊</button><button class="btn btn-icon btn-primary" onclick="apriContrattoDaAuto(${autoObj.id})" title="Contratto">📄</button>` : ''}
                         <button class="btn btn-icon btn-danger" onclick="eliminaAuto(${autoObj.id})" title="Elimina">🗑️</button>
                     </td>
@@ -4202,7 +4324,7 @@ select#filtroStato {
         function aggiornaImpostazioniBilancio() {
             const aliquotaIrpef = parseFloat(document.getElementById('impostazioneAliquotaIrpef').value) || 0;
 
-            impostazioniBilancio = { id: 'impostazioniBilancio', aliquotaIrpef };
+            impostazioniBilancio = { ...impostazioniBilancio, id: 'impostazioniBilancio', aliquotaIrpef };
             salvaImpostazioniBilancio();
             aggiornaBilancio();
             toast('✅ Impostazioni salvate!', 'success');
@@ -5341,7 +5463,39 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            localStorage.setItem('ultimoBackup', new Date().toISOString());
+            aggiornaAvvisoBackup();
             toast('Backup scaricato.', 'success');
+        }
+
+        // Promemoria: se l'ultimo backup scaricato da questo browser è vecchio di oltre 30 giorni
+        // (o non ne esiste nessuno) mostra un avviso in alto. "Più tardi" lo nasconde fino alla
+        // prossima apertura del gestionale.
+        function aggiornaAvvisoBackup() {
+            const el = document.getElementById('avvisoBackup');
+            if (!el) return;
+            const SOGLIA_GIORNI = 30;
+            let nascosto = false;
+            try { nascosto = sessionStorage.getItem('avvisoBackupNascosto') === '1'; } catch (e) {}
+            const ultimo = localStorage.getItem('ultimoBackup');
+            const giorni = ultimo ? Math.floor((Date.now() - new Date(ultimo).getTime()) / 86400000) : null;
+
+            if (nascosto || (giorni !== null && giorni < SOGLIA_GIORNI)) {
+                el.style.display = 'none';
+                return;
+            }
+            const testo = giorni === null
+                ? 'Non hai ancora scaricato nessun backup dei dati da questo computer.'
+                : `L'ultimo backup scaricato da questo computer risale a ${giorni} giorni fa.`;
+            el.innerHTML = `<span>💾 ${testo}</span>
+                <button class="btn btn-primary" onclick="esportaBackup()" style="padding: 6px 12px;">⬇️ Scarica ora</button>
+                <button class="btn" onclick="nascondiAvvisoBackup()" style="padding: 6px 12px; background: transparent; color: #92400E;">Più tardi</button>`;
+            el.style.display = 'flex';
+        }
+
+        function nascondiAvvisoBackup() {
+            try { sessionStorage.setItem('avvisoBackupNascosto', '1'); } catch (e) {}
+            aggiornaAvvisoBackup();
         }
 
         // BACKUP: importa un file esportato da esportaBackup(), sovrascrivendo TUTTI i dati
