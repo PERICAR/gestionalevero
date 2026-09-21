@@ -1674,6 +1674,7 @@ select#filtroStato {
             <div id="contrattoCompleto"></div>
             <div style="margin-top: 20px; text-align: center;">
                 <button class="btn btn-primary" onclick="stampaContratto()">🖨️ Stampa Contratto</button>
+                <button class="btn btn-success" onclick="condividiContratto(contrattoInVisualizzazioneId)" title="Crea un PDF pronto da inviare su WhatsApp o via mail">📤 Condividi</button>
                 <button class="btn btn-danger" onclick="chiudiModalContratto()">❌ Chiudi</button>
             </div>
         </div>
@@ -1938,6 +1939,7 @@ select#filtroStato {
         let preventivoDaConvertire = null; // id del preventivo che ha precompilato il form Contratto, in attesa che l'utente lo completi e salvi
         let autoInVisualizzazione = null; // id dell'auto aperta nel modal "Visualizza"
         let preventivoInVisualizzazione = null; // id del preventivo aperto nel modal (serve al bottone Condividi)
+        let contrattoInVisualizzazioneId = null; // id del contratto aperto nel modal (serve al bottone Condividi)
         let condivisionePdfInCorso = false; // evita doppi click mentre il PDF si sta generando
         let sortState = {}; // stato ordinamento corrente per tabella {clienti:{campo,dir}, ...}
 
@@ -2926,18 +2928,22 @@ select#filtroStato {
             document.getElementById('modalPreventivo').style.display = 'block';
         }
 
-        // Carica html2pdf.js (html2canvas + jsPDF) solo la prima volta che serve
+        // Carica html2canvas + jsPDF solo la prima volta che servono
         let _promessaLibreriaPdf = null;
         function caricaLibreriaPdf() {
-            if (window.html2pdf) return Promise.resolve();
+            if (window.html2canvas && window.jspdf) return Promise.resolve();
             if (_promessaLibreriaPdf) return _promessaLibreriaPdf;
-            _promessaLibreriaPdf = new Promise((resolve, reject) => {
+            const carica = (src) => new Promise((resolve, reject) => {
                 const s = document.createElement('script');
-                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                s.src = src;
                 s.onload = () => resolve();
-                s.onerror = () => { _promessaLibreriaPdf = null; reject(new Error('Impossibile caricare la libreria PDF')); };
+                s.onerror = () => reject(new Error('Impossibile caricare ' + src));
                 document.head.appendChild(s);
             });
+            _promessaLibreriaPdf = Promise.all([
+                window.html2canvas ? Promise.resolve() : carica('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+                window.jspdf ? Promise.resolve() : carica('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+            ]).catch(err => { _promessaLibreriaPdf = null; throw err; });
             return _promessaLibreriaPdf;
         }
 
@@ -2957,17 +2963,63 @@ select#filtroStato {
             }
         }
 
-        // Crea un PDF temporaneo del preventivo (non viene salvato da nessuna parte) e lo passa al
+        // Compone il PDF A4 da una lista di sezioni HTML già impaginate a mano:
+        //   modo 'una':    la sezione sta in UNA pagina (se è troppo alta viene rimpicciolita)
+        //   modo 'pagine': la sezione può occupare più pagine, tagliata tra un blocco e l'altro
+        async function creaPdfDaSezioni(sezioni) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const MARGINE = 10, LARG = 210 - 2 * MARGINE, ALT = 297 - 2 * MARGINE;
+            const SCALA = 2, QUALITA = 0.88;
+            let primaPagina = true;
+
+            for (const sez of sezioni) {
+                const canvas = await window.html2canvas(sez.el, { scale: SCALA, useCORS: true, backgroundColor: '#ffffff' });
+                const mmPerPx = LARG / canvas.width;
+
+                if (sez.modo === 'una') {
+                    let w = LARG, h = canvas.height * mmPerPx;
+                    if (h > ALT) { w = w * ALT / h; h = ALT; }
+                    if (!primaPagina) pdf.addPage();
+                    pdf.addImage(canvas.toDataURL('image/jpeg', QUALITA), 'JPEG', MARGINE + (LARG - w) / 2, MARGINE, w, h);
+                    primaPagina = false;
+                    continue;
+                }
+
+                const capacitaPx = ALT / mmPerPx;
+                const cimaEl = sez.el.getBoundingClientRect().top;
+                const tagliPossibili = Array.from(sez.el.children)
+                    .map(f => (f.getBoundingClientRect().bottom - cimaEl) * SCALA)
+                    .filter(y => y > 0);
+                let y0 = 0;
+                while (y0 < canvas.height - 1) {
+                    let y1 = y0 + capacitaPx;
+                    if (y1 >= canvas.height) {
+                        y1 = canvas.height;
+                    } else {
+                        const candidati = tagliPossibili.filter(y => y > y0 + 1 && y <= y1);
+                        if (candidati.length) y1 = Math.max(...candidati);
+                    }
+                    const altezzaPx = Math.round(y1 - y0);
+                    const fetta = document.createElement('canvas');
+                    fetta.width = canvas.width;
+                    fetta.height = altezzaPx;
+                    fetta.getContext('2d').drawImage(canvas, 0, Math.round(y0), canvas.width, altezzaPx, 0, 0, canvas.width, altezzaPx);
+                    if (!primaPagina) pdf.addPage();
+                    pdf.addImage(fetta.toDataURL('image/jpeg', QUALITA), 'JPEG', MARGINE, MARGINE, LARG, altezzaPx * mmPerPx);
+                    primaPagina = false;
+                    y0 = y1;
+                }
+            }
+            return pdf.output('blob');
+        }
+
+        // Crea un PDF temporaneo (non viene salvato da nessuna parte) da un blocco HTML e lo passa al
         // menu di condivisione del sistema (WhatsApp, Mail, ...). Se il browser non lo supporta,
         // scarica il file così lo si può allegare a mano.
-        async function condividiPreventivo(id) {
+        //   sezioniDa(doc): restituisce le sezioni da rendere, come per creaPdfDaSezioni
+        async function condividiHtmlComePdf({ html, nomeFile, titolo, larghezza = 720, sezioniDa }) {
             if (condivisionePdfInCorso) return;
-            const preventivo = preventivi.find(p => p.id == id);
-            if (!preventivo || !preventivo.auto || !preventivo.cliente) {
-                toast('Preventivo incompleto: mancano cliente o auto.', 'danger');
-                return;
-            }
-
             condivisionePdfInCorso = true;
             toast('Sto creando il PDF...', 'warning');
             let contenitore = null;
@@ -2975,36 +3027,25 @@ select#filtroStato {
                 await caricaLibreriaPdf();
 
                 contenitore = document.createElement('div');
-                contenitore.style.cssText = 'position:fixed; left:-10000px; top:0; width:720px; background:#fff;';
-                contenitore.innerHTML = costruisciHtmlPreventivo(preventivo);
+                contenitore.style.cssText = `position:fixed; left:-10000px; top:0; width:${larghezza}px; background:#fff;`;
+                // Lo stile globale dei titoli h2 (barra rossa a sinistra) non va nel PDF, come nella stampa
+                contenitore.innerHTML = '<style>.contract-preview h2 { border-left: none; padding-left: 0; }</style>' + html;
                 const doc = contenitore.querySelector('.contract-preview');
-                doc.style.cssText += 'border:none; box-shadow:none; margin:0; border-radius:0;';
+                doc.style.cssText += 'border:none; box-shadow:none; margin:0; border-radius:0; padding:0;';
 
-                const logo = contenitore.querySelector('img');
-                if (logo) {
+                for (const logo of contenitore.querySelectorAll('img')) {
                     const dataUrl = await logoComeDataUrl(logo.src);
                     if (dataUrl) logo.src = dataUrl;
                     if (!logo.complete) await new Promise(r => { logo.onload = r; logo.onerror = r; });
                 }
                 document.body.appendChild(contenitore);
 
-                const nomeFile = ('Preventivo_' + preventivo.cliente.nome + '_' + preventivo.auto.marca + '_' + preventivo.auto.modello)
-                    .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '.pdf';
-
-                const blob = await window.html2pdf().set({
-                    margin: 10,
-                    filename: nomeFile,
-                    image: { type: 'jpeg', quality: 0.95 },
-                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                }).from(doc).outputPdf('blob');
-
+                const blob = await creaPdfDaSezioni(sezioniDa(doc));
                 const file = new File([blob], nomeFile, { type: 'application/pdf' });
-                const testo = `Preventivo PERICAR - ${preventivo.auto.marca} ${preventivo.auto.modello}`;
 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
-                        await navigator.share({ files: [file], title: testo, text: testo });
+                        await navigator.share({ files: [file], title: titolo, text: titolo });
                         return;
                     } catch (e) {
                         if (e && e.name === 'AbortError') return; // ha chiuso il menu di condivisione
@@ -3022,12 +3063,52 @@ select#filtroStato {
                 setTimeout(() => URL.revokeObjectURL(url), 10000);
                 toast('PDF scaricato: allegalo tu su WhatsApp o nella mail.', 'success');
             } catch (e) {
-                console.error('Errore creazione PDF preventivo:', e);
+                console.error('Errore creazione PDF:', e);
                 toast('Non sono riuscito a creare il PDF. Controlla la connessione e riprova.', 'danger');
             } finally {
                 if (contenitore && contenitore.parentNode) contenitore.parentNode.removeChild(contenitore);
                 condivisionePdfInCorso = false;
             }
+        }
+
+        function nomeFilePdf(prefisso, cliente, auto) {
+            return (prefisso + '_' + cliente.nome + '_' + auto.marca + '_' + auto.modello)
+                .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '.pdf';
+        }
+
+        function condividiPreventivo(id) {
+            if (condivisionePdfInCorso) return;
+            const preventivo = preventivi.find(p => p.id == id);
+            if (!preventivo || !preventivo.auto || !preventivo.cliente) {
+                toast('Preventivo incompleto: mancano cliente o auto.', 'danger');
+                return;
+            }
+            return condividiHtmlComePdf({
+                html: costruisciHtmlPreventivo(preventivo),
+                nomeFile: nomeFilePdf('Preventivo', preventivo.cliente, preventivo.auto),
+                titolo: `Preventivo PERICAR - ${preventivo.auto.marca} ${preventivo.auto.modello}`,
+                sezioniDa: (doc) => [{ el: doc, modo: 'una' }]
+            });
+        }
+
+        function condividiContratto(id) {
+            if (condivisionePdfInCorso) return;
+            const contratto = contratti.find(c => c.id == id);
+            if (!contratto || !contratto.auto || !contratto.cliente) {
+                toast('Contratto incompleto: mancano cliente o auto.', 'danger');
+                return;
+            }
+            return condividiHtmlComePdf({
+                html: costruisciHtmlContratto(contratto),
+                nomeFile: nomeFilePdf('Contratto', contratto.cliente, contratto.auto),
+                titolo: `Contratto PERICAR - ${contratto.auto.marca} ${contratto.auto.modello}`,
+                // Prima pagina (fino alle NOTE) in una sola pagina A4; le condizioni generali e la
+                // privacy sulle pagine successive, tagliate tra un articolo e l'altro
+                sezioniDa: (doc) => [
+                    { el: doc.querySelector('#paginaFronteContratto'), modo: 'una' },
+                    { el: doc.querySelector('#condizioniGeneraliContratto'), modo: 'pagine' }
+                ]
+            });
         }
 
         function chiudiModalPreventivo() {
@@ -3676,6 +3757,7 @@ select#filtroStato {
                     <td>${permutaText}</td>
                     <td class="actions">
                         <button class="btn btn-primary" onclick="mostraContratto(${JSON.stringify(contratto).replace(/"/g, '&quot;')})">📋 Visualizza</button>
+                        <button class="btn btn-primary" onclick="condividiContratto(${contratto.id})" title="Crea un PDF pronto da inviare su WhatsApp o via mail">📤 Condividi</button>
                         <button class="btn btn-warning" onclick="modificaContratto(${contratto.id})">✏️ Modifica</button>
                         <button class="btn btn-danger" onclick="eliminaContratto(${contratto.id})">🗑️ Elimina</button>
                     </td>
@@ -4683,7 +4765,8 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
 }
 
         // CONTRATTO
-        function mostraContratto(contratto) {
+        // Costruisce l'HTML del contratto (usato sia dal modal "Visualizza" sia dal PDF di Condividi)
+        function costruisciHtmlContratto(contratto) {
             const totaleExtra = (contratto.extraItems || []).reduce((sum, item) => sum + item.prezzo, 0);
             const prezzoBaseAuto = contratto.auto.prezzoVendita;
             const scontoApplicato = contratto.scontoApplicato || 0;
@@ -4931,9 +5014,6 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                         </div>
                     </div>
 
-                        </div>
-                    </div>
-
                     <!-- Spazio per note -->
                     <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         <div style="font-size: 0.7rem; font-weight: bold; margin-bottom: 8px;">NOTE:</div>
@@ -4941,7 +5021,7 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                     </div>
                     </div>
 
-                    <div style="page-break-before: always; margin-top: 10px;">
+                    <div id="condizioniGeneraliContratto" style="page-break-before: always; margin-top: 10px;">
                         <h2 style="text-align: center; margin-bottom: 15px; font-size: 1rem;">CONDIZIONI GENERALI DI VENDITA</h2>
                         
                         <div style="margin-bottom: 8px; font-size: 0.55rem;">
@@ -5078,7 +5158,12 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                 </div>
             `;
             
-            document.getElementById('contrattoCompleto').innerHTML = html;
+            return html;
+        }
+
+        function mostraContratto(contratto) {
+            contrattoInVisualizzazioneId = contratto.id;
+            document.getElementById('contrattoCompleto').innerHTML = costruisciHtmlContratto(contratto);
             document.getElementById('modalContratto').style.display = 'block';
         }
 
