@@ -876,6 +876,22 @@ select#filtroStato {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Classe ambientale</label>
+                        <select id="classeAmbientaleAuto">
+                            <option value="">Non indicata</option>
+                            <option value="Euro 0">Euro 0</option>
+                            <option value="Euro 1">Euro 1</option>
+                            <option value="Euro 2">Euro 2</option>
+                            <option value="Euro 3">Euro 3</option>
+                            <option value="Euro 4">Euro 4</option>
+                            <option value="Euro 5">Euro 5</option>
+                            <option value="Euro 6">Euro 6</option>
+                            <option value="Euro 6d-TEMP">Euro 6d-TEMP</option>
+                            <option value="Euro 6d">Euro 6d</option>
+                            <option value="Euro 6e">Euro 6e</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Stato</label>
                         <select id="statoAuto">
                             <option value="Disponibile">Disponibile</option>
@@ -2276,6 +2292,7 @@ select#filtroStato {
             const potenzaCV = potenzaUnita === 'CV' ? potenzaValore : kwToCv(potenzaValore);
             const potenzaKw = potenzaUnita === 'kW' ? potenzaValore : cvToKw(potenzaValore);
             const trasmissione = document.getElementById('trasmissioneAuto').value;
+            const classeAmbientale = document.getElementById('classeAmbientaleAuto').value;
 
             if (!marca || !modello || !targa) {
                 toast('Marca, modello e targa sono obbligatori!', 'danger');
@@ -2309,6 +2326,7 @@ select#filtroStato {
                 potenzaCV,
                 potenzaKw,
                 trasmissione,
+                classeAmbientale,
                 stato,
                 speseAggiuntive: speseIniziali // Tutti i costi come spese unificate
             };
@@ -2343,6 +2361,7 @@ select#filtroStato {
             document.getElementById('potenzaUnita').value = 'CV';
             document.getElementById('potenzaConvertita').textContent = '';
             document.getElementById('trasmissioneAuto').value = 'Anteriore';
+            document.getElementById('classeAmbientaleAuto').value = '';
             document.getElementById('statoAuto').value = 'Disponibile';
             costiAutoItems = [];
             aggiornaListaCostiAuto();
@@ -3163,6 +3182,7 @@ select#filtroStato {
                 ['Alimentazione', a.alimentazione],
                 ['Potenza', a.potenzaCV ? `${a.potenzaCV} CV${a.potenzaKw ? ` (${a.potenzaKw} kW)` : ''}` : ''],
                 ['Trasmissione', a.trasmissione],
+                ['Classe ambientale', a.classeAmbientale],
                 ['Tipo', a.tipo]
             ].filter(([, valore]) => valore);
 
@@ -3509,6 +3529,7 @@ select#filtroStato {
                     {nome: 'alimentazione', label: 'Alimentazione', tipo: 'select', opzioni: ['Benzina', 'Diesel', 'GPL', 'Metano', 'Ibrido', 'Ibrido Plug-in', 'Elettrico']},
                     {nome: 'potenza', label: 'Potenza', tipo: 'potenza'},
                     {nome: 'trasmissione', label: 'Trasmissione', tipo: 'select', opzioni: ['Anteriore', 'Posteriore', 'Integrale']},
+                    {nome: 'classeAmbientale', label: 'Classe ambientale', tipo: 'select', opzioni: ['', 'Euro 0', 'Euro 1', 'Euro 2', 'Euro 3', 'Euro 4', 'Euro 5', 'Euro 6', 'Euro 6d-TEMP', 'Euro 6d', 'Euro 6e']},
                     {nome: 'stato', label: 'Stato', tipo: 'select', opzioni: ['Disponibile', 'Venduta', 'In Trattativa']}
                 ];
             } else if (tipo === 'spesaFissa') {
@@ -3538,7 +3559,7 @@ select#filtroStato {
                     html += `<select id="modifica_${campo.nome}">`;
                     campo.opzioni.forEach(opzione => {
                         const selected = oggetto[campo.nome] === opzione ? 'selected' : '';
-                        html += `<option value="${opzione}" ${selected}>${opzione}</option>`;
+                        html += `<option value="${opzione}" ${selected}>${opzione || 'Non indicata'}</option>`;
                     });
                     html += `</select>`;
                 } else if (campo.tipo === 'potenza') {
@@ -5953,6 +5974,7 @@ function aggiornaAutoVendute(mostraTutti, annoNum, includiBaseline, baseline) {
                     <div><strong>Alimentazione:</strong> ${autoObj.alimentazione || '-'}</div>
                     <div><strong>Potenza:</strong> ${autoObj.potenzaCV ? `${autoObj.potenzaCV} CV (${autoObj.potenzaKw} kW)` : '-'}</div>
                     <div><strong>Trasmissione:</strong> ${autoObj.trasmissione || '-'}</div>
+                    <div><strong>Classe ambientale:</strong> ${autoObj.classeAmbientale || '-'}</div>
                     <div><strong>Stato:</strong> <span class="badge" style="background:${statoColor};">${autoObj.stato}</span></div>
                 </div>
 
